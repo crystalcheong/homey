@@ -1,0 +1,66 @@
+{
+  "name": "homey.com",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "preview": "next build && next start",
+    "lint": "next lint",
+    "lint:fix": "eslint src --fix && pnpm format",
+    "lint:strict": "eslint --max-warnings=0 src",
+    "lint:tsc": "tsc --noEmit --incremental false",
+    "format": "prettier -w .",
+    "format:check": "prettier -c .",
+    "prisma:studio": "npx prisma studio",
+    "prisma:dev": "dotenv -e .env.local prisma migrate dev ",
+    "prisma:update": "prisma db push",
+    "prisma:prepare": "prisma generate",
+    "prepare": "husky install && pnpm prisma:prepare"
+  },
+  "dependencies": {
+    "@next-auth/prisma-adapter": "^1.0.5",
+    "@prisma/client": "^4.9.0",
+    "@tanstack/react-query": "^4.20.2",
+    "@trpc/client": "^10.9.0",
+    "@trpc/next": "^10.9.0",
+    "@trpc/react-query": "^10.9.0",
+    "@trpc/server": "^10.9.0",
+    "next": "13.1.6",
+    "next-auth": "^4.19.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "superjson": "1.9.1",
+    "zod": "^3.20.2"
+  },
+  "devDependencies": {
+    "typescript": "^4.9.4",
+    "@types/node": "^18.11.18",
+    "@types/react": "^18.0.26",
+    "@types/react-dom": "^18.0.10",
+    "@typescript-eslint/eslint-plugin": "^5.47.1",
+    "@typescript-eslint/parser": "^5.47.1",
+    "eslint": "^8.30.0",
+    "prettier": "^2.8.4",
+    "eslint-config-next": "13.1.6",
+    "eslint-config-prettier": "^8.6.0",
+    "eslint-plugin-simple-import-sort": "^10.0.0",
+    "eslint-plugin-unused-imports": "^2.0.0",
+    "dotenv-cli": "^7.0.0",
+    "@svgr/webpack": "^6.5.1",
+    "prisma": "^4.9.0",
+    "husky": "^8.0.3",
+    "@commitlint/cli": "^17.4.2",
+    "@commitlint/config-conventional": "^17.4.2"
+  },
+  "lint-staged": {
+    "**/*.{js,jsx,ts,tsx}": [
+      "eslint --max-warnings=0",
+      "prettier -w"
+    ],
+    "**/*.{json,css,scss,md,webmanifest}": [
+      "prettier -w"
+    ]
+  }
+}
