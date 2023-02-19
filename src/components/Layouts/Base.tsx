@@ -11,6 +11,7 @@ import { PropsWithChildren } from "react";
 import { TbArrowUp } from "react-icons/tb";
 
 import { Navbar } from "@/components/Layouts";
+import BetaWarning from "@/components/Layouts/BetaWarning";
 
 export type BaseLayoutProps = PropsWithChildren & {
   isLoading?: boolean;
@@ -27,6 +28,7 @@ export const BaseLayout = ({
   return (
     <>
       <Navbar.Base />
+      <BetaWarning />
       <Container
         sx={{
           position: "relative",

@@ -12,8 +12,6 @@ import { api } from "@/utils/api";
 import { logger } from "@/utils/debug";
 
 const IndexPage: NextPage = () => {
-  const hello = api.example.hello.useQuery({ text: "from tRPC" });
-
   const allListings: Record<ListingType, Listing[]> =
     useNinetyNineStore.use.listings();
   const { rent: rentListings = [], sale: saleListings = [] } = allListings;
@@ -40,8 +38,6 @@ const IndexPage: NextPage = () => {
       )
     )
   );
-
-  const isLoading: boolean = isFetchingRentListings || isFetchingSaleListings;
 
   const handleLoadMoreListings = (listingType: ListingType) => {
     const isTypeLoading =
@@ -95,17 +91,6 @@ const IndexPage: NextPage = () => {
           );
         })}
       </Box>
-
-      {!isLoading && (
-        <main>
-          {ListingTypes.map((type) => (
-            <p key={type}>
-              {type} Listings: {allListings[type].length}
-            </p>
-          ))}
-        </main>
-      )}
-      <p>{hello.data ? hello.data.greeting : "Loading tRPC query..."}</p>
     </Layout.Base>
   );
 };
