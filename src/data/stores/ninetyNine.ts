@@ -1,6 +1,7 @@
 import { createTRPCProxyClient, httpBatchLink } from "@trpc/client";
 import superjson from "superjson";
 import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 
 import { Listing, ListingType, ListingTypes } from "@/data/clients/ninetyNine";
 
@@ -11,19 +12,28 @@ import { getUniqueObjectList } from "@/utils/helpers";
 import { createSelectors } from "@/utils/store";
 
 interface State {
-  listings: {
-    [key in ListingType]: Listing[];
-  };
-  pagination: {
-    [key in ListingType]: {
+  currentListing: Listing | null;
+  listings: Record<ListingType, Listing[]>;
+  pagination: Record<
+    ListingType,
+    {
       currentCount: number;
       pageSize: number;
       pageNum: number;
-    };
-  };
+    }
+  >;
+}
+
+interface Mutators {
   updateListings: (listingType: ListingType, newListings: Listing[]) => void;
   getMoreListings: (listingType: ListingType) => void;
+  getListing: (
+    listingType: ListingType,
+    listingId: Listing["id"]
+  ) => Listing | null;
 }
+
+interface Store extends State, Mutators {}
 
 //#endregion  //*======== Universal Functions ===========
 
@@ -39,8 +49,8 @@ const api = createTRPCProxyClient<AppRouter>({
 const updateListings = (
   listingType: ListingType,
   newListings: Listing[],
-  state: State
-): Partial<State> => {
+  state: Store
+): Partial<Store> => {
   const currentListings = state.listings;
   const currentPagination = state.pagination;
   const { currentCount, pageNum } = currentPagination[listingType];
@@ -52,7 +62,7 @@ const updateListings = (
   const updatedCurrentCount = (currentCount ?? 0) + updatedListings.length;
   const updatePageNum = (pageNum ?? 0) + 1;
 
-  const updatedState: Partial<State> = {
+  const updatedState: Partial<Store> = {
     listings: {
       ...currentListings,
       [listingType]: updatedListings,
@@ -66,44 +76,85 @@ const updateListings = (
       },
     },
   };
-  logger("ninetyNine.ts line 76", { updatedState });
+  logger("NinetyNine/updateListings", listingType, { updatedState });
   return updatedState;
 };
 
+const cachedStates: string[] = ["currentListing"];
+
 //#endregion  //*======== Universal Functions ===========
 
-const store = create<State>()((set, get) => ({
-  listings: ListingTypes.reduce(
-    (listingMap = {}, type) => ({
-      ...listingMap,
-      [type]: [],
-    }),
-    {}
-  ),
-  pagination: ListingTypes.reduce(
-    (listingMap = {}, type) => ({
-      ...listingMap,
-      [type]: {
-        currentCount: 0,
-        pageSize: 40,
-        pageNum: 1,
+const store = create<Store>()(
+  persist(
+    (set, get) => ({
+      currentListing: null,
+      listings: ListingTypes.reduce(
+        (listingMap = {}, type) => ({
+          ...listingMap,
+          [type]: [],
+        }),
+        {}
+      ),
+      pagination: ListingTypes.reduce(
+        (listingMap = {}, type) => ({
+          ...listingMap,
+          [type]: {
+            currentCount: 0,
+            pageSize: 30,
+            pageNum: 1,
+          },
+        }),
+        {}
+      ),
+      updateListings: (listingType, newListings) =>
+        set((state) => updateListings(listingType, newListings, state)),
+      getMoreListings: async (listingType) => {
+        const currentPagination = get().pagination;
+        const { pageNum } = currentPagination[listingType];
+        const newListings: Listing[] =
+          (await api.ninetyNine.getListings.query({
+            listingType,
+            pageNum,
+          })) ?? [];
+        return set((state) => updateListings(listingType, newListings, state));
+      },
+      getListing: (listingType, listingId) => {
+        const currentListings: State["listings"] = get().listings;
+        const currentListing: State["currentListing"] = get().currentListing;
+        const currentTypeListings: Listing[] =
+          currentListings[listingType] ?? [];
+
+        if (!listingId.length) return null;
+
+        // CHECK: If it matches currentListing
+        if (currentListing) {
+          const isCurrentListing: boolean = currentListing.id === listingId;
+          if (isCurrentListing) return currentListing;
+        }
+
+        if (!currentTypeListings.length) return null;
+
+        const matchingListings: Listing[] =
+          currentTypeListings.filter(({ id }) => id === listingId) ?? [];
+        if (!matchingListings.length) return null;
+
+        const matchedListing: Listing = matchingListings[0];
+        set((state) => ({
+          currentListing: matchedListing ?? state.currentListing,
+        }));
+        return matchedListing;
       },
     }),
-    {}
-  ),
-  updateListings: (listingType, newListings) =>
-    set((state) => updateListings(listingType, newListings, state)),
-  getMoreListings: async (listingType) => {
-    const currentPagination = get().pagination;
-    const { pageNum } = currentPagination[listingType];
-    const newListings: Listing[] =
-      (await api.ninetyNine.getListings.query({
-        listingType,
-        pageNum,
-      })) ?? [];
-    return set((state) => updateListings(listingType, newListings, state));
-  },
-}));
+    {
+      name: "properties",
+      storage: createJSONStorage(() => sessionStorage),
+      partialize: (state) =>
+        Object.fromEntries(
+          Object.entries(state).filter(([key]) => cachedStates.includes(key))
+        ),
+    }
+  )
+);
 
 // export const persistentStore = create<State>()(
 //   persist(
@@ -118,7 +169,7 @@ const store = create<State>()((set, get) => ({
 //           ...listingMap,
 //           [type]: {
 //             currentCount: 0,
-//             pageSize: 40,
+//             pageSize: 30,
 //             pageNum: 1,
 //           },
 //         }), {}),

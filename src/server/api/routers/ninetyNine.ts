@@ -10,15 +10,16 @@ export const ninetyNineRouter = createTRPCRouter({
   getListings: publicProcedure
     .input(
       z.object({
-        listingType: z.string().min(1),
+        listingType: z.string(),
         pageSize: z.number().optional(),
         pageNum: z.number().optional(),
       })
     )
-    .query(async ({ input }) => {
-      return await client.getListings(input.listingType, {
-        pageSize: input.pageSize,
-        pageNum: input.pageNum,
-      });
-    }),
+    .query(
+      async ({ input }) =>
+        await client.getListings(input.listingType, {
+          pageSize: input.pageSize,
+          pageNum: input.pageNum,
+        })
+    ),
 });

@@ -10,6 +10,24 @@
 const config = {
   reactStrictMode: true,
 
+  // SVGR
+  webpack(config) {
+    config.module.rules.push({
+      test: /\.svg$/i,
+      issuer: /\.[jt]sx?$/,
+      use: [
+        {
+          loader: "@svgr/webpack",
+          options: {
+            typescript: true,
+            icon: true,
+          },
+        },
+      ],
+    });
+    return config;
+  },
+
   /**
    * If you have the "experimental: { appDir: true }" setting enabled, then you
    * must comment the below `i18n` config out.

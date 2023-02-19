@@ -14,6 +14,11 @@ export type ListingType = (typeof ListingTypes)[number];
 export type Listing = {
   id: string;
   listing_type: ListingType;
+  photo_url: string;
+  address_name: string;
+  sub_category_formatted: string;
+  attributes: Record<string, string | number>;
+  tags: string[];
 };
 
 export class NinetyNine {
@@ -25,9 +30,11 @@ export class NinetyNine {
 
   getListings = async (
     listingType: ListingType = ListingTypes[0],
-    { pageSize = 40, pageNum = 1 }
+    { pageSize = 30, pageNum = 1 }
   ) => {
     const listings: Listing[] = [];
+    if (!listingType.length) return listings;
+
     const params = {
       property_segments: "residential",
       listing_type: listingType,

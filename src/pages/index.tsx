@@ -1,68 +1,113 @@
-import { NextPage } from "next";
-import { signIn, signOut, useSession } from "next-auth/react";
-import React from "react";
+import { Box, Button } from "@mantine/core";
+import { NextPage } from "next/types";
 
 import { Listing, ListingType, ListingTypes } from "@/data/clients/ninetyNine";
 import { useNinetyNineStore } from "@/data/stores/ninetyNine";
 
+import { Layout, Property } from "@/components";
+import Hero from "@/components/Pages/Index/Hero";
+import ThemeToggle from "@/components/ThemeToggle";
+
 import { api } from "@/utils/api";
+import { logger } from "@/utils/debug";
 
 const IndexPage: NextPage = () => {
   const hello = api.example.hello.useQuery({ text: "from tRPC" });
 
-  const listingType: ListingType = ListingTypes[0];
-  const listings: Listing[] = useNinetyNineStore.use.listings()[listingType];
+  const allListings: Record<ListingType, Listing[]> =
+    useNinetyNineStore.use.listings();
+  const { rent: rentListings = [], sale: saleListings = [] } = allListings;
+
   const updateListings = useNinetyNineStore.use.updateListings();
   const getMoreListings = useNinetyNineStore.use.getMoreListings();
 
-  const { isFetching } = api.ninetyNine.getListings.useQuery(
-    {
-      listingType,
-    },
-    {
-      enabled: !listings.length,
-      onSuccess(data) {
-        updateListings(listingType, data as Listing[]);
-      },
-    }
+  const [
+    { isFetching: isFetchingRentListings },
+    { isFetching: isFetchingSaleListings },
+  ] = api.useQueries((t) =>
+    ListingTypes.map((listingType) =>
+      t.ninetyNine.getListings(
+        {
+          listingType,
+        },
+        {
+          enabled: !allListings[listingType].length,
+          onSuccess(data) {
+            if (!data.length) return;
+            updateListings(listingType, data as Listing[]);
+          },
+        }
+      )
+    )
   );
 
-  const isLoading: boolean = isFetching;
+  const isLoading: boolean = isFetchingRentListings || isFetchingSaleListings;
+
+  const handleLoadMoreListings = (listingType: ListingType) => {
+    const isTypeLoading =
+      listingType === "rent" ? isFetchingRentListings : isFetchingSaleListings;
+
+    logger("handleLoadMoreListings", { listingType, isTypeLoading });
+
+    if (isTypeLoading) return;
+    getMoreListings(listingType);
+  };
+
+  logger("index.tsx line 39", {
+    rentListings,
+    saleListings,
+  });
   return (
-    <div>
+    <Layout.Base>
+      <ThemeToggle />
+      <Hero />
+
+      <Box
+        component="section"
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        {ListingTypes.map((type, idx) => {
+          const isTypeLoading =
+            type === "rent" ? isFetchingRentListings : isFetchingSaleListings;
+
+          return (
+            <Property.Grid
+              key={`grid-${type}-${idx}`}
+              listings={allListings[type]}
+              isLoading={isTypeLoading}
+              maxViewableCount={3}
+            >
+              <Box
+                component="aside"
+                mt={20}
+              >
+                <Button
+                  onClick={() => handleLoadMoreListings(type)}
+                  loading={isTypeLoading}
+                >
+                  Load More
+                </Button>
+              </Box>
+            </Property.Grid>
+          );
+        })}
+      </Box>
+
       {!isLoading && (
         <main>
-          <p>Listings: {listings.length}</p>
-          <button onClick={() => getMoreListings(listingType)}>Get More</button>
+          {ListingTypes.map((type) => (
+            <p key={type}>
+              {type} Listings: {allListings[type].length}
+            </p>
+          ))}
         </main>
       )}
       <p>{hello.data ? hello.data.greeting : "Loading tRPC query..."}</p>
-      <AuthShowcase />
-    </div>
+    </Layout.Base>
   );
 };
 
 export default IndexPage;
-
-const AuthShowcase: React.FC = () => {
-  const { data: sessionData } = useSession();
-
-  const { data: secretMessage } = api.example.getSecretMessage.useQuery(
-    undefined, // no input
-    { enabled: sessionData?.user !== undefined }
-  );
-
-  return (
-    <div>
-      <p>
-        {sessionData && <span>Logged in as {sessionData.user?.name}</span>}
-        {secretMessage && <span> - {secretMessage}</span>}
-      </p>
-      <button
-        onClick={sessionData ? () => void signOut() : () => void signIn()}
-      >
-        {sessionData ? "Sign out" : "Sign in"}
-      </button>
-    </div>
-  );
-};
