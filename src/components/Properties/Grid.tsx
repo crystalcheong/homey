@@ -1,10 +1,13 @@
 import {
   Box,
   BoxProps,
+  Group,
   SimpleGrid,
   SimpleGridProps,
+  Text,
   Title,
 } from "@mantine/core";
+import Link from "next/link";
 
 import { Listing, ListingType } from "@/data/clients/ninetyNine";
 
@@ -18,6 +21,7 @@ interface Props extends BoxProps {
   maxViewableCount?: number;
   isLoading?: boolean;
   showTitle?: boolean;
+  showMoreCTA?: boolean;
 
   gridProps?: SimpleGridProps;
 }
@@ -26,6 +30,7 @@ export const Grid = ({
   listings = [],
   isLoading = false,
   showTitle = true,
+  showMoreCTA = false,
   placeholderCount = 3,
   maxViewableCount = 0,
   gridProps,
@@ -45,15 +50,30 @@ export const Grid = ({
 
   return (
     <Box {...rest}>
-      {showTitle && (
-        <Title
-          order={1}
-          size="h3"
-          py="md"
-          tt="capitalize"
-        >
-          {`${listingType} Listings`.trim()}
-        </Title>
+      {(showTitle || showMoreCTA) && (
+        <Group position="apart">
+          {showTitle && (
+            <Title
+              order={1}
+              size="h3"
+              py="md"
+              tt="capitalize"
+            >
+              {`${listingType} Listings`.trim()}
+            </Title>
+          )}
+
+          {showMoreCTA && (
+            <Text
+              component={Link}
+              href={`/property/${listingType}`}
+              size="sm"
+              color="dimmed"
+            >
+              See More
+            </Text>
+          )}
+        </Group>
       )}
 
       <SimpleGrid
@@ -67,6 +87,9 @@ export const Grid = ({
           placeItems: "center",
           gridAutoRows: "1fr",
           position: "relative",
+          "&>*": {
+            height: "100%",
+          },
         }}
         {...gridProps}
       >

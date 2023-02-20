@@ -1,4 +1,4 @@
-import { Box, Button } from "@mantine/core";
+import { Box, Button, useMantineTheme } from "@mantine/core";
 import { useRouter } from "next/router";
 
 import { Listing, ListingType, ListingTypes } from "@/data/clients/ninetyNine";
@@ -10,6 +10,7 @@ import { api } from "@/utils/api";
 
 const PropertyTypePage = () => {
   const router = useRouter();
+  const theme = useMantineTheme();
   const { type } = router.query;
 
   const paramType: string = (type ?? "").toString();
@@ -54,6 +55,12 @@ const PropertyTypePage = () => {
             <Button
               onClick={() => handleLoadMoreListings(listingType)}
               loading={isLoading}
+              variant="gradient"
+              gradient={{
+                from: theme.primaryColor,
+                to: theme.colors.violet[3],
+                deg: 45,
+              }}
             >
               Load More
             </Button>

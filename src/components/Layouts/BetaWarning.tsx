@@ -17,6 +17,7 @@ const BetaWarning = () => {
         color="yellow"
         withCloseButton
         onClose={handleOnClose}
+        mb={30}
       >
         This app is a preview and should not be considered as the final product
       </Alert>

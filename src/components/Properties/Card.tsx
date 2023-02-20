@@ -1,6 +1,5 @@
 import {
   Badge,
-  Button,
   Card as MCard,
   CardProps,
   Group,
@@ -10,12 +9,26 @@ import {
 } from "@mantine/core";
 import Link from "next/link";
 
-import { Listing } from "@/data/clients/ninetyNine";
+import { Listing, ListingType, ListingTypes } from "@/data/clients/ninetyNine";
+
+import { logger } from "@/utils/debug";
 
 interface Props extends Partial<CardProps> {
   listing: Listing;
   isLoading?: boolean;
 }
+
+const PriceTypes: string[] = ["/month", ""];
+export type PriceType = (typeof PriceTypes)[number];
+const PriceListingTypes: {
+  [key in ListingType]: PriceType;
+} = ListingTypes.reduce(
+  (searchMap = {}, type: string, idx: number) => ({
+    ...searchMap,
+    [type]: PriceTypes[idx],
+  }),
+  {}
+);
 
 export const Card = ({
   listing,
@@ -34,6 +47,11 @@ export const Card = ({
 
   const isPlaceholder = !Object.keys(listing).length;
   const isSkeleton: boolean = isLoading || isPlaceholder;
+
+  logger("Card.tsx line 50", { PriceListingTypes });
+  const strPrice = `${attributes?.price_formatted ?? `$-.--`} SGD ${
+    PriceListingTypes[listing_type]
+  }`;
 
   return (
     <MCard
@@ -85,20 +103,15 @@ export const Card = ({
           With Fjord Tours you can explore more of the magical fjord landscapes
           with tours and activities on and around the fjords of Norway
         </Text>
+        <Text
+          component="p"
+          weight={500}
+        >
+          {strPrice}
+        </Text>
       </Skeleton>
 
       {children}
-
-      <Button
-        variant="light"
-        color="blue"
-        fullWidth
-        mt="md"
-        radius="md"
-        disabled={isSkeleton}
-      >
-        {id}
-      </Button>
     </MCard>
   );
 };

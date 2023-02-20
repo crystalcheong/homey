@@ -12,7 +12,7 @@ const ThemeToggle = () => {
   return (
     <ActionIcon
       size="lg"
-      variant="outline"
+      variant="subtle"
       color="transparent"
       onClick={handleToggleSwitch}
     >

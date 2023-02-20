@@ -28,7 +28,6 @@ export const BaseLayout = ({
   return (
     <>
       <Navbar.Base />
-      <BetaWarning />
       <Container
         sx={{
           position: "relative",
@@ -36,6 +35,7 @@ export const BaseLayout = ({
           ...layoutStylesOverwrite,
         }}
       >
+        <BetaWarning />
         <LoadingOverlay
           visible={isLoading}
           overlayBlur={2}

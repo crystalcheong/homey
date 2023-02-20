@@ -47,6 +47,7 @@ import {
 import { ListingTypes } from "@/data/clients/ninetyNine";
 
 import Logo from "@/components/Logo";
+import ThemeToggle from "@/components/ThemeToggle";
 
 import { useIsMobile } from "@/utils/dom";
 import { getNameInitials } from "@/utils/helpers";
@@ -355,110 +356,117 @@ export function HeaderMegaMenu() {
 
           <Group className={classes.hiddenMobile}>
             {sessionData ? (
-              <Menu
-                width={260}
-                position="bottom-end"
-                transition="pop-top-right"
-                trigger="hover"
-                openDelay={100}
-                closeDelay={400}
-                onClose={() => setUserMenuOpened(false)}
-                onOpen={() => setUserMenuOpened(true)}
-              >
-                <Menu.Target>
-                  <UnstyledButton>
-                    <Group spacing={8}>
-                      <Avatar
-                        src={sessionData.user?.image}
-                        color="violet"
-                        alt="profile-avatar"
-                        radius="xl"
-                        size={40}
-                      >
-                        {getNameInitials(sessionData.user?.name ?? "")}
-                      </Avatar>
-                      <Box mr={3}>
-                        <Text
-                          weight={500}
-                          fz="xs"
+              <Group position="right">
+                <ThemeToggle />
+                <Divider
+                  color={theme.colorScheme === "dark" ? "dark.5" : "gray.1"}
+                  orientation="vertical"
+                />
+                <Menu
+                  width={260}
+                  position="bottom-end"
+                  transition="pop-top-right"
+                  trigger="hover"
+                  openDelay={100}
+                  closeDelay={400}
+                  onClose={() => setUserMenuOpened(false)}
+                  onOpen={() => setUserMenuOpened(true)}
+                >
+                  <Menu.Target>
+                    <UnstyledButton>
+                      <Group spacing={8}>
+                        <Avatar
+                          src={sessionData.user?.image}
+                          color="violet"
+                          alt="profile-avatar"
+                          radius="xl"
+                          size={40}
                         >
-                          {sessionData.user?.name}
-                        </Text>
-                        <Text
-                          size="xs"
-                          color="dimmed"
-                        >
-                          Renter
-                        </Text>
-                      </Box>
-                      <TbChevronDown
-                        size={16}
-                        color={theme.fn.primaryColor()}
-                      />
-                    </Group>
-                  </UnstyledButton>
-                </Menu.Target>
+                          {getNameInitials(sessionData.user?.name ?? "")}
+                        </Avatar>
+                        <Box mr={3}>
+                          <Text
+                            weight={500}
+                            fz="xs"
+                          >
+                            {sessionData.user?.name}
+                          </Text>
+                          <Text
+                            size="xs"
+                            color="dimmed"
+                          >
+                            Renter
+                          </Text>
+                        </Box>
+                        <TbChevronDown
+                          size={16}
+                          color={theme.fn.primaryColor()}
+                        />
+                      </Group>
+                    </UnstyledButton>
+                  </Menu.Target>
 
-                <Menu.Dropdown>
-                  <Menu.Item
-                    icon={
-                      <TbHeart
-                        size={14}
-                        color={theme.colors.red[6]}
-                      />
-                    }
-                  >
-                    Liked posts
-                  </Menu.Item>
-                  <Menu.Item
-                    icon={
-                      <TbStar
-                        size={14}
-                        color={theme.colors.yellow[6]}
-                      />
-                    }
-                  >
-                    Saved posts
-                  </Menu.Item>
-                  <Menu.Item
-                    icon={
-                      <TbMessage
-                        size={14}
-                        color={theme.colors.blue[6]}
-                      />
-                    }
-                  >
-                    Your comments
-                  </Menu.Item>
+                  <Menu.Dropdown>
+                    <Menu.Item
+                      icon={
+                        <TbHeart
+                          size={14}
+                          color={theme.colors.red[6]}
+                        />
+                      }
+                    >
+                      Liked posts
+                    </Menu.Item>
+                    <Menu.Item
+                      icon={
+                        <TbStar
+                          size={14}
+                          color={theme.colors.yellow[6]}
+                        />
+                      }
+                    >
+                      Saved posts
+                    </Menu.Item>
+                    <Menu.Item
+                      icon={
+                        <TbMessage
+                          size={14}
+                          color={theme.colors.blue[6]}
+                        />
+                      }
+                    >
+                      Your comments
+                    </Menu.Item>
 
-                  <Menu.Label>Settings</Menu.Label>
-                  <Menu.Item icon={<TbSettings size={14} />}>
-                    Account settings
-                  </Menu.Item>
-                  <Menu.Item icon={<TbSwitchHorizontal size={14} />}>
-                    Change account
-                  </Menu.Item>
-                  <Menu.Item
-                    icon={<TbLogout size={14} />}
-                    onClick={handleSignOut}
-                  >
-                    Logout
-                  </Menu.Item>
+                    <Menu.Label>Settings</Menu.Label>
+                    <Menu.Item icon={<TbSettings size={14} />}>
+                      Account settings
+                    </Menu.Item>
+                    <Menu.Item icon={<TbSwitchHorizontal size={14} />}>
+                      Change account
+                    </Menu.Item>
+                    <Menu.Item
+                      icon={<TbLogout size={14} />}
+                      onClick={handleSignOut}
+                    >
+                      Logout
+                    </Menu.Item>
 
-                  <Menu.Divider />
+                    <Menu.Divider />
 
-                  <Menu.Label>Danger zone</Menu.Label>
-                  <Menu.Item icon={<TbPlayerPause size={14} />}>
-                    Pause subscription
-                  </Menu.Item>
-                  <Menu.Item
-                    color="red"
-                    icon={<TbTrash size={14} />}
-                  >
-                    Delete account
-                  </Menu.Item>
-                </Menu.Dropdown>
-              </Menu>
+                    <Menu.Label>Danger zone</Menu.Label>
+                    <Menu.Item icon={<TbPlayerPause size={14} />}>
+                      Pause subscription
+                    </Menu.Item>
+                    <Menu.Item
+                      color="red"
+                      icon={<TbTrash size={14} />}
+                    >
+                      Delete account
+                    </Menu.Item>
+                  </Menu.Dropdown>
+                </Menu>
+              </Group>
             ) : (
               <>
                 <Button
