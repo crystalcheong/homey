@@ -17,6 +17,7 @@ import { TbCalendar, TbSearch } from "react-icons/tb";
 
 import { ListingType, ListingTypes } from "@/data/clients/ninetyNine";
 
+import { addYears } from "@/utils/date";
 import { logger } from "@/utils/debug";
 import { useIsMobile } from "@/utils/dom";
 
@@ -32,17 +33,25 @@ const SearchListingTypes: {
   {}
 );
 
-const InitalFormState = {
+const InitalFormState: {
+  location: string;
+  moveInDate: Date | null;
+} = {
   location: "",
-  moveInDate: new Date(),
+  moveInDate: null,
 };
 
-type Props = BoxProps;
+interface Props extends BoxProps {
+  headline: string;
+  subHeading: string;
+}
 
-const Hero = ({ children, ...rest }: Props) => {
+const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
   const router = useRouter();
   const theme = useMantineTheme();
   const isMobile = useIsMobile(theme);
+
+  const today: Date = new Date();
 
   //#endregion  //*======== Search Type ===========
 
@@ -78,7 +87,7 @@ const Hero = ({ children, ...rest }: Props) => {
     logger("index.tsx line 67", {
       searchRoute,
     });
-    router.push(`./property/${searchRoute}`);
+    router.push(`./property/${searchRoute}`, undefined, { scroll: true });
   };
 
   //#endregion  //*======== Query Form Group ===========
@@ -93,7 +102,7 @@ const Hero = ({ children, ...rest }: Props) => {
       }}
       {...rest}
     >
-      <Title order={1}>Buy, rent, or sell your property easily</Title>
+      <Title order={1}>{headline}</Title>
       <Title
         order={2}
         size="p"
@@ -104,8 +113,7 @@ const Hero = ({ children, ...rest }: Props) => {
           }),
         }}
       >
-        A great platform to buy, sell, or even rent your properties without any
-        commisions.
+        {subHeading}
       </Title>
 
       <Box
@@ -229,7 +237,7 @@ const Hero = ({ children, ...rest }: Props) => {
                 >
                   <TextInput
                     placeholder="Search Location"
-                    label="When"
+                    label="Where"
                     id="location"
                     value={formState.location}
                     onChange={handleInputChange}
@@ -241,6 +249,10 @@ const Hero = ({ children, ...rest }: Props) => {
                     id="moveInDate"
                     value={formState.moveInDate}
                     onChange={handleDateChange}
+                    firstDayOfWeek="monday"
+                    dropdownType={isMobile ? "modal" : "popover"}
+                    minDate={today}
+                    maxDate={addYears(today, 2)}
                   />
                 </Box>
                 <Button

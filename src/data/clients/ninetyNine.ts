@@ -16,6 +16,7 @@ export type Listing = {
   listing_type: ListingType;
   photo_url: string;
   address_name: string;
+  main_category: string;
   sub_category_formatted: string;
   attributes: Record<string, string | number>;
   tags: string[];

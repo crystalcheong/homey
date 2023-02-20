@@ -9,9 +9,11 @@ import Hero from "@/components/Pages/Index/Hero";
 
 import { api } from "@/utils/api";
 import { logger } from "@/utils/debug";
+import { useIsTablet } from "@/utils/dom";
 
 const IndexPage: NextPage = () => {
   const theme = useMantineTheme();
+  const isTablet = useIsTablet(theme);
 
   const allListings: Record<ListingType, Listing[]> =
     useNinetyNineStore.use.listings();
@@ -59,12 +61,15 @@ const IndexPage: NextPage = () => {
       layoutStylesOverwrite={{
         display: "flex",
         flexDirection: "column",
-        "&> :not(:first-child)": {
+        "&>*": {
           marginBottom: "10vh",
         },
       }}
     >
-      <Hero />
+      <Hero
+        headline="Find your dream home in Singapore"
+        subHeading="Search for properties, connect with agents, and get expert advice"
+      />
 
       <Box
         component="section"
@@ -83,7 +88,7 @@ const IndexPage: NextPage = () => {
               key={`grid-${type}-${idx}`}
               listings={allListings[type]}
               isLoading={isTypeLoading}
-              maxViewableCount={3}
+              maxViewableCount={isTablet ? 4 : 3}
               showMoreCTA
             >
               <Box

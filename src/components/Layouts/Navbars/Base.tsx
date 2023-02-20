@@ -283,6 +283,9 @@ export function HeaderMegaMenu() {
               radius="md"
               shadow="md"
               withinPortal
+              transition="pop-top-right"
+              openDelay={100}
+              closeDelay={400}
             >
               <HoverCard.Target>
                 <a
@@ -354,131 +357,134 @@ export function HeaderMegaMenu() {
             </HoverCard>
           </Group>
 
-          <Group className={classes.hiddenMobile}>
-            {sessionData ? (
-              <Group position="right">
-                <ThemeToggle />
-                <Divider
-                  color={theme.colorScheme === "dark" ? "dark.5" : "gray.1"}
-                  orientation="vertical"
-                />
-                <Menu
-                  width={260}
-                  position="bottom-end"
-                  transition="pop-top-right"
-                  trigger="hover"
-                  openDelay={100}
-                  closeDelay={400}
-                  onClose={() => setUserMenuOpened(false)}
-                  onOpen={() => setUserMenuOpened(true)}
-                >
-                  <Menu.Target>
-                    <UnstyledButton>
-                      <Group spacing={8}>
-                        <Avatar
-                          src={sessionData.user?.image}
-                          color="violet"
-                          alt="profile-avatar"
-                          radius="xl"
-                          size={40}
-                        >
-                          {getNameInitials(sessionData.user?.name ?? "")}
-                        </Avatar>
-                        <Box mr={3}>
-                          <Text
-                            weight={500}
-                            fz="xs"
+          {!isMobile && (
+            <Group position="right">
+              <ThemeToggle />
+              <Divider
+                size="xs"
+                color={theme.primaryColor}
+                orientation="vertical"
+              />
+              {sessionData ? (
+                <Group>
+                  <Menu
+                    width={260}
+                    position="bottom-end"
+                    transition="pop-top-right"
+                    trigger="hover"
+                    openDelay={100}
+                    closeDelay={400}
+                    onClose={() => setUserMenuOpened(false)}
+                    onOpen={() => setUserMenuOpened(true)}
+                  >
+                    <Menu.Target>
+                      <UnstyledButton>
+                        <Group spacing={8}>
+                          <Avatar
+                            src={sessionData.user?.image}
+                            color="violet"
+                            alt="profile-avatar"
+                            radius="xl"
+                            size={40}
                           >
-                            {sessionData.user?.name}
-                          </Text>
-                          <Text
-                            size="xs"
-                            color="dimmed"
-                          >
-                            Renter
-                          </Text>
-                        </Box>
-                        <TbChevronDown
-                          size={16}
-                          color={theme.fn.primaryColor()}
-                        />
-                      </Group>
-                    </UnstyledButton>
-                  </Menu.Target>
+                            {getNameInitials(sessionData.user?.name ?? "")}
+                          </Avatar>
+                          <Box mr={3}>
+                            <Text
+                              weight={500}
+                              fz="xs"
+                            >
+                              {sessionData.user?.name}
+                            </Text>
+                            <Text
+                              size="xs"
+                              color="dimmed"
+                            >
+                              Renter
+                            </Text>
+                          </Box>
+                          <TbChevronDown
+                            size={16}
+                            color={theme.fn.primaryColor()}
+                          />
+                        </Group>
+                      </UnstyledButton>
+                    </Menu.Target>
 
-                  <Menu.Dropdown>
-                    <Menu.Item
-                      icon={
-                        <TbHeart
-                          size={14}
-                          color={theme.colors.red[6]}
-                        />
-                      }
-                    >
-                      Liked posts
-                    </Menu.Item>
-                    <Menu.Item
-                      icon={
-                        <TbStar
-                          size={14}
-                          color={theme.colors.yellow[6]}
-                        />
-                      }
-                    >
-                      Saved posts
-                    </Menu.Item>
-                    <Menu.Item
-                      icon={
-                        <TbMessage
-                          size={14}
-                          color={theme.colors.blue[6]}
-                        />
-                      }
-                    >
-                      Your comments
-                    </Menu.Item>
+                    <Menu.Dropdown>
+                      <Menu.Item
+                        icon={
+                          <TbHeart
+                            size={14}
+                            color={theme.colors.red[6]}
+                          />
+                        }
+                      >
+                        Liked posts
+                      </Menu.Item>
+                      <Menu.Item
+                        icon={
+                          <TbStar
+                            size={14}
+                            color={theme.colors.yellow[6]}
+                          />
+                        }
+                      >
+                        Saved posts
+                      </Menu.Item>
+                      <Menu.Item
+                        icon={
+                          <TbMessage
+                            size={14}
+                            color={theme.colors.blue[6]}
+                          />
+                        }
+                      >
+                        Your comments
+                      </Menu.Item>
 
-                    <Menu.Label>Settings</Menu.Label>
-                    <Menu.Item icon={<TbSettings size={14} />}>
-                      Account settings
-                    </Menu.Item>
-                    <Menu.Item icon={<TbSwitchHorizontal size={14} />}>
-                      Change account
-                    </Menu.Item>
-                    <Menu.Item
-                      icon={<TbLogout size={14} />}
-                      onClick={handleSignOut}
-                    >
-                      Logout
-                    </Menu.Item>
+                      <Menu.Label>Settings</Menu.Label>
+                      <Menu.Item icon={<TbSettings size={14} />}>
+                        Account settings
+                      </Menu.Item>
+                      <Menu.Item icon={<TbSwitchHorizontal size={14} />}>
+                        Change account
+                      </Menu.Item>
+                      <Menu.Item
+                        icon={<TbLogout size={14} />}
+                        onClick={handleSignOut}
+                      >
+                        Logout
+                      </Menu.Item>
 
-                    <Menu.Divider />
+                      <Menu.Divider />
 
-                    <Menu.Label>Danger zone</Menu.Label>
-                    <Menu.Item icon={<TbPlayerPause size={14} />}>
-                      Pause subscription
-                    </Menu.Item>
-                    <Menu.Item
-                      color="red"
-                      icon={<TbTrash size={14} />}
-                    >
-                      Delete account
-                    </Menu.Item>
-                  </Menu.Dropdown>
-                </Menu>
-              </Group>
-            ) : (
-              <>
-                <Button
-                  variant="default"
-                  onClick={handleSignIn}
-                >
-                  Log in
-                </Button>
-                <Button disabled>Sign up</Button>
-              </>
-            )}
-          </Group>
+                      <Menu.Label>Danger zone</Menu.Label>
+                      <Menu.Item icon={<TbPlayerPause size={14} />}>
+                        Pause subscription
+                      </Menu.Item>
+                      <Menu.Item
+                        color="red"
+                        icon={<TbTrash size={14} />}
+                      >
+                        Delete account
+                      </Menu.Item>
+                    </Menu.Dropdown>
+                  </Menu>
+                </Group>
+              ) : (
+                <>
+                  <Button
+                    variant="default"
+                    onClick={handleSignIn}
+                  >
+                    Log in
+                  </Button>
+                  <Button disabled>Sign up</Button>
+                </>
+              )}
+            </Group>
+          )}
 
           <Burger
             size="sm"

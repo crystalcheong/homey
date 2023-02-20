@@ -6,12 +6,14 @@ import {
   Image,
   Skeleton,
   Text,
+  Title,
+  useMantineTheme,
 } from "@mantine/core";
 import Link from "next/link";
 
 import { Listing, ListingType, ListingTypes } from "@/data/clients/ninetyNine";
 
-import { logger } from "@/utils/debug";
+import { useIsTablet } from "@/utils/dom";
 
 interface Props extends Partial<CardProps> {
   listing: Listing;
@@ -42,13 +44,15 @@ export const Card = ({
     photo_url,
     attributes,
     sub_category_formatted,
+    main_category,
     address_name,
   } = listing;
 
+  const theme = useMantineTheme();
+  const isTablet = useIsTablet(theme);
+
   const isPlaceholder = !Object.keys(listing).length;
   const isSkeleton: boolean = isLoading || isPlaceholder;
-
-  logger("Card.tsx line 50", { PriceListingTypes });
   const strPrice = `${attributes?.price_formatted ?? `$-.--`} SGD ${
     PriceListingTypes[listing_type]
   }`;
@@ -80,11 +84,16 @@ export const Card = ({
           mb="xs"
           spacing="xs"
         >
-          <Text weight={500}>
-            {attributes?.bedrooms_formatted}&nbsp;
-            {sub_category_formatted}
-            &nbsp;in&nbsp;{address_name}
-          </Text>
+          <Title
+            order={1}
+            size="h4"
+            truncate
+            sx={{
+              maxWidth: isTablet ? "auto" : "180px",
+            }}
+          >
+            {address_name}
+          </Title>
           <Badge
             color="pink"
             variant="light"
@@ -95,13 +104,9 @@ export const Card = ({
       </Skeleton>
 
       <Skeleton visible={isSkeleton}>
-        <Text
-          component="p"
-          size="sm"
-          color="dimmed"
-        >
-          With Fjord Tours you can explore more of the magical fjord landscapes
-          with tours and activities on and around the fjords of Norway
+        <Text tt="capitalize">
+          {sub_category_formatted ?? main_category}&nbsp;&middot;&nbsp;
+          {attributes?.bedrooms_formatted}
         </Text>
         <Text
           component="p"

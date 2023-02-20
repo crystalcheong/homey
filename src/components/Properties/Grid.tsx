@@ -49,7 +49,10 @@ export const Grid = ({
   );
 
   return (
-    <Box {...rest}>
+    <Box
+      component="section"
+      {...rest}
+    >
       {(showTitle || showMoreCTA) && (
         <Group position="apart">
           {showTitle && (
@@ -89,6 +92,7 @@ export const Grid = ({
           position: "relative",
           "&>*": {
             height: "100%",
+            width: "100%",
           },
         }}
         {...gridProps}
