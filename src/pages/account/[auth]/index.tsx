@@ -170,6 +170,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
     const refValues: typeof formState = {
       confirmPassword: formState.password,
     };
+
     const isValidValue = validateAuthInput(id, value, refValues[id] ?? "");
     setErrorState({
       ...errorState,
@@ -222,9 +223,13 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
       : ["email", "password"];
 
     const { hasValues, hasNoErrors } = validateStates(requiredFields);
+
+    // Check for pwd and cfmPwd
+    if (isNewUser && formState.password !== formState.confirmPassword)
+      return false;
     if (!hasValues || !hasNoErrors) return false;
     return true;
-  }, [isAuth, isLoadingProvider, validateStates, isNewUser]);
+  }, [isAuth, isLoadingProvider, validateStates, isNewUser, formState]);
 
   const handleAuthAction = async (
     providerId: ClientSafeProvider["id"],
