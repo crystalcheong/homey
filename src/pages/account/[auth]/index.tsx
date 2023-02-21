@@ -16,7 +16,8 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import { useTimeout } from "@mantine/hooks";
-import { DefaultErrorShape, Maybe } from "@trpc/server";
+import { DefaultErrorShape } from "@trpc/server";
+import { TRPC_ERROR_CODES_BY_KEY } from "@trpc/server/rpc";
 import { InferGetServerSidePropsType, NextPage } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -148,8 +149,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
   const useAccountSignUp = api.account.signUp.useMutation();
   const useAccountSignIn = api.account.signIn.useMutation();
 
-  const [authErrorState, setAuthErrorState] =
-    useState<Maybe<DefaultErrorShape>>(undefined);
+  const [authErrorState, setAuthErrorState] = useState<DefaultErrorShape>();
   const [isLoadingProvider, setIsLoadingProvider] = useState<string>("");
 
   const { start: revertToInitialState } = useTimeout(() => {
@@ -262,7 +262,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
                 }
               },
               onError({ shape }) {
-                setAuthErrorState(shape);
+                setAuthErrorState(shape as DefaultErrorShape);
                 revertToInitialState();
               },
             }
@@ -289,7 +289,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
                 }
               },
               onError({ shape }) {
-                setAuthErrorState(shape);
+                setAuthErrorState(shape as DefaultErrorShape);
                 revertToInitialState();
               },
             }
@@ -531,7 +531,11 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
               title={`Sign ${isNewUser ? "Up" : "In"} Failed`}
               color={isDark ? "red" : "red.7"}
             >
-              <Text color="dimmed">{authErrorState.message}</Text>
+              <Text color="dimmed">
+                {authErrorState.code !== TRPC_ERROR_CODES_BY_KEY.NOT_FOUND
+                  ? "Unable to authenticate with the given credentials"
+                  : authErrorState.message}
+              </Text>
             </Alert>
           )}
 
