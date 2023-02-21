@@ -251,13 +251,15 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
             },
             {
               onSuccess(data) {
-                signIn(providerId, {
-                  name: data.name,
-                  email: data.email,
-                  password: formState.password,
-                  callbackUrl: "/",
-                });
-                return;
+                if (data) {
+                  signIn(providerId, {
+                    name: data.name,
+                    email: data.email,
+                    password: formState.password,
+                    callbackUrl: "/",
+                  });
+                  return;
+                }
               },
               onError({ shape }) {
                 setAuthErrorState(shape);
@@ -276,13 +278,15 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
             },
             {
               onSuccess(data) {
-                signIn(providerId, {
-                  name: data.name,
-                  email: data.email,
-                  password: formState.password,
-                  callbackUrl: "/account/signUp",
-                });
-                return;
+                if (data) {
+                  signIn(providerId, {
+                    name: data.name,
+                    email: data.email,
+                    password: formState.password,
+                    callbackUrl: "/account/signUp",
+                  });
+                  return;
+                }
               },
               onError({ shape }) {
                 setAuthErrorState(shape);
