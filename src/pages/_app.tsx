@@ -48,7 +48,9 @@ const App: AppType<{ session: Session | null }> = ({
     <SessionProvider session={session}>
       <Provider.Mantine>
         <Provider.ErrorBoundary>
-          {!loading && <Component {...pageProps} />}
+          <Provider.RenderGuard renderIf={!loading}>
+            <Component {...pageProps} />
+          </Provider.RenderGuard>
         </Provider.ErrorBoundary>
       </Provider.Mantine>
     </SessionProvider>

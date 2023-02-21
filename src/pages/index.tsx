@@ -1,4 +1,4 @@
-import { Box, Button, useMantineTheme } from "@mantine/core";
+import { Box, useMantineTheme } from "@mantine/core";
 import { NextPage } from "next/types";
 
 import { Listing, ListingType, ListingTypes } from "@/data/clients/ninetyNine";
@@ -20,7 +20,6 @@ const IndexPage: NextPage = () => {
   const { rent: rentListings = [], sale: saleListings = [] } = allListings;
 
   const updateListings = useNinetyNineStore.use.updateListings();
-  const getMoreListings = useNinetyNineStore.use.getMoreListings();
 
   const [
     { isFetching: isFetchingRentListings },
@@ -41,16 +40,6 @@ const IndexPage: NextPage = () => {
       )
     )
   );
-
-  const handleLoadMoreListings = (listingType: ListingType) => {
-    const isTypeLoading =
-      listingType === "rent" ? isFetchingRentListings : isFetchingSaleListings;
-
-    logger("handleLoadMoreListings", { listingType, isTypeLoading });
-
-    if (isTypeLoading) return;
-    getMoreListings(listingType);
-  };
 
   logger("index.tsx line 39", {
     rentListings,
@@ -90,25 +79,7 @@ const IndexPage: NextPage = () => {
               isLoading={isTypeLoading}
               maxViewableCount={isTablet ? 4 : 3}
               showMoreCTA
-            >
-              <Box
-                component="aside"
-                mt={20}
-              >
-                <Button
-                  onClick={() => handleLoadMoreListings(type)}
-                  loading={isTypeLoading}
-                  variant="gradient"
-                  gradient={{
-                    from: theme.primaryColor,
-                    to: theme.colors.violet[3],
-                    deg: 45,
-                  }}
-                >
-                  Load More
-                </Button>
-              </Box>
-            </Property.Grid>
+            />
           );
         })}
       </Box>
