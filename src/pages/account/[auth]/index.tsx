@@ -15,6 +15,7 @@ import {
   Transition,
   useMantineTheme,
 } from "@mantine/core";
+import { useTimeout } from "@mantine/hooks";
 import { DefaultErrorShape, Maybe } from "@trpc/server";
 import { InferGetServerSidePropsType, NextPage } from "next";
 import Link from "next/link";
@@ -151,12 +152,15 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
     useState<Maybe<DefaultErrorShape>>(undefined);
   const [isLoadingProvider, setIsLoadingProvider] = useState<string>("");
 
-  const revertToInitialState = () => {
-    setFormState(InitalFormState);
-    setErrorState(InitalFormState);
-    setAuthStep(0);
-    setIsLoadingProvider("");
-  };
+  const { start: revertToInitialState } = useTimeout(
+    () => () => {
+      setFormState(InitalFormState);
+      setErrorState(InitalFormState);
+      setAuthStep(0);
+      setIsLoadingProvider("");
+    },
+    1000
+  );
 
   const updateFormState = (id: string, value: string) => {
     value = value ?? "";
@@ -356,16 +360,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
               data={getEmailSuggestions(formState.email)}
               error={errorState.email}
             />
-            {showConfirmPassword && (
-              <PasswordInput
-                value={formState.confirmPassword}
-                onChange={handleInputChange}
-                error={errorState.confirmPassword}
-                label="Confirm Password"
-                id="confirmPassword"
-                placeholder="Confirm Password"
-              />
-            )}
+
             <PasswordInput
               value={formState.password}
               onChange={handleInputChange}
@@ -392,6 +387,23 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
                 },
               }}
             />
+
+            <Transition
+              transition="slide-down"
+              mounted={!!formState.password.length && showConfirmPassword}
+            >
+              {(transitionStyles) => (
+                <PasswordInput
+                  value={formState.confirmPassword}
+                  onChange={handleInputChange}
+                  error={errorState.confirmPassword}
+                  label="Confirm Password"
+                  id="confirmPassword"
+                  placeholder="Confirm Password"
+                  style={transitionStyles}
+                />
+              )}
+            </Transition>
 
             {!hideActionButton && (
               <Button
@@ -500,6 +512,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
               <Button
                 onClick={nextStep}
                 disabled={!canProceedStep}
+                loading={!!isLoadingProvider}
                 sx={{
                   flex: canProceedStep && isSubmitEnabled ? 1 : "unset",
                 }}
