@@ -152,15 +152,12 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
     useState<Maybe<DefaultErrorShape>>(undefined);
   const [isLoadingProvider, setIsLoadingProvider] = useState<string>("");
 
-  const { start: revertToInitialState } = useTimeout(
-    () => () => {
-      setFormState(InitalFormState);
-      setErrorState(InitalFormState);
-      setAuthStep(0);
-      setIsLoadingProvider("");
-    },
-    1000
-  );
+  const { start: revertToInitialState } = useTimeout(() => {
+    setFormState(InitalFormState);
+    setErrorState(InitalFormState);
+    setAuthStep(0);
+    setIsLoadingProvider("");
+  }, 1000);
 
   const updateFormState = (id: string, value: string) => {
     value = value ?? "";
@@ -264,6 +261,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
               },
               onError({ shape }) {
                 setAuthErrorState(shape);
+                revertToInitialState();
               },
             }
           );
@@ -288,6 +286,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
               },
               onError({ shape }) {
                 setAuthErrorState(shape);
+                revertToInitialState();
               },
             }
           );
