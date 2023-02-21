@@ -49,7 +49,6 @@ import { ListingTypes } from "@/data/clients/ninetyNine";
 import Logo from "@/components/Logo";
 import ThemeToggle from "@/components/ThemeToggle";
 
-import { logger } from "@/utils/debug";
 import { useIsMobile } from "@/utils/dom";
 import { getNameInitials } from "@/utils/helpers";
 
@@ -176,8 +175,6 @@ export function HeaderMegaMenu() {
   const isMobile = useIsMobile(theme);
   const isDark: boolean = theme.colorScheme === "dark";
 
-  const currentBasePath = router.asPath.split("/").filter(Boolean)[0] ?? "";
-
   const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] =
     useDisclosure(false);
   const [linksOpened, { toggle: toggleLinks }] = useDisclosure(false);
@@ -265,13 +262,6 @@ export function HeaderMegaMenu() {
           >
             {NavigationRoutes.map(({ label, href }) => {
               const isActiveRoute: boolean = router.asPath === href;
-              logger("Base.tsx line 267", {
-                currentBasePath,
-                href,
-                base2: router.asPath.split("/").filter(Boolean)?.[1] ?? "",
-                path: router.asPath,
-                isActiveRoute,
-              });
               return (
                 <Button
                   key={`link-${label}`}
@@ -412,12 +402,14 @@ export function HeaderMegaMenu() {
                             >
                               {sessionData.user?.name}
                             </Text>
-                            <Text
-                              size="xs"
-                              color="dimmed"
-                            >
-                              Renter
-                            </Text>
+                            {false && (
+                              <Text
+                                size="xs"
+                                color="dimmed"
+                              >
+                                Renter
+                              </Text>
+                            )}
                           </Box>
                           <TbChevronDown
                             size={16}
