@@ -49,6 +49,7 @@ import { ListingTypes } from "@/data/clients/ninetyNine";
 import Logo from "@/components/Logo";
 import ThemeToggle from "@/components/ThemeToggle";
 
+import { logger } from "@/utils/debug";
 import { useIsMobile } from "@/utils/dom";
 import { getNameInitials } from "@/utils/helpers";
 
@@ -184,6 +185,14 @@ export function HeaderMegaMenu() {
   const { data: sessionData } = useSession();
 
   const handleSignIn = () => signIn();
+  const handleSignUp = () =>
+    router.push(
+      {
+        pathname: `/account/signUp`,
+      },
+      undefined,
+      { scroll: true }
+    );
   const handleSignOut = () => signOut();
   const [, setUserMenuOpened] = useState<boolean>(false);
 
@@ -255,7 +264,14 @@ export function HeaderMegaMenu() {
             }}
           >
             {NavigationRoutes.map(({ label, href }) => {
-              const isActiveRoute: boolean = `/${currentBasePath}` === href;
+              const isActiveRoute: boolean = router.asPath === href;
+              logger("Base.tsx line 267", {
+                currentBasePath,
+                href,
+                base2: router.asPath.split("/").filter(Boolean)?.[1] ?? "",
+                path: router.asPath,
+                isActiveRoute,
+              });
               return (
                 <Button
                   key={`link-${label}`}
@@ -480,7 +496,12 @@ export function HeaderMegaMenu() {
                   >
                     Log in
                   </Button>
-                  <Button disabled>Sign up</Button>
+                  <Button
+                    variant="default"
+                    onClick={handleSignUp}
+                  >
+                    Sign up
+                  </Button>
                 </>
               )}
             </Group>
@@ -514,7 +535,7 @@ export function HeaderMegaMenu() {
           />
 
           {NavigationRoutes.map(({ label, href }) => {
-            const isActiveRoute: boolean = `/${currentBasePath}` === href;
+            const isActiveRoute: boolean = router.asPath === href;
             return (
               <Button
                 key={`link-${label}`}
@@ -590,7 +611,12 @@ export function HeaderMegaMenu() {
             >
               Log in
             </Button>
-            <Button disabled>Sign up</Button>
+            <Button
+              variant="default"
+              onClick={handleSignUp}
+            >
+              Sign up
+            </Button>
           </Group>
         </ScrollArea>
       </Drawer>

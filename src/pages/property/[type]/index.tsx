@@ -15,7 +15,7 @@ const PropertyTypePage = () => {
 
   const paramType: string = (type ?? "").toString();
   const isValidType: boolean =
-    (ListingTypes.includes(paramType) || !!paramType.length) ?? false;
+    (ListingTypes.includes(paramType) && !!paramType.length) ?? false;
 
   const listingType: ListingType = paramType;
   const listings: Listing[] =

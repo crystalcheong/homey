@@ -87,7 +87,9 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
     logger("index.tsx line 67", {
       searchRoute,
     });
-    router.push(`./property/${searchRoute}`, undefined, { scroll: true });
+    router.push(`${router.basePath}/property/${searchRoute}`, undefined, {
+      scroll: true,
+    });
   };
 
   //#endregion  //*======== Query Form Group ===========
