@@ -22,6 +22,7 @@ interface Props extends BoxProps {
   isLoading?: boolean;
   showTitle?: boolean;
   showMoreCTA?: boolean;
+  allowSaveListing?: boolean;
 
   gridProps?: SimpleGridProps;
 }
@@ -31,6 +32,7 @@ export const Grid = ({
   isLoading = false,
   showTitle = true,
   showMoreCTA = false,
+  allowSaveListing = false,
   placeholderCount = 3,
   maxViewableCount = 0,
   gridProps,
@@ -105,6 +107,7 @@ export const Grid = ({
             key={`listing-${listing.id}-${idx}`}
             listing={listing}
             isLoading={isLoading}
+            allowSaveListing={allowSaveListing}
           />
         ))}
       </SimpleGrid>

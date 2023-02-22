@@ -19,7 +19,7 @@ const App: AppType<{ session: Session | null }> = ({
   pageProps: { session, ...pageProps },
 }) => {
   const router = useRouter();
-  const [loading, setLoading] = useState<boolean>(false);
+  const [, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const start = (url: string) => {
@@ -48,9 +48,7 @@ const App: AppType<{ session: Session | null }> = ({
     <SessionProvider session={session}>
       <Provider.Mantine>
         <Provider.ErrorBoundary>
-          <Provider.RenderGuard renderIf={!loading}>
-            <Component {...pageProps} />
-          </Provider.RenderGuard>
+          <Component {...pageProps} />
         </Provider.ErrorBoundary>
       </Provider.Mantine>
     </SessionProvider>

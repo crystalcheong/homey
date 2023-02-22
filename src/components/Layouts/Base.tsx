@@ -3,7 +3,6 @@ import {
   Button,
   Container,
   ContainerProps,
-  LoadingOverlay,
   Paper,
   Transition,
 } from "@mantine/core";
@@ -15,7 +14,6 @@ import { Footer, Navbar } from "@/components/Layouts";
 import BetaWarning from "@/components/Layouts/BetaWarning";
 
 export type BaseLayoutProps = PropsWithChildren & {
-  isLoading?: boolean;
   isBeta?: boolean;
   showAffix?: boolean;
   layoutStylesOverwrite?: ContainerProps["styles"];
@@ -23,7 +21,6 @@ export type BaseLayoutProps = PropsWithChildren & {
 
 export const BaseLayout = ({
   children,
-  isLoading = false,
   isBeta = true,
   showAffix = true,
   layoutStylesOverwrite,
@@ -49,10 +46,6 @@ export const BaseLayout = ({
           }}
         >
           {isBeta && <BetaWarning />}
-          <LoadingOverlay
-            visible={isLoading}
-            overlayBlur={2}
-          />
           {children}
         </Container>
         {showAffix && (

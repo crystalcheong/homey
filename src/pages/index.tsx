@@ -1,5 +1,6 @@
 import { Box, useMantineTheme } from "@mantine/core";
 import { NextPage } from "next/types";
+import { useSession } from "next-auth/react";
 
 import { Listing, ListingType, ListingTypes } from "@/data/clients/ninetyNine";
 import { useNinetyNineStore } from "@/data/stores/ninetyNine";
@@ -13,6 +14,8 @@ import { useIsTablet } from "@/utils/dom";
 const IndexPage: NextPage = () => {
   const theme = useMantineTheme();
   const isTablet = useIsTablet(theme);
+  const { data: sessionData } = useSession();
+  const isAuth = !!sessionData;
 
   const allListings: Map<ListingType, Listing[]> =
     useNinetyNineStore.use.listings();
@@ -71,6 +74,7 @@ const IndexPage: NextPage = () => {
               listings={allListings.get(type) ?? []}
               isLoading={isTypeLoading}
               maxViewableCount={isTablet ? 4 : 3}
+              allowSaveListing={isAuth}
               showMoreCTA
             />
           );

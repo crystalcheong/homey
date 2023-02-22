@@ -28,6 +28,7 @@ export const EnquiryIcons: Record<EnquiryType, IconType> = {
 interface Props extends Partial<CardProps> {
   listing: Listing;
   isLoading?: boolean;
+  allowSaveListing?: boolean;
 }
 
 const PriceTypes: string[] = ["/month", ""];
@@ -57,6 +58,7 @@ export const Card = ({
   listing,
   children,
   isLoading = false,
+  allowSaveListing = false,
   ...rest
 }: Props) => {
   const {
@@ -79,7 +81,8 @@ export const Card = ({
     PriceListingTypes[listing_type]
   }`;
 
-  const clusterId: string = cluster_mappings?.development?.[0] ?? "";
+  const clusterId: string =
+    cluster_mappings?.development?.[0] ?? cluster_mappings?.local?.[0] ?? "";
   const listingRelativeLink = `/property/${listing_type}/${id}?clusterId=${clusterId}`;
   // const availableEnquiryTypes: string[] =
   //   Object.entries(enquiry_flags ?? {})
@@ -190,28 +193,32 @@ export const Card = ({
             );
           }
         )}
-        <ActionIcon
-          onClick={(e) => {
-            e.preventDefault();
-            showNotification({
-              onClick: () => {
-                cleanNotifications();
-                router.push(
-                  {
-                    pathname: `/account/saved`,
-                  },
-                  undefined,
-                  { scroll: true }
-                );
-              },
-              icon: <TbBookmark />,
-              title: "Listing Saved!",
-              message: "Click to view your saved listings",
-            });
-          }}
-        >
-          <TbBookmark size={40} />
-        </ActionIcon>
+
+        {allowSaveListing && (
+          <ActionIcon
+            onClick={(e) => {
+              e.preventDefault();
+              showNotification({
+                onClick: () => {
+                  if (!allowSaveListing) return;
+                  cleanNotifications();
+                  router.push(
+                    {
+                      pathname: `/account/saved`,
+                    },
+                    undefined,
+                    { scroll: true }
+                  );
+                },
+                icon: <TbBookmark />,
+                title: "Listing Saved!",
+                message: "Click to view your saved listings",
+              });
+            }}
+          >
+            <TbBookmark size={40} />
+          </ActionIcon>
+        )}
       </Group>
     </MCard>
   );

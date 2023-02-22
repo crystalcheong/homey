@@ -18,7 +18,7 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import { useRouter } from "next/router";
 import { signOut, useSession } from "next-auth/react";
-import { useRef, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import { IconType } from "react-icons";
 import {
   TbBook,
@@ -481,9 +481,8 @@ export function HeaderMegaMenu() {
                 );
               };
               return (
-                <>
+                <Fragment key={`link-${label}`}>
                   <Button
-                    key={`link-${label}`}
                     onClick={action}
                     compact
                     variant={isActiveRoute ? "light" : "subtle"}
@@ -525,7 +524,7 @@ export function HeaderMegaMenu() {
                       <NestedNavRoutes routes={nodes} />
                     </Collapse>
                   )}
-                </>
+                </Fragment>
               );
             })}
           </ScrollArea>

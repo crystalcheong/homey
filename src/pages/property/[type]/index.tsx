@@ -1,5 +1,6 @@
 import { Box, Button, useMantineTheme } from "@mantine/core";
 import { useRouter } from "next/router";
+import { useSession } from "next-auth/react";
 
 import { Listing, ListingType, ListingTypes } from "@/data/clients/ninetyNine";
 import { useNinetyNineStore } from "@/data/stores";
@@ -12,6 +13,10 @@ const PropertyTypePage = () => {
   const router = useRouter();
   const theme = useMantineTheme();
   const { type } = router.query;
+
+  const { data: sessionData } = useSession();
+
+  const isAuth = !!sessionData;
 
   const paramType: string = (type ?? "").toString();
   const isValidType: boolean =
@@ -47,6 +52,7 @@ const PropertyTypePage = () => {
         <Property.Grid
           listings={listings}
           isLoading={isLoading}
+          allowSaveListing={isAuth}
         >
           <Box
             component="aside"
