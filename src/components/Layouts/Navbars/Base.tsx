@@ -472,6 +472,8 @@ export function HeaderMegaMenu() {
                   if (isLinksOpened) drawerScrollTo("center");
                   return;
                 }
+
+                closeDrawer();
                 router.push(
                   {
                     pathname: href,
