@@ -1,13 +1,9 @@
 import {
-  Anchor,
-  Avatar,
   Box,
   Burger,
   Button,
-  Center,
   Collapse,
   Container,
-  createStyles,
   Divider,
   Drawer,
   Group,
@@ -17,14 +13,13 @@ import {
   ScrollArea,
   SimpleGrid,
   Text,
-  ThemeIcon,
-  UnstyledButton,
+  useMantineTheme,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { signOut, useSession } from "next-auth/react";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { IconType } from "react-icons";
 import {
   TbBook,
   TbChartPie3,
@@ -46,115 +41,23 @@ import {
 
 import { ListingTypes } from "@/data/clients/ninetyNine";
 
+import AuthActions from "@/components/Layouts/Navbars/AuthActions";
+import NestedNavRoutes from "@/components/Layouts/Navbars/NestedNavRoutes";
+import { UserButton } from "@/components/Layouts/Navbars/UserButton";
 import Logo from "@/components/Logo";
 import ThemeToggle from "@/components/ThemeToggle";
 
-import { useIsMobile } from "@/utils/dom";
-import { getNameInitials } from "@/utils/helpers";
+import { useIsMobile, useIsTablet } from "@/utils/dom";
+export interface Route {
+  label: string;
+  href: string;
+  icon?: IconType;
+  description?: string;
+}
 
-const useStyles = createStyles((theme) => ({
-  link: {
-    display: "flex",
-    alignItems: "center",
-    height: "100%",
-    paddingLeft: theme.spacing.md,
-    paddingRight: theme.spacing.md,
-    textDecoration: "none",
-    color: theme.colorScheme === "dark" ? theme.white : theme.black,
-    fontWeight: 500,
-    fontSize: theme.fontSizes.sm,
-
-    [theme.fn.smallerThan("sm")]: {
-      height: 42,
-      display: "flex",
-      alignItems: "center",
-      width: "100%",
-    },
-
-    ...theme.fn.hover({
-      backgroundColor:
-        theme.colorScheme === "dark"
-          ? theme.colors.dark[6]
-          : theme.colors.gray[0],
-    }),
-  },
-
-  subLink: {
-    width: "100%",
-    padding: `${theme.spacing.xs}px ${theme.spacing.md}px`,
-    borderRadius: theme.radius.md,
-
-    ...theme.fn.hover({
-      backgroundColor:
-        theme.colorScheme === "dark"
-          ? theme.colors.dark[7]
-          : theme.colors.gray[0],
-    }),
-
-    "&:active": theme.activeStyles,
-  },
-
-  dropdownFooter: {
-    backgroundColor:
-      theme.colorScheme === "dark"
-        ? theme.colors.dark[7]
-        : theme.colors.gray[0],
-    margin: -theme.spacing.md,
-    marginTop: theme.spacing.sm,
-    padding: `${theme.spacing.md}px ${theme.spacing.md * 2}px`,
-    paddingBottom: theme.spacing.xl,
-    borderTop: `1px solid ${
-      theme.colorScheme === "dark" ? theme.colors.dark[5] : theme.colors.gray[1]
-    }`,
-  },
-
-  hiddenMobile: {
-    [theme.fn.smallerThan("sm")]: {
-      display: "none",
-    },
-  },
-
-  hiddenDesktop: {
-    [theme.fn.largerThan("sm")]: {
-      display: "none",
-    },
-  },
-}));
-
-const mockdata = [
-  {
-    icon: TbCode,
-    title: "Open source",
-    description: "This Pokémon’s cry is very loud and distracting",
-  },
-  {
-    icon: TbCoin,
-    title: "Free for everyone",
-    description: "The fluid of Smeargle’s tail secretions changes",
-  },
-  {
-    icon: TbBook,
-    title: "Documentation",
-    description: "Yanma is capable of seeing 360 degrees without",
-  },
-  {
-    icon: TbFingerprint,
-    title: "Security",
-    description: "The shell’s rounded shape and the grooves on its.",
-  },
-  {
-    icon: TbChartPie3,
-    title: "Analytics",
-    description: "This Pokémon uses its flying ability to quickly chase",
-  },
-  {
-    icon: TbNotification,
-    title: "Notifications",
-    description: "Combusken battles with the intensely hot flames it spews",
-  },
-];
-
-const NavigationRoutes = [
+const NavRoutes: (Route & {
+  nodes?: Route[];
+})[] = [
   {
     label: "Home",
     href: "/",
@@ -167,76 +70,94 @@ const NavigationRoutes = [
     label: "Buy",
     href: `/property/${ListingTypes[1]}`,
   },
+  {
+    label: "Feature",
+    href: `#`,
+    nodes: [
+      {
+        icon: TbCode,
+        label: "Open source",
+        href: "",
+        description: "This Pokémon’s cry is very loud and distracting",
+      },
+      {
+        icon: TbCoin,
+        label: "Free for everyone",
+        href: "",
+        description: "The fluid of Smeargle’s tail secretions changes",
+      },
+      {
+        icon: TbBook,
+        label: "Documentation",
+        href: "",
+        description: "Yanma is capable of seeing 360 degrees without",
+      },
+    ],
+  },
+  {
+    label: "Feature 2",
+    href: `#`,
+    nodes: [
+      {
+        icon: TbFingerprint,
+        label: "Security",
+        href: "",
+        description: "The shell’s rounded shape and the grooves on its.",
+      },
+      {
+        icon: TbChartPie3,
+        label: "Analytics",
+        href: "",
+        description: "This Pokémon uses its flying ability to quickly chase",
+      },
+      {
+        icon: TbNotification,
+        label: "Notifications",
+        href: "",
+        description: "Combusken battles with the intensely hot flames it spews",
+      },
+    ],
+  },
 ];
 
 export function HeaderMegaMenu() {
   const router = useRouter();
-  const { classes, theme } = useStyles();
+  const theme = useMantineTheme();
   const isMobile = useIsMobile(theme);
+  const isTablet = useIsTablet(theme);
+  const { data: sessionData } = useSession();
+
   const isDark: boolean = theme.colorScheme === "dark";
+  const drawerViewport = useRef<HTMLDivElement>(null);
 
   const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] =
     useDisclosure(false);
-  const [linksOpened, { toggle: toggleLinks }] = useDisclosure(false);
-
-  const { data: sessionData } = useSession();
-
-  const handleSignIn = () => {
-    router.push(
-      {
-        pathname: `/account/signIn`,
-      },
-      undefined,
-      { scroll: true }
-    );
-  };
-  const handleSignUp = () =>
-    router.push(
-      {
-        pathname: `/account/signUp`,
-      },
-      undefined,
-      { scroll: true }
-    );
-  const handleSignOut = () => signOut();
   const [, setUserMenuOpened] = useState<boolean>(false);
+  const [linksOpened, setLinkOpened] = useState<string>("");
 
-  const links = mockdata.map((item) => (
-    <UnstyledButton
-      className={classes.subLink}
-      key={item.title}
-    >
-      <Group
-        noWrap
-        align="flex-start"
-      >
-        <ThemeIcon
-          size={34}
-          variant="default"
-          radius="md"
-        >
-          <item.icon
-            size={22}
-            color={theme.fn.primaryColor()}
-          />
-        </ThemeIcon>
-        <div>
-          <Text
-            size="sm"
-            weight={500}
-          >
-            {item.title}
-          </Text>
-          <Text
-            size="xs"
-            color="dimmed"
-          >
-            {item.description}
-          </Text>
-        </div>
-      </Group>
-    </UnstyledButton>
-  ));
+  const drawerScrollTo = (position: "top" | "center" | "bottom" = "top") => {
+    if (!drawerViewport) return;
+    switch (position) {
+      case "top": {
+        drawerViewport?.current?.scrollTo({ top: 0, behavior: "smooth" });
+        break;
+      }
+      case "center": {
+        drawerViewport?.current?.scrollTo({
+          top: drawerViewport.current.scrollHeight / 2,
+          behavior: "smooth",
+        });
+        break;
+      }
+      case "bottom": {
+        drawerViewport?.current?.scrollTo({
+          top: drawerViewport.current.scrollHeight,
+          behavior: "smooth",
+        });
+        break;
+      }
+    }
+  };
 
   return (
     <>
@@ -258,121 +179,155 @@ export function HeaderMegaMenu() {
         >
           <Logo />
 
-          <Group
-            spacing="md"
-            // className={classes.hiddenMobile}
-            sx={{
-              height: "100%",
-              ...(isMobile && {
-                display: "none",
-              }),
-            }}
-          >
-            {NavigationRoutes.map(({ label, href }) => {
-              const isActiveRoute: boolean = router.asPath === href;
-              return (
-                <Button
-                  key={`link-${label}`}
-                  component={Link}
-                  href={href}
-                  compact
-                  variant={isActiveRoute ? "light" : "subtle"}
-                  styles={{
-                    inner: {
-                      ...(!isActiveRoute && {
-                        color: isDark ? theme.white : theme.black,
-                      }),
-                    },
-                  }}
-                  // className={classes.link}
-                >
-                  {label}
-                </Button>
-              );
-            })}
-
-            <HoverCard
-              width={600}
-              position="bottom"
-              radius="md"
-              shadow="md"
-              withinPortal
-              transition="pop-top-right"
-              openDelay={100}
-              closeDelay={400}
+          {!isTablet && (
+            <Group
+              spacing="md"
+              sx={{
+                height: "100%",
+              }}
             >
-              <HoverCard.Target>
-                <a
-                  href="#"
-                  className={classes.link}
-                >
-                  <Center inline>
-                    <Box
-                      component="span"
-                      mr={5}
-                    >
-                      Features
-                    </Box>
-                    <TbChevronDown
-                      size={16}
-                      color={theme.fn.primaryColor()}
-                    />
-                  </Center>
-                </a>
-              </HoverCard.Target>
+              {NavRoutes.map(({ label, href, nodes = [] }) => {
+                const hasNodes = !!nodes.length;
+                const isActiveRoute: boolean = router.asPath === href;
+                const isLinksOpened: boolean = hasNodes && linksOpened == label;
 
-              <HoverCard.Dropdown sx={{ overflow: "hidden" }}>
-                <Group
-                  position="apart"
-                  px="md"
-                >
-                  <Text weight={500}>Features</Text>
-                  <Anchor
-                    href="#"
-                    size="xs"
+                const action = () => {
+                  if (hasNodes) {
+                    setLinkOpened(isLinksOpened ? "" : label);
+                    return;
+                  }
+                  router.push(
+                    {
+                      pathname: href,
+                    },
+                    undefined,
+                    { scroll: true }
+                  );
+                };
+
+                return !nodes.length ? (
+                  <Button
+                    key={`link-${label}`}
+                    onClick={action}
+                    compact
+                    variant={isActiveRoute ? "light" : "subtle"}
+                    styles={{
+                      inner: {
+                        ...(!isActiveRoute && {
+                          color: isDark ? theme.white : theme.black,
+                        }),
+                      },
+                    }}
                   >
-                    View all
-                  </Anchor>
-                </Group>
+                    {label}
 
-                <Divider
-                  my="sm"
-                  mx="-md"
-                  color={theme.colorScheme === "dark" ? "dark.5" : "gray.1"}
-                />
-
-                <SimpleGrid
-                  cols={2}
-                  spacing={0}
-                >
-                  {links}
-                </SimpleGrid>
-
-                <div className={classes.dropdownFooter}>
-                  <Group position="apart">
-                    <div>
-                      <Text
-                        weight={500}
-                        size="sm"
+                    {hasNodes && (
+                      <TbChevronDown
+                        size={16}
+                        color={theme.fn.primaryColor()}
+                      />
+                    )}
+                  </Button>
+                ) : (
+                  <HoverCard
+                    key={`link-${label}`}
+                    width={600}
+                    position="bottom"
+                    radius="md"
+                    shadow="md"
+                    withinPortal
+                    transition="pop-top-right"
+                    openDelay={100}
+                    closeDelay={400}
+                  >
+                    <HoverCard.Target>
+                      <Button
+                        key={`link-${label}`}
+                        compact
+                        variant={isActiveRoute ? "light" : "subtle"}
+                        styles={{
+                          root: {
+                            display: "flex",
+                            flexDirection: "row",
+                            placeItems: "center",
+                            gap: theme.spacing.sm,
+                          },
+                          inner: {
+                            ...(!isActiveRoute && {
+                              color: isDark ? theme.white : theme.black,
+                            }),
+                          },
+                        }}
                       >
-                        Get started
-                      </Text>
-                      <Text
-                        size="xs"
-                        color="dimmed"
-                      >
-                        Their food sources have decreased, and their numbers
-                      </Text>
-                    </div>
-                    <Button variant="default">Get started</Button>
-                  </Group>
-                </div>
-              </HoverCard.Dropdown>
-            </HoverCard>
-          </Group>
+                        {label}
 
-          {!isMobile && (
-            <Group position="right">
+                        <TbChevronDown
+                          size={16}
+                          color={theme.fn.primaryColor()}
+                        />
+                      </Button>
+                    </HoverCard.Target>
+
+                    <HoverCard.Dropdown sx={{ overflow: "hidden" }}>
+                      <SimpleGrid
+                        cols={2}
+                        spacing={0}
+                      >
+                        <NestedNavRoutes routes={nodes} />
+                      </SimpleGrid>
+
+                      <Box
+                        sx={{
+                          backgroundColor:
+                            theme.colorScheme === "dark"
+                              ? theme.colors.dark[7]
+                              : theme.colors.gray[0],
+                          margin: -theme.spacing.md,
+                          marginTop: theme.spacing.sm,
+                          padding: `${theme.spacing.md}px ${
+                            theme.spacing.md * 2
+                          }px`,
+                          paddingBottom: theme.spacing.xl,
+                          borderTop: `1px solid ${
+                            theme.colorScheme === "dark"
+                              ? theme.colors.dark[5]
+                              : theme.colors.gray[1]
+                          }`,
+                        }}
+                      >
+                        <Group position="apart">
+                          <Box>
+                            <Text
+                              weight={500}
+                              size="sm"
+                            >
+                              Get started
+                            </Text>
+                            <Text
+                              size="xs"
+                              color="dimmed"
+                            >
+                              Their food sources have decreased, and their
+                              numbers
+                            </Text>
+                          </Box>
+                          <Button variant="default">Get started</Button>
+                        </Group>
+                      </Box>
+                    </HoverCard.Dropdown>
+                  </HoverCard>
+                );
+              })}
+            </Group>
+          )}
+
+          {!isTablet && (
+            <Group
+              position="right"
+              sx={{
+                flexWrap: "nowrap",
+              }}
+            >
               <ThemeToggle />
               <Divider
                 size="xs"
@@ -392,39 +347,10 @@ export function HeaderMegaMenu() {
                     onOpen={() => setUserMenuOpened(true)}
                   >
                     <Menu.Target>
-                      <UnstyledButton>
-                        <Group spacing={8}>
-                          <Avatar
-                            src={sessionData.user?.image}
-                            color="violet"
-                            alt="profile-avatar"
-                            radius="xl"
-                            size={40}
-                          >
-                            {getNameInitials(sessionData.user?.name ?? "")}
-                          </Avatar>
-                          <Box mr={3}>
-                            <Text
-                              weight={500}
-                              fz="xs"
-                            >
-                              {sessionData.user?.name}
-                            </Text>
-                            {false && (
-                              <Text
-                                size="xs"
-                                color="dimmed"
-                              >
-                                Renter
-                              </Text>
-                            )}
-                          </Box>
-                          <TbChevronDown
-                            size={16}
-                            color={theme.fn.primaryColor()}
-                          />
-                        </Group>
-                      </UnstyledButton>
+                      <UserButton
+                        name={sessionData.user.name ?? ""}
+                        icon={<TbChevronDown />}
+                      />
                     </Menu.Target>
 
                     <Menu.Dropdown>
@@ -479,7 +405,7 @@ export function HeaderMegaMenu() {
                       </Menu.Item>
                       <Menu.Item
                         icon={<TbLogout size={14} />}
-                        onClick={handleSignOut}
+                        onClick={() => signOut()}
                       >
                         Logout
                       </Menu.Item>
@@ -500,142 +426,146 @@ export function HeaderMegaMenu() {
                   </Menu>
                 </Group>
               ) : (
-                <>
-                  <Button
-                    variant="default"
-                    onClick={handleSignIn}
-                  >
-                    Log in
-                  </Button>
-                  <Button
-                    variant="default"
-                    onClick={handleSignUp}
-                  >
-                    Sign up
-                  </Button>
-                </>
+                <AuthActions session={sessionData} />
               )}
             </Group>
           )}
 
-          <Burger
-            size="sm"
-            opened={drawerOpened}
-            onClick={toggleDrawer}
-            className={classes.hiddenDesktop}
-          />
+          {isTablet && (
+            <Burger
+              size="sm"
+              opened={drawerOpened}
+              onClick={toggleDrawer}
+            />
+          )}
         </Container>
       </Header>
 
-      <Drawer
-        opened={drawerOpened}
-        onClose={closeDrawer}
-        size="100%"
-        padding="md"
-        title="Navigation"
-        className={classes.hiddenDesktop}
-        zIndex={1000000}
-      >
-        <ScrollArea
-          sx={{ height: "calc(100vh - 60px)" }}
-          mx="-md"
+      {isTablet && (
+        <Drawer
+          opened={drawerOpened}
+          onClose={closeDrawer}
+          size={isMobile ? "100%" : "md"}
+          padding="md"
+          title={<Logo hideBrand />}
+          zIndex={1000000}
         >
+          <ScrollArea
+            viewportRef={drawerViewport}
+            type="never"
+            sx={{ height: "calc(75vh - 60px)" }}
+            mx="-md"
+          >
+            <Divider
+              my="sm"
+              color={theme.colorScheme === "dark" ? "dark.5" : "gray.1"}
+            />
+
+            {NavRoutes.map(({ label, href, nodes = [] }) => {
+              const hasNodes = !!nodes.length;
+              const isActiveRoute: boolean = router.asPath === href;
+              const isLinksOpened: boolean = hasNodes && linksOpened == label;
+
+              const action = () => {
+                if (hasNodes) {
+                  setLinkOpened(isLinksOpened ? "" : label);
+                  if (isLinksOpened) drawerScrollTo("center");
+                  return;
+                }
+                router.push(
+                  {
+                    pathname: href,
+                  },
+                  undefined,
+                  { scroll: true }
+                );
+              };
+              return (
+                <>
+                  <Button
+                    key={`link-${label}`}
+                    onClick={action}
+                    compact
+                    variant={isActiveRoute ? "light" : "subtle"}
+                    styles={{
+                      root: {
+                        ...(isTablet && {
+                          height: 42,
+                          display: "flex",
+                          alignItems: "center",
+                          width: "100%",
+                          paddingLeft: theme.spacing.md,
+                          paddingRight: theme.spacing.md,
+                        }),
+                      },
+                      inner: {
+                        ...(!isActiveRoute && {
+                          color: isDark ? theme.white : theme.black,
+                        }),
+                      },
+                    }}
+                  >
+                    {label}
+
+                    {hasNodes &&
+                      (isLinksOpened ? (
+                        <TbChevronUp
+                          size={16}
+                          color={theme.fn.primaryColor()}
+                        />
+                      ) : (
+                        <TbChevronDown
+                          size={16}
+                          color={theme.fn.primaryColor()}
+                        />
+                      ))}
+                  </Button>
+                  {hasNodes && (
+                    <Collapse in={isLinksOpened}>
+                      <NestedNavRoutes routes={nodes} />
+                    </Collapse>
+                  )}
+                </>
+              );
+            })}
+          </ScrollArea>
+
           <Divider
             my="sm"
             color={theme.colorScheme === "dark" ? "dark.5" : "gray.1"}
           />
 
-          {NavigationRoutes.map(({ label, href }) => {
-            const isActiveRoute: boolean = router.asPath === href;
-            return (
-              <Button
-                key={`link-${label}`}
-                component={Link}
-                href={href}
-                compact
-                variant={isActiveRoute ? "light" : "subtle"}
-                // className={classes.link}
-                styles={{
-                  root: {
-                    ...(isMobile && {
-                      height: 42,
-                      display: "flex",
-                      alignItems: "center",
-                      width: "100%",
-                      paddingLeft: theme.spacing.md,
-                      paddingRight: theme.spacing.md,
-                    }),
-                  },
-                  inner: {
-                    ...(!isActiveRoute && {
-                      color: isDark ? theme.white : theme.black,
-                    }),
-                  },
+          <Container>
+            {sessionData && (
+              <UserButton
+                name={sessionData.user.name ?? ""}
+                onClick={() => {
+                  router.push(
+                    {
+                      pathname: `/account`,
+                    },
+                    undefined,
+                    { scroll: true }
+                  );
+                  return;
                 }}
-              >
-                {label}
-              </Button>
-            );
-          })}
-
-          <UnstyledButton
-            className={classes.link}
-            onClick={toggleLinks}
-          >
-            <Center inline>
-              <Box
-                component="span"
-                mr={5}
-              >
-                Features
-              </Box>
-
-              {linksOpened ? (
-                <TbChevronUp
-                  size={16}
-                  color={theme.fn.primaryColor()}
-                />
-              ) : (
-                <TbChevronDown
-                  size={16}
-                  color={theme.fn.primaryColor()}
-                />
-              )}
-            </Center>
-          </UnstyledButton>
-          <Collapse in={linksOpened}>{links}</Collapse>
-
-          <Divider
-            my="sm"
-            color={theme.colorScheme === "dark" ? "dark.5" : "gray.1"}
-          />
-
-          <Group
-            position="center"
-            grow
-            pb="xl"
-            px="md"
-          >
-            <Button
-              variant="default"
-              onClick={handleSignIn}
+              />
+            )}
+            <Group
+              position="center"
+              grow
+              pb="xl"
+              px="md"
+              mt="md"
             >
-              Log in
-            </Button>
-            <Button
-              variant="default"
-              onClick={handleSignUp}
-            >
-              Sign up
-            </Button>
-          </Group>
-        </ScrollArea>
-      </Drawer>
+              <AuthActions session={sessionData} />
+            </Group>
+          </Container>
+        </Drawer>
+      )}
     </>
   );
 }
-
-// export type BaseNavbarProps = PropsWithChildren;
 
 export const BaseNavbar = () => {
   return <HeaderMegaMenu />;
