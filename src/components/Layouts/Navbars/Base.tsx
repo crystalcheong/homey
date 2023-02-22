@@ -41,9 +41,9 @@ import {
 
 import { ListingTypes } from "@/data/clients/ninetyNine";
 
-import AuthActions from "@/components/Layouts/Navbars/AuthActions";
-import NestedNavRoutes from "@/components/Layouts/Navbars/NestedNavRoutes";
-import { UserButton } from "@/components/Layouts/Navbars/UserButton";
+import AuthActions from "@/components/Layouts/AuthActions";
+import NestedNavRoutes from "@/components/Layouts/NestedNavRoutes";
+import UserButton from "@/components/Layouts/UserButton";
 import Logo from "@/components/Logo";
 import ThemeToggle from "@/components/ThemeToggle";
 
