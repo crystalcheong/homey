@@ -51,7 +51,6 @@ const updateListings = (
   newListings: Listing[],
   state: Store
 ): Partial<Store> => {
-  // const currentListings = state.listings;
   const currentListings = state.listings;
   const currentPagination = state.pagination;
   const { currentCount, pageNum } = currentPagination[listingType];
@@ -66,10 +65,6 @@ const updateListings = (
   currentListings.set(listingType, updatedListings);
 
   const updatedState: Partial<Store> = {
-    // listings: {
-    //   ...currentListings,
-    //   [listingType]: updatedListings,
-    // },
     listings: currentListings,
     pagination: {
       ...currentPagination,
@@ -119,7 +114,6 @@ const store = create<Store>()(
         return set((state) => updateListings(listingType, newListings, state));
       },
       getListing: (listingType, listingId) => {
-        // const currentListings: State["listings"] = get().listings;
         const currentListings: State["listings"] = get().listings;
         const currentListing: State["currentListing"] = get().currentListing;
         const currentTypeListings: Listing[] =

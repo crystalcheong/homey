@@ -16,10 +16,6 @@ const IndexPage: NextPage = () => {
 
   const allListings: Map<ListingType, Listing[]> =
     useNinetyNineStore.use.listings();
-  // const allListings: Record<ListingType, Listing[]> =
-  //   useNinetyNineStore.use.listings();
-  // const { rent: rentListings = [], sale: saleListings = [] } = allListings;
-
   const updateListings = useNinetyNineStore.use.updateListings();
 
   const [
