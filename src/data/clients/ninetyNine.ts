@@ -8,15 +8,17 @@ const Routes: Record<string, string> = {
 };
 
 export const ListingTypes = ["rent", "sale"];
-
 export type ListingType = (typeof ListingTypes)[number];
+
+export const ListingCategories = ["HDB", "Condo"];
+export type ListingCategory = (typeof ListingCategories)[number];
 
 export type Listing = {
   id: string;
   listing_type: ListingType;
   photo_url: string;
   address_name: string;
-  main_category: string;
+  main_category: ListingCategory;
   sub_category_formatted: string;
   attributes: Record<string, string | number>;
   tags: string[];
@@ -35,6 +37,7 @@ export class NinetyNine {
 
   getListings = async (
     listingType: ListingType = ListingTypes[0],
+    listingCategory: ListingCategory = ListingCategories[0],
     { pageSize = 30, pageNum = 1 }
   ) => {
     const listings: Listing[] = [];
@@ -43,6 +46,7 @@ export class NinetyNine {
     const params = {
       property_segments: "residential",
       listing_type: listingType,
+      main_category: listingCategory,
       rental_type: "unit",
       page_size: pageSize.toString(),
       page_num: pageNum.toString(),

@@ -11,13 +11,14 @@ export const ninetyNineRouter = createTRPCRouter({
     .input(
       z.object({
         listingType: z.string().trim().min(1),
+        listingCategory: z.string().trim().optional(),
         pageSize: z.number().optional(),
         pageNum: z.number().optional(),
       })
     )
     .query(
       async ({ input }) =>
-        await client.getListings(input.listingType, {
+        await client.getListings(input.listingType, input.listingCategory, {
           pageSize: input.pageSize,
           pageNum: input.pageNum,
         })

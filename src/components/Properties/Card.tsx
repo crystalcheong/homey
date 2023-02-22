@@ -66,7 +66,6 @@ export const Card = ({
     listing_type,
     photo_url,
     attributes,
-    sub_category_formatted,
     main_category,
     address_name,
     cluster_mappings,
@@ -147,7 +146,13 @@ export const Card = ({
 
       <Skeleton visible={isSkeleton}>
         <Text tt="capitalize">
-          {sub_category_formatted ?? main_category}&nbsp;&middot;&nbsp;
+          <Text
+            tt="uppercase"
+            component="span"
+          >
+            {main_category}
+          </Text>
+          &nbsp;&middot;&nbsp;
           {attributes?.bedrooms_formatted}
         </Text>
         <Text

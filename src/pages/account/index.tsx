@@ -12,7 +12,7 @@ const AccountPage = () => {
   //#endregion  //*======== Pre-Render Checks ===========
   useEffect(() => {
     if (!isAuth) {
-      router.replace("/");
+      router.replace("/account/signIn");
       return;
     }
   }, [isAuth, router]);

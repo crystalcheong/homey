@@ -1,5 +1,6 @@
 import { Box, Button, useMantineTheme } from "@mantine/core";
 import { useRouter } from "next/router";
+import { useMemo } from "react";
 
 import { Listing, ListingType, ListingTypes } from "@/data/clients/ninetyNine";
 import { useNinetyNineStore } from "@/data/stores";
@@ -7,6 +8,7 @@ import { useNinetyNineStore } from "@/data/stores";
 import { Layout, Property, Provider } from "@/components";
 
 import { api } from "@/utils/api";
+import { logger } from "@/utils/debug";
 
 const PropertyTypePage = () => {
   const router = useRouter();
@@ -40,6 +42,16 @@ const PropertyTypePage = () => {
     if (isLoading) return;
     getMoreListings(listingType);
   };
+
+  useMemo(() => {
+    const listingMap: Map<ListingType, Listing[]> = new Map<
+      ListingType,
+      Listing[]
+    >(ListingTypes.map((type) => [type as ListingType, [] as Listing[]]));
+    logger("index.tsx line 46", {
+      listingMap,
+    });
+  }, []);
 
   return (
     <Layout.Base>

@@ -23,7 +23,7 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useState } from "react";
 import {
   TbBook,
@@ -181,7 +181,15 @@ export function HeaderMegaMenu() {
 
   const { data: sessionData } = useSession();
 
-  const handleSignIn = () => signIn();
+  const handleSignIn = () => {
+    router.push(
+      {
+        pathname: `/account/signIn`,
+      },
+      undefined,
+      { scroll: true }
+    );
+  };
   const handleSignUp = () =>
     router.push(
       {
@@ -452,7 +460,18 @@ export function HeaderMegaMenu() {
                       </Menu.Item>
 
                       <Menu.Label>Settings</Menu.Label>
-                      <Menu.Item icon={<TbSettings size={14} />}>
+                      <Menu.Item
+                        icon={<TbSettings size={14} />}
+                        onClick={() => {
+                          router.push(
+                            {
+                              pathname: `/account`,
+                            },
+                            undefined,
+                            { scroll: true }
+                          );
+                        }}
+                      >
                         Account settings
                       </Menu.Item>
                       <Menu.Item icon={<TbSwitchHorizontal size={14} />}>
