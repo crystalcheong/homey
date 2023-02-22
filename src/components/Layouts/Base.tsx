@@ -42,10 +42,8 @@ export const BaseLayout = ({
         }}
       >
         <Container
-          py="5vh"
           sx={{
             position: "relative",
-            // minHeight: "100vh",
             minHeight: "calc(100vh - 350px)",
             ...layoutStylesOverwrite,
           }}
