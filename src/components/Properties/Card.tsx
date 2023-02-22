@@ -18,8 +18,6 @@ import { TbBookmark } from "react-icons/tb";
 
 import { Listing, ListingType, ListingTypes } from "@/data/clients/ninetyNine";
 
-import { logger } from "@/utils/debug";
-
 export const EnquiryTypes: string[] = ["call", "whatsapp"];
 export type EnquiryType = (typeof EnquiryTypes)[number];
 export const EnquiryIcons: Record<EnquiryType, IconType> = {
@@ -69,7 +67,7 @@ export const Card = ({
     main_category,
     address_name,
     cluster_mappings,
-    enquiry_flags,
+    // enquiry_flags,
     user,
   } = listing;
 
@@ -83,12 +81,10 @@ export const Card = ({
 
   const clusterId: string = cluster_mappings?.development?.[0] ?? "";
   const listingRelativeLink = `/property/${listing_type}/${id}?clusterId=${clusterId}`;
-  const availableEnquiryTypes: string[] =
-    Object.entries(enquiry_flags ?? {})
-      .filter(([k, v]) => !!v && EnquiryTypes.some((type) => k.includes(type)))
-      .map(([k]) => EnquiryTypes.find((t) => k.includes(t)) ?? "") ?? [];
-
-  logger("Card.tsx line 83", { availableEnquiryTypes });
+  // const availableEnquiryTypes: string[] =
+  //   Object.entries(enquiry_flags ?? {})
+  //     .filter(([k, v]) => !!v && EnquiryTypes.some((type) => k.includes(type)))
+  //     .map(([k]) => EnquiryTypes.find((t) => k.includes(t)) ?? "") ?? [];
 
   return (
     <MCard

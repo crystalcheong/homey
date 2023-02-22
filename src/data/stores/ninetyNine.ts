@@ -13,7 +13,7 @@ import { createSelectors } from "@/utils/store";
 
 interface State {
   currentListing: Listing | null;
-  listings: Record<ListingType, Listing[]>;
+  listings: Map<ListingType, Listing[]>;
   pagination: Record<
     ListingType,
     {
@@ -51,22 +51,26 @@ const updateListings = (
   newListings: Listing[],
   state: Store
 ): Partial<Store> => {
+  // const currentListings = state.listings;
   const currentListings = state.listings;
   const currentPagination = state.pagination;
   const { currentCount, pageNum } = currentPagination[listingType];
 
   const updatedListings: Listing[] = getUniqueObjectList(
-    (currentListings[listingType] ?? []).concat(newListings),
+    (currentListings.get(listingType) ?? []).concat(newListings),
     "id"
   );
   const updatedCurrentCount = (currentCount ?? 0) + updatedListings.length;
   const updatePageNum = (pageNum ?? 0) + 1;
 
+  currentListings.set(listingType, updatedListings);
+
   const updatedState: Partial<Store> = {
-    listings: {
-      ...currentListings,
-      [listingType]: updatedListings,
-    },
+    // listings: {
+    //   ...currentListings,
+    //   [listingType]: updatedListings,
+    // },
+    listings: currentListings,
     pagination: {
       ...currentPagination,
       [listingType]: {
@@ -88,12 +92,8 @@ const store = create<Store>()(
   persist(
     (set, get) => ({
       currentListing: null,
-      listings: ListingTypes.reduce(
-        (listingMap = {}, type) => ({
-          ...listingMap,
-          [type]: [],
-        }),
-        {}
+      listings: new Map<ListingType, Listing[]>(
+        ListingTypes.map((type) => [type as ListingType, [] as Listing[]])
       ),
       pagination: ListingTypes.reduce(
         (listingMap = {}, type) => ({
@@ -119,10 +119,11 @@ const store = create<Store>()(
         return set((state) => updateListings(listingType, newListings, state));
       },
       getListing: (listingType, listingId) => {
+        // const currentListings: State["listings"] = get().listings;
         const currentListings: State["listings"] = get().listings;
         const currentListing: State["currentListing"] = get().currentListing;
         const currentTypeListings: Listing[] =
-          currentListings[listingType] ?? [];
+          currentListings.get(listingType) ?? [];
 
         if (!listingId.length) return null;
 

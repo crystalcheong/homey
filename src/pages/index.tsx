@@ -8,16 +8,17 @@ import { Layout, Property } from "@/components";
 import Hero from "@/components/Pages/Index/Hero";
 
 import { api } from "@/utils/api";
-import { logger } from "@/utils/debug";
 import { useIsTablet } from "@/utils/dom";
 
 const IndexPage: NextPage = () => {
   const theme = useMantineTheme();
   const isTablet = useIsTablet(theme);
 
-  const allListings: Record<ListingType, Listing[]> =
+  const allListings: Map<ListingType, Listing[]> =
     useNinetyNineStore.use.listings();
-  const { rent: rentListings = [], sale: saleListings = [] } = allListings;
+  // const allListings: Record<ListingType, Listing[]> =
+  //   useNinetyNineStore.use.listings();
+  // const { rent: rentListings = [], sale: saleListings = [] } = allListings;
 
   const updateListings = useNinetyNineStore.use.updateListings();
 
@@ -31,7 +32,7 @@ const IndexPage: NextPage = () => {
           listingType,
         },
         {
-          enabled: !allListings[listingType].length,
+          enabled: !(allListings.get(listingType) ?? []).length,
           onSuccess(data) {
             if (!data.length) return;
             updateListings(listingType, data as Listing[]);
@@ -41,10 +42,6 @@ const IndexPage: NextPage = () => {
     )
   );
 
-  logger("index.tsx line 39", {
-    rentListings,
-    saleListings,
-  });
   return (
     <Layout.Base
       layoutStylesOverwrite={{
@@ -75,7 +72,7 @@ const IndexPage: NextPage = () => {
           return (
             <Property.Grid
               key={`grid-${type}-${idx}`}
-              listings={allListings[type]}
+              listings={allListings.get(type) ?? []}
               isLoading={isTypeLoading}
               maxViewableCount={isTablet ? 4 : 3}
               showMoreCTA
