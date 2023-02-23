@@ -1,4 +1,4 @@
-import { Box, Text, useMantineTheme } from "@mantine/core";
+import { Badge, Box, Text, useMantineTheme } from "@mantine/core";
 import Link from "next/link";
 
 import HomeyLogo from "~/assets/brand/homey.svg";
@@ -37,6 +37,7 @@ const Logo = ({ hideBrand = false }: Props) => {
           Homey
         </Text>
       )}
+      <Badge>Beta</Badge>
     </Box>
   );
 };

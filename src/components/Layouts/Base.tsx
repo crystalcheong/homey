@@ -11,17 +11,14 @@ import { PropsWithChildren } from "react";
 import { TbArrowUp } from "react-icons/tb";
 
 import { Footer, Navbar } from "@/components/Layouts";
-import BetaWarning from "@/components/Layouts/BetaWarning";
 
 export type BaseLayoutProps = PropsWithChildren & {
-  isBeta?: boolean;
   showAffix?: boolean;
   layoutStylesOverwrite?: ContainerProps["styles"];
 };
 
 export const BaseLayout = ({
   children,
-  isBeta = true,
   showAffix = true,
   layoutStylesOverwrite,
 }: BaseLayoutProps) => {
@@ -45,7 +42,6 @@ export const BaseLayout = ({
             ...layoutStylesOverwrite,
           }}
         >
-          {isBeta && <BetaWarning />}
           {children}
         </Container>
         {showAffix && (
