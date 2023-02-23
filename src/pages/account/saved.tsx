@@ -1,3 +1,4 @@
+import { Box, Title } from "@mantine/core";
 import { PropertyType } from "@prisma/client";
 import { useSession } from "next-auth/react";
 
@@ -63,6 +64,16 @@ const AccountSavedPage = () => {
           listings={allSavedListings}
           allowSaveListing={isAuth}
           title="Saved Listings"
+          emptyFallback={
+            <Box>
+              <Title
+                order={2}
+                size="h5"
+              >
+                Browse more listings and save them here
+              </Title>
+            </Box>
+          }
         />
       </Provider.RenderGuard>
     </Layout.Base>

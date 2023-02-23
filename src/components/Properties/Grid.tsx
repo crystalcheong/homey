@@ -8,6 +8,7 @@ import {
   Title,
 } from "@mantine/core";
 import Link from "next/link";
+import { ReactNode } from "react";
 
 import { Listing, ListingType } from "@/data/clients/ninetyNine";
 
@@ -27,6 +28,7 @@ interface Props extends BoxProps {
   allowSaveListing?: boolean;
 
   gridProps?: SimpleGridProps;
+  emptyFallback?: ReactNode;
 }
 
 export const Grid = ({
@@ -40,6 +42,7 @@ export const Grid = ({
   maxViewableCount = 0,
   gridProps,
   children,
+  emptyFallback,
   ...rest
 }: Props) => {
   const hasNoListings = !listings.length;
@@ -52,6 +55,8 @@ export const Grid = ({
     listings ?? [],
     maxViewableCount
   );
+
+  const showEmptyFallback: boolean = !!emptyFallback && hasNoListings;
 
   return (
     <Box
@@ -84,38 +89,44 @@ export const Grid = ({
         </Group>
       )}
 
-      <SimpleGrid
-        cols={3}
-        spacing="lg"
-        breakpoints={[
-          { maxWidth: "md", cols: 2, spacing: "md" },
-          { maxWidth: "xs", cols: 1, spacing: "sm" },
-        ]}
-        sx={{
-          placeItems: "center",
-          gridAutoRows: "1fr",
-          position: "relative",
-          "&>*": {
-            height: "100%",
-            width: "100%",
-          },
-        }}
-        {...gridProps}
-      >
-        {(isLoading || hasNoListings
-          ? new Array(placeholderCount).fill(false)
-          : viewableListings
-        ).map((listing, idx) => (
-          <Card
-            key={`listing-${listing.id}-${idx}`}
-            listing={listing}
-            isLoading={isLoading}
-            allowSaveListing={allowSaveListing}
-          />
-        ))}
-      </SimpleGrid>
+      {showEmptyFallback ? (
+        emptyFallback
+      ) : (
+        <>
+          <SimpleGrid
+            cols={3}
+            spacing="lg"
+            breakpoints={[
+              { maxWidth: "md", cols: 2, spacing: "md" },
+              { maxWidth: "xs", cols: 1, spacing: "sm" },
+            ]}
+            sx={{
+              placeItems: "center",
+              gridAutoRows: "1fr",
+              position: "relative",
+              "&>*": {
+                height: "100%",
+                width: "100%",
+              },
+            }}
+            {...gridProps}
+          >
+            {(isLoading || hasNoListings
+              ? new Array(placeholderCount).fill(false)
+              : viewableListings
+            ).map((listing, idx) => (
+              <Card
+                key={`listing-${listing.id}-${idx}`}
+                listing={listing}
+                isLoading={isLoading}
+                allowSaveListing={allowSaveListing}
+              />
+            ))}
+          </SimpleGrid>
 
-      {children}
+          {children}
+        </>
+      )}
     </Box>
   );
 };
