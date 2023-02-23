@@ -19,6 +19,8 @@ interface Props extends BoxProps {
   listings: Listing[];
   placeholderCount?: number;
   maxViewableCount?: number;
+  title?: string;
+
   isLoading?: boolean;
   showTitle?: boolean;
   showMoreCTA?: boolean;
@@ -29,6 +31,7 @@ interface Props extends BoxProps {
 
 export const Grid = ({
   listings = [],
+  title = "",
   isLoading = false,
   showTitle = true,
   showMoreCTA = false,
@@ -64,7 +67,7 @@ export const Grid = ({
               py="md"
               tt="capitalize"
             >
-              {`${listingType} Listings`.trim()}
+              {title || `${listingType} Listings`.trim()}
             </Title>
           )}
 

@@ -68,7 +68,7 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
     useState<typeof InitalFormState>(InitalFormState);
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const inputValue = event.currentTarget.value ?? "";
+    const inputValue = (event.currentTarget.value ?? "").trim();
     setFormState({
       ...formState,
       [event.currentTarget.id]: inputValue,
@@ -84,10 +84,25 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
 
   const handleOnBrowseClick = () => {
     const searchRoute = SearchListingTypes[searchType];
+    const formParams = Object.fromEntries(
+      Object.entries(formState)
+        .filter(([, v]) => !!v)
+        .map(([k, v]) => [k, JSON.stringify(v)])
+    );
     logger("index.tsx line 67", {
       searchRoute,
+      formState,
+      formParams,
     });
-    router.push(`${router.basePath}/property/${searchRoute}`, undefined, {
+
+    let searchQuery = `${router.basePath}/property/${searchRoute}`;
+    if (Object.keys(formParams).length) {
+      const params = new URLSearchParams(formParams);
+      searchQuery += `?${params}`;
+      logger("Hero.tsx line 100", searchQuery, params);
+    }
+
+    router.push(searchQuery, undefined, {
       scroll: true,
     });
   };

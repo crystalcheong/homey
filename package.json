@@ -18,7 +18,7 @@
     "prisma:update": "prisma db pull && prisma db push",
     "prisma:prepare": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:live": "pn prisma:update && pn prisma:migrate && prisma migrate deploy",
+    "prisma:live": "pnpm prisma:update && pnpm prisma:migrate && prisma migrate deploy",
     "prepare": "husky install && pnpm prisma:prepare"
   },
   "dependencies": {

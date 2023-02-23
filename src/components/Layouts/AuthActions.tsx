@@ -3,13 +3,19 @@ import { useRouter } from "next/router";
 import { Session } from "next-auth";
 import { signOut } from "next-auth/react";
 
+import { Provider } from "@/components";
+
 import { AuthType, AuthTypes } from "@/pages/account/[auth]";
 
 interface Props {
   session: Session | null;
+  hidePostAuth?: boolean;
 }
 
-export const AuthActions = ({ session = null }: Props) => {
+export const AuthActions = ({
+  session = null,
+  hidePostAuth = false,
+}: Props) => {
   const isAuth = !!session;
 
   const router = useRouter();
@@ -28,7 +34,7 @@ export const AuthActions = ({ session = null }: Props) => {
   };
 
   return !isAuth ? (
-    <>
+    <Provider.RenderGuard renderIf={!!AuthTypes.length}>
       {AuthTypes.map((type, idx) => (
         <Button
           key={`authAction-${type}`}
@@ -39,8 +45,8 @@ export const AuthActions = ({ session = null }: Props) => {
           {type.replace(/([A-Z])/g, " $1").trim()}
         </Button>
       ))}
-    </>
-  ) : (
+    </Provider.RenderGuard>
+  ) : !hidePostAuth ? (
     <Button
       variant="subtle"
       onClick={handleSignOut}
@@ -48,7 +54,7 @@ export const AuthActions = ({ session = null }: Props) => {
     >
       Sign Out
     </Button>
-  );
+  ) : null;
 };
 
 export default AuthActions;

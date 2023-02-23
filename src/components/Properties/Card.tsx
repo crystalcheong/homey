@@ -1,5 +1,4 @@
 import {
-  ActionIcon,
   Button,
   Card as MCard,
   CardProps,
@@ -9,14 +8,13 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-import { cleanNotifications, showNotification } from "@mantine/notifications";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import { IconType } from "react-icons";
 import { FaPhoneAlt, FaWhatsapp } from "react-icons/fa";
-import { TbBookmark } from "react-icons/tb";
 
 import { Listing, ListingType, ListingTypes } from "@/data/clients/ninetyNine";
+
+import SaveButton from "@/components/Properties/SaveButton";
 
 export const EnquiryTypes: string[] = ["call", "whatsapp"];
 export type EnquiryType = (typeof EnquiryTypes)[number];
@@ -73,8 +71,6 @@ export const Card = ({
     user,
   } = listing;
 
-  const router = useRouter();
-
   const isPlaceholder = !Object.keys(listing).length;
   const isSkeleton: boolean = isLoading || isPlaceholder;
   const strPrice = `${attributes?.price_formatted ?? `$-.--`} SGD ${
@@ -84,10 +80,6 @@ export const Card = ({
   const clusterId: string =
     cluster_mappings?.development?.[0] ?? cluster_mappings?.local?.[0] ?? "";
   const listingRelativeLink = `/property/${listing_type}/${id}?clusterId=${clusterId}`;
-  // const availableEnquiryTypes: string[] =
-  //   Object.entries(enquiry_flags ?? {})
-  //     .filter(([k, v]) => !!v && EnquiryTypes.some((type) => k.includes(type)))
-  //     .map(([k]) => EnquiryTypes.find((t) => k.includes(t)) ?? "") ?? [];
 
   return (
     <MCard
@@ -194,31 +186,7 @@ export const Card = ({
           }
         )}
 
-        {allowSaveListing && (
-          <ActionIcon
-            onClick={(e) => {
-              e.preventDefault();
-              showNotification({
-                onClick: () => {
-                  if (!allowSaveListing) return;
-                  cleanNotifications();
-                  router.push(
-                    {
-                      pathname: `/account/saved`,
-                    },
-                    undefined,
-                    { scroll: true }
-                  );
-                },
-                icon: <TbBookmark />,
-                title: "Listing Saved!",
-                message: "Click to view your saved listings",
-              });
-            }}
-          >
-            <TbBookmark size={40} />
-          </ActionIcon>
-        )}
+        {allowSaveListing && <SaveButton listing={listing} />}
       </Group>
     </MCard>
   );

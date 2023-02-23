@@ -48,6 +48,7 @@ export const UserButton = forwardRef<HTMLButtonElement, Props>(
           alt={name}
           radius="xl"
           size={40}
+          color="primary"
         >
           {getNameInitials(name)}
         </Avatar>

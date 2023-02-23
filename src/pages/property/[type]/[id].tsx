@@ -1,7 +1,6 @@
 import { Button, Group, Image, Title } from "@mantine/core";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
-import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import superjson from "superjson";
 
@@ -60,8 +59,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 type Props = InferGetServerSidePropsType<typeof getServerSideProps>;
 
 const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
-  const router = useRouter();
-
   const [isMounted, setIsMounted] = useState<boolean>(false);
   const listing: Listing | null = useNinetyNineStore.use.getListing()(type, id);
 
@@ -74,13 +71,13 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
     {
       enabled: !listing && isValidProperty && isMounted,
       onSuccess(data) {
-        logger("[id].tsx line 45/onSuccess", { data, clusterId, id });
+        logger("[id].tsx line 45/onSuccess", { data, clusterId, id, type });
 
-        if (!data) {
-          router.push(`${router.basePath}/property/${type}`, undefined, {
-            scroll: true,
-          });
-        }
+        // if (!data) {
+        //   router.push(`${router.basePath}/property/${type}`, undefined, {
+        //     scroll: true,
+        //   });
+        // }
         useNinetyNineStore.setState(() => ({ currentListing: data }));
       },
     }

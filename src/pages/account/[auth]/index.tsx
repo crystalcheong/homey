@@ -33,6 +33,7 @@ import {
   Fragment,
   ReactNode,
   useCallback,
+  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -155,6 +156,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
   const { start: revertToInitialState } = useTimeout(() => {
     setFormState(InitalFormState);
     setErrorState(InitalFormState);
+    setAuthErrorState(undefined);
     setAuthStep(0);
     setIsLoadingProvider("");
   }, 1000);
@@ -263,6 +265,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
                     password: formState.password,
                     callbackUrl: "/",
                   });
+                  logger("index.tsx line 268", { data });
                   return;
                 }
               },
@@ -315,15 +318,22 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
   //#endregion  //*======== Submission ===========
 
   //#endregion  //*======== Pre-Render Checks ===========
-  if (isAuth) {
-    router.push(
-      {
-        pathname: `/account`,
-      },
-      undefined,
-      { scroll: true }
-    );
-  }
+  useEffect(() => {
+    revertToInitialState();
+
+    if (isAuth) {
+      router.push(
+        {
+          pathname: `/account`,
+        },
+        undefined,
+        { scroll: true }
+      );
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuth, paramAuth]);
+
   //#endregion  //*======== Pre-Render Checks ===========
 
   const stepList: {

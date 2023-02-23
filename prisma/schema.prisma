@@ -39,14 +39,33 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model Property {
+  id        String              @id
+  clusterId String
+  type      PropertyType        @default(RENT)
+  userSaved UserSavedProperty[]
+
+  @@unique([id, clusterId])
+}
+
 model User {
-  id            String    @id @default(cuid())
+  id            String              @id @default(cuid())
   name          String?
-  email         String?   @unique
+  email         String?             @unique
   emailVerified DateTime?
   image         String?
   accounts      Account[]
   sessions      Session[]
+  propertySaved UserSavedProperty[]
+}
+
+model UserSavedProperty {
+  propertyId String
+  userId     String
+  property   Property @relation(fields: [propertyId], references: [id])
+  User       User     @relation(fields: [userId], references: [id])
+
+  @@id([propertyId, userId])
 }
 
 model VerificationToken {
@@ -55,4 +74,9 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+enum PropertyType {
+  RENT
+  SALE
 }

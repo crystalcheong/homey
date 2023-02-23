@@ -163,7 +163,7 @@ export function FooterLinks({ data }: FooterLinksProps) {
             color="dimmed"
             className={classes.description}
           >
-            Build fully functional accessible web applications faster than ever
+            Find your dream home in Singapore
           </Text>
         </div>
         <div className={classes.groups}>{groups}</div>

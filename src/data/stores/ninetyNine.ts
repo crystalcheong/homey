@@ -1,18 +1,16 @@
-import { createTRPCProxyClient, httpBatchLink } from "@trpc/client";
-import superjson from "superjson";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 import { Listing, ListingType, ListingTypes } from "@/data/clients/ninetyNine";
 
-import { AppRouter } from "@/server/api/root";
-import { getBaseUrl } from "@/utils/api";
+import { innerApi } from "@/utils/api";
 import { logger } from "@/utils/debug";
 import { getUniqueObjectList } from "@/utils/helpers";
 import { createSelectors } from "@/utils/store";
 
 interface State {
   currentListing: Listing | null;
+  savedListings: Listing[];
   listings: Map<ListingType, Listing[]>;
   pagination: Record<
     ListingType,
@@ -36,15 +34,6 @@ interface Mutators {
 interface Store extends State, Mutators {}
 
 //#endregion  //*======== Universal Functions ===========
-
-const api = createTRPCProxyClient<AppRouter>({
-  transformer: superjson,
-  links: [
-    httpBatchLink({
-      url: `${getBaseUrl()}/api/trpc`,
-    }),
-  ],
-});
 
 const updateListings = (
   listingType: ListingType,
@@ -79,7 +68,7 @@ const updateListings = (
   return updatedState;
 };
 
-const cachedStates: string[] = ["currentListing"];
+const cachedStates: string[] = ["currentListing", "savedListings"];
 
 //#endregion  //*======== Universal Functions ===========
 
@@ -87,6 +76,7 @@ const store = create<Store>()(
   persist(
     (set, get) => ({
       currentListing: null,
+      savedListings: [],
       listings: new Map<ListingType, Listing[]>(
         ListingTypes.map((type) => [type as ListingType, [] as Listing[]])
       ),
@@ -107,7 +97,7 @@ const store = create<Store>()(
         const currentPagination = get().pagination;
         const { pageNum } = currentPagination[listingType];
         const newListings: Listing[] =
-          (await api.ninetyNine.getListings.query({
+          (await innerApi.ninetyNine.getListings.query({
             listingType,
             pageNum,
           })) ?? [];
@@ -115,6 +105,7 @@ const store = create<Store>()(
       },
       getListing: (listingType, listingId) => {
         const currentListings: State["listings"] = get().listings;
+        const savedListings: State["savedListings"] = get().savedListings;
         const currentListing: State["currentListing"] = get().currentListing;
         const currentTypeListings: Listing[] =
           currentListings.get(listingType) ?? [];
@@ -125,6 +116,19 @@ const store = create<Store>()(
         if (currentListing) {
           const isCurrentListing: boolean = currentListing.id === listingId;
           if (isCurrentListing) return currentListing;
+        }
+        // CHECK: If it's included in savedListings
+        if (savedListings.length) {
+          const savedListingIdx: number = savedListings.findIndex(
+            ({ id }) => id === listingId
+          );
+          if (savedListingIdx >= 0) {
+            const savedListing: Listing = savedListings[savedListingIdx];
+            set((state) => ({
+              currentListing: savedListing ?? state.currentListing,
+            }));
+            return savedListing;
+          }
         }
 
         if (!currentTypeListings.length) return null;

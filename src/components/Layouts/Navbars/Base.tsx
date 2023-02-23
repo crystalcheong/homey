@@ -16,30 +16,30 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { signOut, useSession } from "next-auth/react";
 import { Fragment, useRef, useState } from "react";
 import { IconType } from "react-icons";
 import {
   TbBook,
+  TbBookmarks,
   TbChartPie3,
   TbChevronDown,
+  TbChevronLeft,
+  TbChevronRight,
   TbChevronUp,
   TbCode,
   TbCoin,
   TbFingerprint,
-  TbHeart,
   TbLogout,
   TbMessage,
   TbNotification,
-  TbPlayerPause,
   TbSettings,
-  TbStar,
-  TbSwitchHorizontal,
-  TbTrash,
 } from "react-icons/tb";
 
 import { ListingTypes } from "@/data/clients/ninetyNine";
+import { SavedListing, useAccountStore } from "@/data/stores";
 
 import AuthActions from "@/components/Layouts/AuthActions";
 import NestedNavRoutes from "@/components/Layouts/NestedNavRoutes";
@@ -47,7 +47,10 @@ import UserButton from "@/components/Layouts/UserButton";
 import Logo from "@/components/Logo";
 import ThemeToggle from "@/components/ThemeToggle";
 
+import { api } from "@/utils/api";
+import { logger } from "@/utils/debug";
 import { useIsMobile, useIsTablet } from "@/utils/dom";
+
 export interface Route {
   label: string;
   href: string;
@@ -120,6 +123,31 @@ const NavRoutes: (Route & {
   },
 ];
 
+export const AccountMenulist: (Omit<Route, "href"> & {
+  href?: string;
+  onClick?: () => void;
+})[] = [
+  {
+    label: "Saved listings",
+    icon: TbBookmarks,
+    href: `/account/saved`,
+  },
+  {
+    label: "Your comments",
+    icon: TbMessage,
+  },
+  {
+    label: "Account settings",
+    icon: TbSettings,
+    href: `/account/update`,
+  },
+  {
+    label: "Logout",
+    icon: TbLogout,
+    onClick: () => signOut(),
+  },
+];
+
 export function HeaderMegaMenu() {
   const router = useRouter();
   const theme = useMantineTheme();
@@ -127,11 +155,13 @@ export function HeaderMegaMenu() {
   const isTablet = useIsTablet(theme);
   const { data: sessionData } = useSession();
 
+  const isAuth = !!sessionData;
   const isDark: boolean = theme.colorScheme === "dark";
   const drawerViewport = useRef<HTMLDivElement>(null);
 
   const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] =
     useDisclosure(false);
+  const [accDrawerOpened, { toggle: toggleAccDrawer }] = useDisclosure(false);
   const [, setUserMenuOpened] = useState<boolean>(false);
   const [linksOpened, setLinkOpened] = useState<string>("");
 
@@ -158,6 +188,24 @@ export function HeaderMegaMenu() {
       }
     }
   };
+
+  const { data: userData } = api.account.getUserByEmail.useQuery(
+    {
+      email: sessionData?.user?.email ?? "",
+    },
+    {
+      enabled: isAuth,
+      onSuccess(data) {
+        logger("Base.tsx line 173", { data });
+
+        const userSavedListings: SavedListing[] = data?.propertySaved ?? [];
+        useAccountStore.setState(() => ({
+          currentUser: data,
+          savedListings: userSavedListings,
+        }));
+      },
+    }
+  );
 
   return (
     <>
@@ -334,7 +382,7 @@ export function HeaderMegaMenu() {
                 color={theme.primaryColor}
                 orientation="vertical"
               />
-              {sessionData ? (
+              {userData ? (
                 <Group>
                   <Menu
                     width={260}
@@ -348,80 +396,32 @@ export function HeaderMegaMenu() {
                   >
                     <Menu.Target>
                       <UserButton
-                        name={sessionData.user.name ?? ""}
+                        name={userData.name ?? ""}
                         icon={<TbChevronDown />}
                       />
                     </Menu.Target>
 
                     <Menu.Dropdown>
-                      <Menu.Item
-                        icon={
-                          <TbHeart
-                            size={14}
-                            color={theme.colors.red[6]}
-                          />
-                        }
-                      >
-                        Liked posts
-                      </Menu.Item>
-                      <Menu.Item
-                        icon={
-                          <TbStar
-                            size={14}
-                            color={theme.colors.yellow[6]}
-                          />
-                        }
-                      >
-                        Saved posts
-                      </Menu.Item>
-                      <Menu.Item
-                        icon={
-                          <TbMessage
-                            size={14}
-                            color={theme.colors.blue[6]}
-                          />
-                        }
-                      >
-                        Your comments
-                      </Menu.Item>
-
-                      <Menu.Label>Settings</Menu.Label>
-                      <Menu.Item
-                        icon={<TbSettings size={14} />}
-                        onClick={() => {
-                          router.push(
-                            {
-                              pathname: `/account`,
-                            },
-                            undefined,
-                            { scroll: true }
-                          );
-                        }}
-                      >
-                        Account settings
-                      </Menu.Item>
-                      <Menu.Item icon={<TbSwitchHorizontal size={14} />}>
-                        Change account
-                      </Menu.Item>
-                      <Menu.Item
-                        icon={<TbLogout size={14} />}
-                        onClick={() => signOut()}
-                      >
-                        Logout
-                      </Menu.Item>
-
-                      <Menu.Divider />
-
-                      <Menu.Label>Danger zone</Menu.Label>
-                      <Menu.Item icon={<TbPlayerPause size={14} />}>
-                        Pause subscription
-                      </Menu.Item>
-                      <Menu.Item
-                        color="red"
-                        icon={<TbTrash size={14} />}
-                      >
-                        Delete account
-                      </Menu.Item>
+                      {AccountMenulist.map((item) => (
+                        <Menu.Item
+                          key={`accMenu-${item.label}`}
+                          component={Link}
+                          href={item.href || "#"}
+                          {...(!!item.onClick && {
+                            onClick: item.onClick,
+                          })}
+                          icon={
+                            item.icon ? (
+                              <item.icon
+                                size={14}
+                                color={theme.fn.primaryColor()}
+                              />
+                            ) : null
+                          }
+                        >
+                          {item.label}
+                        </Menu.Item>
+                      ))}
                     </Menu.Dropdown>
                   </Menu>
                 </Group>
@@ -453,7 +453,7 @@ export function HeaderMegaMenu() {
           <ScrollArea
             viewportRef={drawerViewport}
             type="never"
-            sx={{ height: "calc(75vh - 60px)" }}
+            sx={{ height: "calc(80vh - 60px)" }}
             mx="-md"
           >
             <Divider
@@ -461,29 +461,85 @@ export function HeaderMegaMenu() {
               color={theme.colorScheme === "dark" ? "dark.5" : "gray.1"}
             />
 
-            {NavRoutes.map(({ label, href, nodes = [] }) => {
-              const hasNodes = !!nodes.length;
-              const isActiveRoute: boolean = router.asPath === href;
-              const isLinksOpened: boolean = hasNodes && linksOpened == label;
+            {!accDrawerOpened &&
+              NavRoutes.map(({ label, href, nodes = [] }) => {
+                const hasNodes = !!nodes.length;
+                const isActiveRoute: boolean = router.asPath === href;
+                const isLinksOpened: boolean = hasNodes && linksOpened == label;
 
-              const action = () => {
-                if (hasNodes) {
-                  setLinkOpened(isLinksOpened ? "" : label);
-                  if (isLinksOpened) drawerScrollTo("center");
-                  return;
-                }
-                router.push(
-                  {
-                    pathname: href,
-                  },
-                  undefined,
-                  { scroll: true }
+                const action = () => {
+                  if (hasNodes) {
+                    setLinkOpened(isLinksOpened ? "" : label);
+                    if (isLinksOpened) drawerScrollTo("center");
+                    return;
+                  }
+                  router.push(
+                    {
+                      pathname: href,
+                    },
+                    undefined,
+                    { scroll: true }
+                  );
+                };
+                return (
+                  <Fragment key={`link-${label}`}>
+                    <Button
+                      onClick={action}
+                      compact
+                      variant={isActiveRoute ? "light" : "subtle"}
+                      styles={{
+                        root: {
+                          ...(isTablet && {
+                            height: 42,
+                            display: "flex",
+                            alignItems: "center",
+                            width: "100%",
+                            paddingLeft: theme.spacing.md,
+                            paddingRight: theme.spacing.md,
+                          }),
+                        },
+                        inner: {
+                          ...(!isActiveRoute && {
+                            color: isDark ? theme.white : theme.black,
+                          }),
+                        },
+                      }}
+                    >
+                      {label}
+
+                      {hasNodes &&
+                        (isLinksOpened ? (
+                          <TbChevronUp
+                            size={16}
+                            color={theme.fn.primaryColor()}
+                          />
+                        ) : (
+                          <TbChevronDown
+                            size={16}
+                            color={theme.fn.primaryColor()}
+                          />
+                        ))}
+                    </Button>
+                    {hasNodes && (
+                      <Collapse in={isLinksOpened}>
+                        <NestedNavRoutes routes={nodes} />
+                      </Collapse>
+                    )}
+                  </Fragment>
                 );
-              };
-              return (
-                <Fragment key={`link-${label}`}>
+              })}
+
+            {accDrawerOpened &&
+              AccountMenulist.map((item) => {
+                const isActiveRoute: boolean = router.asPath === item.href;
+                return (
                   <Button
-                    onClick={action}
+                    key={`accDrawer-${item.label}`}
+                    component={Link}
+                    href={item.href || "#"}
+                    {...(!!item.onClick && {
+                      onClick: item.onClick,
+                    })}
                     compact
                     variant={isActiveRoute ? "light" : "subtle"}
                     styles={{
@@ -504,29 +560,10 @@ export function HeaderMegaMenu() {
                       },
                     }}
                   >
-                    {label}
-
-                    {hasNodes &&
-                      (isLinksOpened ? (
-                        <TbChevronUp
-                          size={16}
-                          color={theme.fn.primaryColor()}
-                        />
-                      ) : (
-                        <TbChevronDown
-                          size={16}
-                          color={theme.fn.primaryColor()}
-                        />
-                      ))}
+                    {item.label}
                   </Button>
-                  {hasNodes && (
-                    <Collapse in={isLinksOpened}>
-                      <NestedNavRoutes routes={nodes} />
-                    </Collapse>
-                  )}
-                </Fragment>
-              );
-            })}
+                );
+              })}
           </ScrollArea>
 
           <Divider
@@ -535,30 +572,33 @@ export function HeaderMegaMenu() {
           />
 
           <Container>
-            {sessionData && (
+            {userData && (
               <UserButton
-                name={sessionData.user.name ?? ""}
-                onClick={() => {
-                  router.push(
-                    {
-                      pathname: `/account`,
-                    },
-                    undefined,
-                    { scroll: true }
-                  );
-                  return;
-                }}
+                name={userData.name ?? ""}
+                onClick={toggleAccDrawer}
+                icon={
+                  accDrawerOpened ? (
+                    <TbChevronLeft size={16} />
+                  ) : (
+                    <TbChevronRight size={16} />
+                  )
+                }
               />
             )}
-            <Group
-              position="center"
-              grow
-              pb="xl"
-              px="md"
-              mt="md"
-            >
-              <AuthActions session={sessionData} />
-            </Group>
+            {!isAuth && (
+              <Group
+                position="center"
+                grow
+                pb="xl"
+                px="md"
+                mt="md"
+              >
+                <AuthActions
+                  session={sessionData}
+                  hidePostAuth
+                />
+              </Group>
+            )}
           </Container>
         </Drawer>
       )}

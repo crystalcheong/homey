@@ -8,11 +8,12 @@ import { useNinetyNineStore } from "@/data/stores";
 import { Layout, Property, Provider } from "@/components";
 
 import { api } from "@/utils/api";
+import { logger } from "@/utils/debug";
 
 const PropertyTypePage = () => {
   const router = useRouter();
   const theme = useMantineTheme();
-  const { type } = router.query;
+  const { type, location } = router.query;
 
   const { data: sessionData } = useSession();
 
@@ -45,6 +46,8 @@ const PropertyTypePage = () => {
     if (isLoading) return;
     getMoreListings(listingType);
   };
+
+  logger("index.tsx line 49", { location });
 
   return (
     <Layout.Base>

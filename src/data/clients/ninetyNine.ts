@@ -99,8 +99,8 @@ export class NinetyNine {
       (result?.data?.sections?.[0]?.listings ?? []) as Listing[]
     ).filter(({ id }) => id === listingId);
 
-    listing = listingsData?.[0] ?? null;
-    logger("NinetyNine/getClusterListing", listingsData);
+    listing = listingsData[0] ?? null;
+    logger("NinetyNine/getClusterListing/listingsData", listingsData);
 
     return listing;
   };
