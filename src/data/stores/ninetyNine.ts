@@ -8,19 +8,18 @@ import { logger } from "@/utils/debug";
 import { getUniqueObjectList } from "@/utils/helpers";
 import { createSelectors } from "@/utils/store";
 
+export type PaginationInfo = {
+  currentCount: number;
+  pageSize: number;
+  pageNum: number;
+};
+
 interface State {
   currentListing: Listing | null;
   savedListings: Listing[];
   listings: Map<ListingType, Listing[]>;
   neighbourhoods: Record<string, string>;
-  pagination: Record<
-    ListingType,
-    {
-      currentCount: number;
-      pageSize: number;
-      pageNum: number;
-    }
-  >;
+  pagination: Map<ListingType, PaginationInfo>;
 }
 
 interface Mutators {
@@ -35,6 +34,13 @@ interface Mutators {
 interface Store extends State, Mutators {}
 
 //#endregion  //*======== Universal Functions ===========
+
+const cachedStates: string[] = ["currentListing", "savedListings"];
+export const defaultPaginationInfo: PaginationInfo = {
+  currentCount: 0,
+  pageSize: 30,
+  pageNum: 1,
+};
 
 export const getPredefinedNeighbourhoods = (): Record<string, string> => {
   const neighbourhoodNames: string[] = [
@@ -79,35 +85,38 @@ const updateListings = (
   newListings: Listing[],
   state: Store
 ): Partial<Store> => {
+  //#endregion  //*======== Listings ===========
   const currentListings = state.listings;
-  const currentPagination = state.pagination;
-  const { currentCount, pageNum } = currentPagination[listingType];
-
   const updatedListings: Listing[] = getUniqueObjectList(
     (currentListings.get(listingType) ?? []).concat(newListings),
     "id"
   );
-  const updatedCurrentCount = (currentCount ?? 0) + updatedListings.length;
-  const updatePageNum = (pageNum ?? 0) + 1;
 
   currentListings.set(listingType, updatedListings);
+  //#endregion  //*======== Listings ===========
+
+  //#endregion  //*======== Pagination Info ===========
+  const currentPagination = state.pagination;
+  const { currentCount, pageNum, pageSize } =
+    currentPagination.get(listingType) ?? defaultPaginationInfo;
+  const updatedCurrentCount = (currentCount ?? 0) + updatedListings.length;
+  const updatePageNum = (pageNum ?? 0) + 1;
+  const updatedPaginationInfo = {
+    pageSize,
+    currentCount: updatedCurrentCount,
+    pageNum: updatePageNum,
+  };
+
+  currentPagination.set(listingType, updatedPaginationInfo);
+  //#endregion  //*======== Pagination Info ===========
 
   const updatedState: Partial<Store> = {
     listings: currentListings,
-    pagination: {
-      ...currentPagination,
-      [listingType]: {
-        ...currentPagination[listingType],
-        currentCount: updatedCurrentCount,
-        pageNum: updatePageNum,
-      },
-    },
+    pagination: currentPagination,
   };
   logger("NinetyNine/updateListings", listingType, { updatedState });
   return updatedState;
 };
-
-const cachedStates: string[] = ["currentListing", "savedListings"];
 
 //#endregion  //*======== Universal Functions ===========
 
@@ -120,22 +129,25 @@ const store = create<Store>()(
       listings: new Map<ListingType, Listing[]>(
         ListingTypes.map((type) => [type as ListingType, [] as Listing[]])
       ),
-      pagination: ListingTypes.reduce(
-        (listingMap = {}, type) => ({
-          ...listingMap,
-          [type]: {
+      pagination: new Map<ListingType, PaginationInfo>(
+        ListingTypes.map((type) => [
+          type as ListingType,
+          {
             currentCount: 0,
             pageSize: 30,
             pageNum: 1,
-          },
-        }),
-        {}
+          } as PaginationInfo,
+        ])
       ),
       updateListings: (listingType, newListings) =>
         set((state) => updateListings(listingType, newListings, state)),
       getMoreListings: async (listingType) => {
+        // const currentPagination = get().pagination;
         const currentPagination = get().pagination;
-        const { pageNum } = currentPagination[listingType];
+        // const { pageNum } = currentPagination[listingType];
+        const { pageNum } =
+          currentPagination.get(listingType as ListingType) ??
+          defaultPaginationInfo;
         const newListings: Listing[] =
           (await innerApi.ninetyNine.getListings.query({
             listingType,

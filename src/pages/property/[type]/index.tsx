@@ -3,7 +3,11 @@ import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 
 import { Listing, ListingType, ListingTypes } from "@/data/clients/ninetyNine";
-import { useNinetyNineStore } from "@/data/stores";
+import {
+  defaultPaginationInfo,
+  PaginationInfo,
+  useNinetyNineStore,
+} from "@/data/stores";
 
 import { Layout, Property, Provider } from "@/components";
 
@@ -24,27 +28,35 @@ const PropertyTypePage = () => {
     (ListingTypes.includes(paramType) && !!paramType.length) ?? false;
 
   const listingType: ListingType = paramType;
+
   const listings: Listing[] =
     useNinetyNineStore.use.listings().get(listingType) ?? [];
+  const pagination: PaginationInfo =
+    useNinetyNineStore.use.pagination().get(listingType) ??
+    defaultPaginationInfo;
+
   const updateListings = useNinetyNineStore.use.updateListings();
-  const getMoreListings = useNinetyNineStore.use.getMoreListings();
 
-  const { isFetching: isLoading } = api.ninetyNine.getListings.useQuery(
-    {
-      listingType,
-    },
-    {
-      enabled: !listings.length && isValidType,
-      onSuccess(data) {
-        if (!data.length) return;
-        updateListings(listingType, data as Listing[]);
+  const { isFetching: isLoading, refetch } =
+    api.ninetyNine.getListings.useQuery(
+      {
+        listingType,
+        pageNum: pagination.pageNum,
+        pageSize: pagination.pageSize,
       },
-    }
-  );
+      {
+        enabled: !listings.length && isValidType,
+        onSuccess(data) {
+          if (!data.length) return;
+          updateListings(listingType, data as Listing[]);
+          logger("index.tsx line 46", { pagination });
+        },
+      }
+    );
 
-  const handleLoadMoreListings = (listingType: ListingType) => {
+  const handleLoadMoreListings = () => {
     if (isLoading) return;
-    getMoreListings(listingType);
+    refetch();
   };
 
   logger("index.tsx line 49", { location });
@@ -62,7 +74,7 @@ const PropertyTypePage = () => {
             mt={20}
           >
             <Button
-              onClick={() => handleLoadMoreListings(listingType)}
+              onClick={handleLoadMoreListings}
               loading={isLoading}
               variant="gradient"
               gradient={{
