@@ -80,3 +80,8 @@ enum PropertyType {
   RENT
   SALE
 }
+
+model Neighbourhood {
+  name     String @unique
+  assetUrl String
+}
