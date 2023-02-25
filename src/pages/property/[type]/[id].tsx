@@ -127,6 +127,36 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
   const PRIMARY_COL_HEIGHT = 300;
   const SECONDARY_COL_HEIGHT = PRIMARY_COL_HEIGHT / 2 - theme.spacing.md / 2;
 
+  const details: {
+    label: string;
+    attribute: string;
+  }[] = [
+    {
+      label: `Price/sqft`,
+      attribute: `${listing?.attributes?.area_ppsf_formatted ?? "$-.-- psf"}`,
+    },
+    {
+      label: `Built year`,
+      attribute: `${listing?.attributes?.completed_at ?? "----"}`,
+    },
+    {
+      label: `No. of Bedrooms`,
+      attribute: `${listing?.attributes?.bedrooms ?? "--"}`,
+    },
+    {
+      label: `Tenure`,
+      attribute: `${listing?.attributes?.tenure ?? "--"}`,
+    },
+    {
+      label: `Property type`,
+      attribute: `${listing?.sub_category_formatted ?? "--"}`,
+    },
+    {
+      label: `Last updated`,
+      attribute: `${listing?.date_formatted ?? "--"}`,
+    },
+  ];
+
   return (
     <Layout.Base
       layoutStylesOverwrite={{
@@ -197,7 +227,7 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
                 wordBreak: "break-word",
               }}
             >
-              {listing?.sub_category_formatted}
+              {listing?.attributes?.bedrooms_formatted}
               &nbsp;in&nbsp;{listing?.address_name}
             </Title>
             <Title
@@ -208,6 +238,34 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
               {PriceListingTypes[listing?.listing_type ?? ListingTypes[0]]}
             </Title>
           </Group>
+
+          <SimpleGrid
+            cols={2}
+            spacing="xl"
+            breakpoints={[
+              { maxWidth: "md", cols: 2, spacing: "lg" },
+              { maxWidth: "xs", cols: 1, spacing: "sm" },
+            ]}
+          >
+            {details.map(({ label, attribute }) => (
+              <Group
+                position="apart"
+                key={`detail-${label}`}
+              >
+                <Text
+                  component="p"
+                  weight={700}
+                  py={0}
+                  sx={{
+                    lineHeight: 0,
+                  }}
+                >
+                  {label}
+                </Text>
+                <Text>{attribute}</Text>
+              </Group>
+            ))}
+          </SimpleGrid>
 
           {listing && (
             <Group position="apart">

@@ -35,6 +35,7 @@ export type Listing = {
   address_name: string;
   main_category: ListingCategory;
   sub_category_formatted: string;
+  date_formatted: string;
   attributes: Record<string, string | number>;
   tags: string[];
   cluster_mappings: Record<string, string[]>;
