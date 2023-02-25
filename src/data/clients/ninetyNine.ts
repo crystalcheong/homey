@@ -5,6 +5,9 @@ const Endpoint = `https://www.99.co/api`;
 
 const Routes: Record<string, string> = {
   listings: `/v10/web/search/listings`,
+  cluster: `/v1/web/clusters/:clusterId/general`,
+  postal: `/v1/web/dashboard/listing-util/address`,
+  neighbourhood: `/v1/web/neighbourhoods/:name/places-of-interest`,
 };
 
 export const ListingTypes = ["rent", "sale"];
@@ -12,6 +15,18 @@ export type ListingType = (typeof ListingTypes)[number];
 
 export const ListingCategories = ["HDB", "Condo"];
 export type ListingCategory = (typeof ListingCategories)[number];
+
+export type ListingPhoto = {
+  id: string;
+  category: string;
+  url: string;
+};
+
+export type Neighbourhood = {
+  categories: {
+    name: string;
+  }[];
+};
 
 export type Listing = {
   id: string;
@@ -26,6 +41,18 @@ export type Listing = {
   enquiry_flags: Record<string, boolean>;
   user: Record<string, string>;
   enquiry_options: Record<string, string>[];
+  photos: ListingPhoto[];
+  location: {
+    coordinates: Record<string, number>;
+    district: string;
+  };
+};
+
+export type Cluster = {
+  title: string;
+  subtitle: string;
+  description: string;
+  tenure: string;
 };
 
 export class NinetyNine {
@@ -34,6 +61,46 @@ export class NinetyNine {
   constructor() {
     this.http = new HTTP(Endpoint, Routes);
   }
+
+  // getPostalInfo = async (postalCode = 0) => {
+  //   const postalItems: any[] = [];
+  //   const params = {
+  //     property_segment: "residential",
+  //     query: postalCode.toString(),
+  //   };
+  //   const url = this.http.path("postal", {}, params);
+
+  //   try {
+  //     const response = await this.http.get({ url });
+  //     if (!response.ok) return postalItems;
+  //     const result = await response.json();
+  //     const postalData = result?.data ?? [];
+  //     postalItems.push(...postalData);
+  //   } catch (error) {
+  //     console.error("NinetyNine/getPostalInfo", url, error);
+  //   }
+
+  //   logger("NinetyNine/getPostalInfo", { postalItems: postalItems.length });
+  //   return postalItems;
+  // };
+
+  // getMRTs = async () => {
+  //   const mrtList: any[] = [];
+  //   const url = new URL(`https://www.99.co/-/v3/all-mrts`);
+
+  //   try {
+  //     const response = await this.http.get({ url });
+  //     if (!response.ok) return mrtList;
+  //     const result = await response.json();
+  //     const mrtData = result?.data ?? [];
+  //     mrtList.push(...mrtData);
+  //   } catch (error) {
+  //     console.error("NinetyNine/getMRTs", url, error);
+  //   }
+
+  //   logger("NinetyNine/getMRTs", { mrtList: mrtList.length });
+  //   return mrtList;
+  // };
 
   getListings = async (
     listingType: ListingType = ListingTypes[0],
@@ -103,5 +170,35 @@ export class NinetyNine {
     logger("NinetyNine/getClusterListing/listingsData", listingsData);
 
     return listing;
+  };
+
+  getCluster = async (clusterId: string) => {
+    let cluster: Cluster | null = null;
+    const url = this.http.path("listings", {
+      clusterId,
+    });
+    const response = await this.http.get({ url });
+    if (!response.ok) return cluster;
+    const result = await response.json();
+
+    cluster = result?.data ?? null;
+    logger("NinetyNine/getCluster", cluster);
+
+    return cluster;
+  };
+
+  getNeighbourhood = async (name: string) => {
+    let neighbourhood: Neighbourhood | null = null;
+    const url = this.http.path("neighbourhood", {
+      name,
+    });
+    const response = await this.http.get({ url });
+    if (!response.ok) return neighbourhood;
+    const result = await response.json();
+
+    neighbourhood = result?.data ?? null;
+    logger("NinetyNine/getNeighbourhood", neighbourhood);
+
+    return neighbourhood;
   };
 }

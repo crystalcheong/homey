@@ -12,7 +12,7 @@ import {
 } from "@mantine/core";
 import { DatePicker } from "@mantine/dates";
 import { useRouter } from "next/router";
-import React, { ChangeEvent, useState } from "react";
+import { ChangeEvent, useState } from "react";
 import { TbCalendar, TbSearch } from "react-icons/tb";
 
 import { ListingType, ListingTypes } from "@/data/clients/ninetyNine";
@@ -189,6 +189,7 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
             root: {
               boxShadow: theme.shadows.md,
               borderRadius: theme.radius.lg,
+              padding: theme.spacing.sm,
               ...(!isMobile && {
                 padding: theme.spacing.md,
                 maxWidth: theme.breakpoints.xs,

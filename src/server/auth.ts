@@ -57,28 +57,27 @@ export const authOptions: NextAuthOptions = {
   },
 
   callbacks: {
-    // jwt: async ({ token, user }) => {
-    //   // logger("auth.ts line 65", { token, user });
+    jwt: async ({ token, user }) => {
+      logger("auth.ts line 53", { token, user });
+      if (user) {
+        token.userId = user.id;
+        token.email = user.email;
+      }
 
-    //   // if (user) {
-    //   //   token.userId = user.id;
-    //   //   token.email = user.email;
-    //   // }
-
-    //   return token;
-    // },
-    session: ({ session, token }) => {
-      // if (session.user && user) {
-      //   session.user.id = user.id;
-      //   // session.user.role = user.role; <-- put other properties on the session here
-      // }
+      return token;
+    },
+    session: ({ session, user, token }) => {
+      if (session.user && user) {
+        session.user.id = user.id;
+        // session.user.role = user.role; <-- put other properties on the session here
+      }
       if (token.sub) {
         session.user = {
           ...session.user,
           id: token.sub,
         };
       }
-      // logger("auth.ts line 53", { session, user, token });
+      logger("auth.ts line 53", { session, user, token });
       return session;
     },
   },
@@ -95,19 +94,23 @@ export const authOptions: NextAuthOptions = {
     }),
 
     CredentialsProvider({
+      // The name to display on the sign in form (e.g. "Sign in with...")
       name: "Credentials",
+      // `credentials` is used to generate a form on the sign in page.
+      // You can specify which fields should be submitted, by adding keys to the `credentials` object.
+      // e.g. domain, username, password, 2FA token, etc.
+      // You can pass any HTML attribute to the <input> tag through the object.
       credentials: {
         name: { label: "Name", type: "text", placeholder: "Name" },
         email: { label: "Email", type: "text", placeholder: "Email" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials, req) {
-        const user =
-          (await prisma.user.findFirst({
-            where: {
-              email: credentials?.email ?? "",
-            },
-          })) ?? null;
+        const user = await prisma.user.findFirst({
+          where: {
+            email: credentials?.email ?? "",
+          },
+        });
 
         if (user) {
           const sessionToken = randomUUID();
@@ -126,6 +129,19 @@ export const authOptions: NextAuthOptions = {
         });
 
         return user;
+        // // Add logic here to look up the user from the credentials supplied
+        // const user = { id: "1", name: "J Smith", email: "jsmith@example.com" }
+
+        // if (user) {
+        //   logger('auth.ts line 84', { user })
+        //   // Any object returned will be saved in `user` property of the JWT
+        //   return user
+        // } else {
+        //   // If you return null then an error will be displayed advising the user to check their details.
+        //   return null
+
+        //   // You can also Reject this callback with an Error thus the user will be sent to the error page with the error message as a query parameter
+        // }
       },
     }),
 

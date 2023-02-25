@@ -24,12 +24,12 @@ import { IconType } from "react-icons";
 import {
   TbBook,
   TbBookmarks,
+  TbBuildingWarehouse,
   TbChartPie3,
   TbChevronDown,
   TbChevronLeft,
   TbChevronRight,
   TbChevronUp,
-  TbCode,
   TbCoin,
   TbFingerprint,
   TbLogout,
@@ -74,13 +74,13 @@ const NavRoutes: (Route & {
     href: `/property/${ListingTypes[1]}`,
   },
   {
-    label: "Feature",
+    label: "Explore",
     href: `#`,
     nodes: [
       {
-        icon: TbCode,
-        label: "Open source",
-        href: "",
+        icon: TbBuildingWarehouse,
+        label: "Neighbourhoods",
+        href: "/explore/neighbourhoods",
         description: "This Pokémon’s cry is very loud and distracting",
       },
       {
@@ -268,7 +268,6 @@ export function HeaderMegaMenu() {
                     }}
                   >
                     {label}
-
                     {hasNodes && (
                       <TbChevronDown
                         size={16}
@@ -447,13 +446,32 @@ export function HeaderMegaMenu() {
           onClose={closeDrawer}
           size={isMobile ? "100%" : "md"}
           padding="md"
-          title={<Logo hideBrand />}
+          title={
+            <Group position="apart">
+              <Logo hideBrand />
+
+              <ThemeToggle />
+            </Group>
+          }
           zIndex={1000000}
+          styles={{
+            header: {
+              marginBottom: theme.spacing.xs,
+              marginTop: theme.spacing.xs,
+            },
+            title: {
+              width: "100%",
+            },
+          }}
         >
           <ScrollArea
             viewportRef={drawerViewport}
             type="never"
-            sx={{ height: "calc(80vh - 60px)" }}
+            sx={{
+              height: "calc(80vh - 60px)",
+              paddingLeft: theme.spacing.md,
+              paddingRight: theme.spacing.md,
+            }}
             mx="-md"
           >
             <Divider
@@ -491,19 +509,13 @@ export function HeaderMegaMenu() {
                       variant={isActiveRoute ? "light" : "subtle"}
                       styles={{
                         root: {
-                          ...(isTablet && {
-                            height: 42,
-                            display: "flex",
-                            alignItems: "center",
-                            width: "100%",
-                            paddingLeft: theme.spacing.md,
-                            paddingRight: theme.spacing.md,
-                          }),
+                          height: 42,
+                          display: "flex",
+                          alignItems: "center",
+                          width: "100%",
                         },
                         inner: {
-                          ...(!isActiveRoute && {
-                            color: isDark ? theme.white : theme.black,
-                          }),
+                          color: isDark ? theme.white : theme.black,
                         },
                       }}
                     >
@@ -546,19 +558,13 @@ export function HeaderMegaMenu() {
                     variant={isActiveRoute ? "light" : "subtle"}
                     styles={{
                       root: {
-                        ...(isTablet && {
-                          height: 42,
-                          display: "flex",
-                          alignItems: "center",
-                          width: "100%",
-                          paddingLeft: theme.spacing.md,
-                          paddingRight: theme.spacing.md,
-                        }),
+                        height: 42,
+                        display: "flex",
+                        alignItems: "center",
+                        width: "100%",
                       },
                       inner: {
-                        ...(!isActiveRoute && {
-                          color: isDark ? theme.white : theme.black,
-                        }),
+                        color: isDark ? theme.white : theme.black,
                       },
                     }}
                   >

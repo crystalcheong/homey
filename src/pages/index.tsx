@@ -46,9 +46,7 @@ const IndexPage: NextPage = () => {
       layoutStylesOverwrite={{
         display: "flex",
         flexDirection: "column",
-        "&>*": {
-          marginBottom: "10vh",
-        },
+        gap: "10vh",
       }}
     >
       <Hero

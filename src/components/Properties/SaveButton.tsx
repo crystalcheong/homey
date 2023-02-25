@@ -1,4 +1,10 @@
-import { ActionIcon, useMantineTheme } from "@mantine/core";
+import {
+  ActionIcon,
+  ActionIconProps,
+  Button,
+  ButtonProps,
+  useMantineTheme,
+} from "@mantine/core";
 import { cleanNotifications, showNotification } from "@mantine/notifications";
 import { PropertyType, User } from "@prisma/client";
 import { useRouter } from "next/router";
@@ -14,9 +20,18 @@ import { logger } from "@/utils/debug";
 
 interface Props {
   listing: Listing;
+  showLabel?: boolean;
+
+  overwriteButtonProps?: ButtonProps;
+  overwriteActionIconProps?: ActionIconProps;
 }
 
-export const SaveButton = ({ listing }: Props) => {
+export const SaveButton = ({
+  listing,
+  showLabel = false,
+  overwriteButtonProps,
+  overwriteActionIconProps,
+}: Props) => {
   const { id: listingId, cluster_mappings, listing_type } = listing;
   const clusterId: string =
     cluster_mappings?.development?.[0] ?? cluster_mappings?.local?.[0] ?? "";
@@ -90,17 +105,36 @@ export const SaveButton = ({ listing }: Props) => {
     }
   };
 
+  const Icon = () => (
+    <TbBookmark
+      size={showLabel ? 16 : 25}
+      color={showLabel || isSaved ? theme.fn.primaryColor() : "#fff"}
+      fill={isSaved ? theme.colors.violet[5] : "none"}
+    />
+  );
+
   return (
     <Provider.RenderGuard renderIf={!!currentUser || !listing}>
-      <ActionIcon
-        onClick={handleOnSave}
-        disabled={!listing}
-      >
-        <TbBookmark
-          size={40}
-          fill={isSaved ? theme.colors.violet[5] : "none"}
-        />
-      </ActionIcon>
+      {showLabel ? (
+        <Button
+          compact
+          variant="outline"
+          onClick={handleOnSave}
+          disabled={!listing}
+          leftIcon={<Icon />}
+          {...overwriteButtonProps}
+        >
+          {isSaved ? "Saved" : "Save"}
+        </Button>
+      ) : (
+        <ActionIcon
+          onClick={handleOnSave}
+          disabled={!listing}
+          {...overwriteActionIconProps}
+        >
+          <Icon />
+        </ActionIcon>
+      )}
     </Provider.RenderGuard>
   );
 };

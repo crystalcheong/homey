@@ -1,5 +1,4 @@
 import {
-  Button,
   Card as MCard,
   CardProps,
   Group,
@@ -14,6 +13,7 @@ import { FaPhoneAlt, FaWhatsapp } from "react-icons/fa";
 
 import { Listing, ListingType, ListingTypes } from "@/data/clients/ninetyNine";
 
+import EnquiryButtonGroup from "@/components/Properties/EnquiryButtonGroup";
 import SaveButton from "@/components/Properties/SaveButton";
 
 export const EnquiryTypes: string[] = ["call", "whatsapp"];
@@ -29,9 +29,9 @@ interface Props extends Partial<CardProps> {
   allowSaveListing?: boolean;
 }
 
-const PriceTypes: string[] = ["/month", ""];
+export const PriceTypes: string[] = ["/month", ""];
 export type PriceType = (typeof PriceTypes)[number];
-const PriceListingTypes: {
+export const PriceListingTypes: {
   [key in ListingType]: PriceType;
 } = ListingTypes.reduce(
   (searchMap = {}, type: string, idx: number) => ({
@@ -40,17 +40,6 @@ const PriceListingTypes: {
   }),
   {}
 );
-
-export const getEnquiryLinks = (
-  user: Listing["user"],
-  listingRelativeLink: string
-) =>
-  user?.phone
-    ? {
-        call: `tel:${user?.phone}`,
-        whatsapp: `https://api.whatsapp.com/send?phone=${user?.phone}&text=Hi ${user?.name}! I would like to check the availability of the following listing. ${listingRelativeLink}`,
-      }
-    : {};
 
 export const Card = ({
   listing,
@@ -67,13 +56,11 @@ export const Card = ({
     main_category,
     address_name,
     cluster_mappings,
-    // enquiry_flags,
-    user,
   } = listing;
 
   const isPlaceholder = !Object.keys(listing).length;
   const isSkeleton: boolean = isLoading || isPlaceholder;
-  const strPrice = `${attributes?.price_formatted ?? `$-.--`} SGD ${
+  const strPrice = `${attributes?.price_formatted ?? `$-.--`} ${
     PriceListingTypes[listing_type]
   }`;
 
@@ -89,11 +76,6 @@ export const Card = ({
       withBorder
       component={Link}
       href={listingRelativeLink}
-      // onClick={() => {
-      //   router.push({
-      //     pathname: `/property/${listing_type}/${id}?clusterId=${clusterId}`,
-      //   }, undefined, { scroll: true })
-      // }}
       {...rest}
     >
       <MCard.Section>
@@ -163,29 +145,12 @@ export const Card = ({
           zIndex: 100,
         }}
       >
-        {Object.entries(getEnquiryLinks(user, listingRelativeLink)).map(
-          ([k, v]) => {
-            const EnquiryIcon = EnquiryIcons[k];
-            return (
-              <Button
-                key={k}
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.open(v, "_blank");
-                }}
-                compact
-                variant="light"
-                leftIcon={<EnquiryIcon />}
-                sx={{
-                  textTransform: "capitalize",
-                }}
-              >
-                {k}
-              </Button>
-            );
-          }
-        )}
-
+        <EnquiryButtonGroup
+          listing={listing}
+          overwriteButtonProps={{
+            compact: true,
+          }}
+        />
         {allowSaveListing && <SaveButton listing={listing} />}
       </Group>
     </MCard>

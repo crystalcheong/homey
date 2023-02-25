@@ -129,9 +129,8 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
   const isDark: boolean = theme.colorScheme === "dark";
 
   const isAuth = !!sessionData;
-  const paramAuth: AuthType = AuthTypes.filter(
-    (t) => t === (auth ?? "").toString()
-  )[0];
+  const paramAuth: AuthType =
+    AuthTypes.filter((t) => t === (auth ?? "").toString())?.[0] ?? "";
   const isValidAuthType: boolean = (!!paramAuth && !!paramAuth.length) ?? false;
   const isNewUser: boolean = paramAuth === AuthTypes[1];
 
@@ -156,7 +155,6 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
   const { start: revertToInitialState } = useTimeout(() => {
     setFormState(InitalFormState);
     setErrorState(InitalFormState);
-    setAuthErrorState(undefined);
     setAuthStep(0);
     setIsLoadingProvider("");
   }, 1000);
@@ -270,6 +268,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
                 }
               },
               onError({ shape }) {
+                logger("index.tsx line 299", { shape });
                 setAuthErrorState(shape as DefaultErrorShape);
                 revertToInitialState();
               },
@@ -291,12 +290,13 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
                     name: data.name,
                     email: data.email,
                     password: formState.password,
-                    callbackUrl: "/account/signUp",
+                    callbackUrl: "/",
                   });
                   return;
                 }
               },
               onError({ shape }) {
+                logger("index.tsx line 299", { shape });
                 setAuthErrorState(shape as DefaultErrorShape);
                 revertToInitialState();
               },
@@ -319,9 +319,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
 
   //#endregion  //*======== Pre-Render Checks ===========
   useEffect(() => {
-    revertToInitialState();
-
-    if (isAuth) {
+    if (isAuth && isValidAuthType) {
       router.push(
         {
           pathname: `/account`,
@@ -332,7 +330,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuth, paramAuth]);
+  }, [isAuth, paramAuth, isValidAuthType]);
 
   //#endregion  //*======== Pre-Render Checks ===========
 
@@ -548,8 +546,8 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
             >
               <Text color="dimmed">
                 {authErrorState.code !== TRPC_ERROR_CODES_BY_KEY.NOT_FOUND
-                  ? "Unable to authenticate with the given credentials"
-                  : authErrorState.message}
+                  ? authErrorState.message
+                  : "Unable to authenticate with the given credentials"}
               </Text>
             </Alert>
           )}

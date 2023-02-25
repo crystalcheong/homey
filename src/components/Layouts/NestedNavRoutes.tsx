@@ -7,6 +7,7 @@ import {
   UnstyledButtonProps,
   useMantineTheme,
 } from "@mantine/core";
+import Link from "next/link";
 
 import { Route } from "@/components/Layouts/Navbars/Base";
 
@@ -20,6 +21,8 @@ const NestedNavRoutes = ({ routes, ...rest }: Props) => {
       {routes.map((item) => (
         <UnstyledButton
           key={item.label}
+          component={Link}
+          href={item.href}
           sx={{
             width: "100%",
             padding: `${theme.spacing.xs}px ${theme.spacing.md}px`,

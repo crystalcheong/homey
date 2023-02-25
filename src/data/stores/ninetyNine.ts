@@ -12,6 +12,7 @@ interface State {
   currentListing: Listing | null;
   savedListings: Listing[];
   listings: Map<ListingType, Listing[]>;
+  neighbourhoods: Record<string, string>;
   pagination: Record<
     ListingType,
     {
@@ -34,6 +35,44 @@ interface Mutators {
 interface Store extends State, Mutators {}
 
 //#endregion  //*======== Universal Functions ===========
+
+export const getPredefinedNeighbourhoods = (): Record<string, string> => {
+  const neighbourhoodNames: string[] = [
+    "novena",
+    "	orchard",
+    "pasir-ris",
+    "paya-lebar-airbase",
+    "pioneer",
+    "punggol",
+    "queenstown",
+    "river-valley",
+    "seletar",
+    "sembawang",
+    "sengkang",
+    "sentosa",
+    "serangoon",
+    "tampines",
+    "tanglin",
+    "tanjong-pagar",
+    "tiong-bahru",
+    "toa-payoh",
+    "tuas",
+    "woodlands",
+    "yishun",
+  ];
+
+  const baseUrl = `https://www.99.co/spa-assets/images/neighbourhoods-landing-page/thumb`;
+
+  const neighbourhoods: Record<string, string> = neighbourhoodNames.reduce(
+    (neighbourhoodMap: Record<string, string> = {}, name: string) => {
+      neighbourhoodMap[name] = `${baseUrl}/${name}.jpg`;
+      return neighbourhoodMap;
+    },
+    {}
+  );
+
+  return neighbourhoods;
+};
 
 const updateListings = (
   listingType: ListingType,
@@ -77,6 +116,7 @@ const store = create<Store>()(
     (set, get) => ({
       currentListing: null,
       savedListings: [],
+      neighbourhoods: getPredefinedNeighbourhoods(),
       listings: new Map<ListingType, Listing[]>(
         ListingTypes.map((type) => [type as ListingType, [] as Listing[]])
       ),

@@ -6,6 +6,7 @@ import {
   SimpleGridProps,
   Text,
   Title,
+  useMantineTheme,
 } from "@mantine/core";
 import Link from "next/link";
 import { ReactNode } from "react";
@@ -45,6 +46,8 @@ export const Grid = ({
   emptyFallback,
   ...rest
 }: Props) => {
+  const theme = useMantineTheme();
+
   const hasNoListings = !listings.length;
   const hasMaxViewable: boolean =
     maxViewableCount > 0 && maxViewableCount <= listings.length;
@@ -81,7 +84,9 @@ export const Grid = ({
               component={Link}
               href={`/property/${listingType}`}
               size="sm"
-              color="dimmed"
+              // color="dimmed"
+              fw={500}
+              color={theme.fn.primaryColor()}
             >
               See More
             </Text>

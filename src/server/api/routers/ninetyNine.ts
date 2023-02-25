@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { NinetyNine } from "@/data/clients/ninetyNine";
+import { getPredefinedNeighbourhoods } from "@/data/stores/ninetyNine";
 
 import { createTRPCRouter, publicProcedure } from "../trpc";
 
@@ -24,6 +25,14 @@ export const ninetyNineRouter = createTRPCRouter({
         })
     ),
 
+  getCluster: publicProcedure
+    .input(
+      z.object({
+        clusterId: z.string().trim().min(1),
+      })
+    )
+    .query(async ({ input }) => await client.getCluster(input.clusterId)),
+
   getClusterListing: publicProcedure
     .input(
       z.object({
@@ -40,4 +49,42 @@ export const ninetyNineRouter = createTRPCRouter({
           input.clusterId
         )
     ),
+
+  // getMRTs: publicProcedure.query(async () => await client.getMRTs()),
+
+  // getPostalInfo: publicProcedure
+  //   .input(
+  //     z.object({
+  //       postalCode: z.number().optional(),
+  //     })
+  //   )
+  //   .query(async ({ input }) => await client.getPostalInfo(input.postalCode)),
+
+  getNeighbourhoods: publicProcedure.query(async ({ ctx }) => {
+    const neighbourhoods = getPredefinedNeighbourhoods();
+    await Object.entries(neighbourhoods).forEach(async ([name, assetUrl]) => {
+      await ctx.prisma.neighbourhood.upsert({
+        where: {
+          name: name,
+        },
+        create: {
+          name,
+          assetUrl,
+        },
+        update: {
+          assetUrl,
+        },
+      });
+    });
+
+    return neighbourhoods;
+  }),
+
+  getNeighbourhood: publicProcedure
+    .input(
+      z.object({
+        name: z.string().trim().min(1),
+      })
+    )
+    .query(async ({ input }) => await client.getNeighbourhood(input.name)),
 });
