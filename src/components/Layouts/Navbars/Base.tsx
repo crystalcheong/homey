@@ -22,19 +22,13 @@ import { signOut, useSession } from "next-auth/react";
 import { Fragment, useRef, useState } from "react";
 import { IconType } from "react-icons";
 import {
-  TbBook,
   TbBookmarks,
   TbBuildingWarehouse,
-  TbChartPie3,
   TbChevronDown,
   TbChevronLeft,
   TbChevronRight,
   TbChevronUp,
-  TbCoin,
-  TbFingerprint,
   TbLogout,
-  TbMessage,
-  TbNotification,
   TbSettings,
 } from "react-icons/tb";
 
@@ -83,42 +77,6 @@ const NavRoutes: (Route & {
         href: "/explore/neighbourhoods",
         description: "This Pokémon’s cry is very loud and distracting",
       },
-      {
-        icon: TbCoin,
-        label: "Free for everyone",
-        href: "",
-        description: "The fluid of Smeargle’s tail secretions changes",
-      },
-      {
-        icon: TbBook,
-        label: "Documentation",
-        href: "",
-        description: "Yanma is capable of seeing 360 degrees without",
-      },
-    ],
-  },
-  {
-    label: "Feature 2",
-    href: `#`,
-    nodes: [
-      {
-        icon: TbFingerprint,
-        label: "Security",
-        href: "",
-        description: "The shell’s rounded shape and the grooves on its.",
-      },
-      {
-        icon: TbChartPie3,
-        label: "Analytics",
-        href: "",
-        description: "This Pokémon uses its flying ability to quickly chase",
-      },
-      {
-        icon: TbNotification,
-        label: "Notifications",
-        href: "",
-        description: "Combusken battles with the intensely hot flames it spews",
-      },
     ],
   },
 ];
@@ -131,10 +89,6 @@ export const AccountMenulist: (Omit<Route, "href"> & {
     label: "Saved listings",
     icon: TbBookmarks,
     href: `/account/saved`,
-  },
-  {
-    label: "Your comments",
-    icon: TbMessage,
   },
   {
     label: "Account settings",

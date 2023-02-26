@@ -1,5 +1,14 @@
-import { Box, BoxProps, Text, Title } from "@mantine/core";
+import {
+  Box,
+  BoxProps,
+  Button,
+  Text,
+  Title,
+  useMantineTheme,
+} from "@mantine/core";
+import { useRouter } from "next/router";
 import React, { ReactNode } from "react";
+import { TbArrowNarrowLeft } from "react-icons/tb";
 
 interface Props extends BoxProps {
   svgNode: ReactNode;
@@ -14,9 +23,19 @@ const UnknownState = ({
   children,
   ...rest
 }: Props) => {
+  const router = useRouter();
+  const theme = useMantineTheme();
+
   return (
     <Box
       component="article"
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        gap: theme.spacing.xs,
+        placeContent: "center",
+        placeItems: "center",
+      }}
       {...rest}
     >
       <Box
@@ -38,7 +57,6 @@ const UnknownState = ({
       <Title
         order={2}
         size="h5"
-        pt="md"
         tt="capitalize"
         align="center"
       >
@@ -48,6 +66,7 @@ const UnknownState = ({
       <Text
         component="p"
         size="sm"
+        m={0}
         color="dimmed"
         align="center"
         fw={500}
@@ -55,6 +74,14 @@ const UnknownState = ({
         {subtitle}
       </Text>
 
+      <Button
+        variant="light"
+        onClick={() => router.back()}
+        leftIcon={<TbArrowNarrowLeft />}
+        mt={8}
+      >
+        Go back
+      </Button>
       {children}
     </Box>
   );

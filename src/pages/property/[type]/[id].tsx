@@ -24,6 +24,7 @@ import { Listing, ListingTypes } from "@/data/clients/ninetyNine";
 import { useNinetyNineStore } from "@/data/stores";
 
 import { Layout, Provider } from "@/components";
+import UnknownState from "@/components/Layouts/UnknownState";
 import {
   EnquiryButtonGroup,
   PriceListingTypes,
@@ -39,6 +40,8 @@ import { api, getBaseUrl } from "@/utils/api";
 import { logger } from "@/utils/debug";
 import { useIsMobile } from "@/utils/dom";
 import { getLimitedArray } from "@/utils/helpers";
+
+import EmptyListing from "~/assets/images/empty-listing.svg";
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const { id, type, clusterId } = context.query;
@@ -167,6 +170,13 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
     >
       <Provider.RenderGuard
         renderIf={isValidProperty && isMounted && !!listing}
+        fallbackComponent={
+          <UnknownState
+            svgNode={<EmptyListing />}
+            title="Listing not found"
+            subtitle="Woops, the listing has vanished"
+          />
+        }
       >
         <Carousel
           withIndicators
