@@ -17,7 +17,6 @@ import {
 } from "@mantine/core";
 import { useTimeout } from "@mantine/hooks";
 import { DefaultErrorShape } from "@trpc/server";
-import { TRPC_ERROR_CODES_BY_KEY } from "@trpc/server/rpc";
 import { InferGetServerSidePropsType, NextPage } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -545,11 +544,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
               title={`Sign ${isNewUser ? "Up" : "In"} Failed`}
               color={isDark ? "red" : "red.7"}
             >
-              <Text color="dimmed">
-                {authErrorState.code === TRPC_ERROR_CODES_BY_KEY.NOT_FOUND
-                  ? authErrorState.message
-                  : "Unable to authenticate with the given credentials"}
-              </Text>
+              <Text color="dimmed">{authErrorState.message}</Text>
             </Alert>
           )}
 

@@ -1,5 +1,6 @@
 import { PropertyType } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
+import argon2 from "argon2";
 import { z } from "zod";
 
 import { logger } from "@/utils/debug";
@@ -7,20 +8,6 @@ import { logger } from "@/utils/debug";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 export const accountRouter = createTRPCRouter({
-  hello: publicProcedure
-    .input(z.object({ text: z.string() }))
-    .query(({ input }) => {
-      return {
-        greeting: `Hello ${input.text}`,
-      };
-    }),
-
-  getSecretMessage: protectedProcedure.query(() => {
-    return "you can now see this secret message!";
-  }),
-
-  //#endregion  //*======== Account ===========
-
   getAll: publicProcedure.query(
     async ({ ctx }) => await ctx.prisma.user.findMany()
   ),
@@ -75,6 +62,19 @@ export const accountRouter = createTRPCRouter({
         });
       }
 
+      if (user.password) {
+        const passwordsMatched: boolean = await argon2.verify(
+          user.password ?? "",
+          input.password
+        );
+        if (!passwordsMatched) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "Invalid account credentials.",
+          });
+        }
+      }
+
       return user;
     }),
 
@@ -100,10 +100,13 @@ export const accountRouter = createTRPCRouter({
         });
       }
 
+      const hashedPassword: string = await argon2.hash(input.password);
+
       return ctx.prisma.user.create({
         data: {
           name: input.name,
           email: input.email,
+          password: hashedPassword,
         },
       });
     }),
@@ -283,124 +286,4 @@ export const accountRouter = createTRPCRouter({
         },
       })
     ),
-
-  // signIn: publicProcedure
-  //   .input(
-  //     z.object({
-  //       email: z.string().trim().min(1, "Email address can't be empty"),
-  //       password: z.string().trim().min(1, "Password can't be empty"),
-  //     })
-  //   )
-  //   .mutation(async ({ ctx, input }) => {
-  //     const user = await ctx.prisma.user.findFirst({
-  //       where: {
-  //         email: input.email,
-  //       },
-  //     });
-
-  //     if (!user) {
-  //       throw new TRPCError({
-  //         code: "NOT_FOUND",
-  //         message: "User does not exist.",
-  //       });
-  //     }
-
-  //     return user;
-  //   }),
-
-  // signUp: publicProcedure
-  //   .input(
-  //     z.object({
-  //       name: z.string().trim().min(1, "Name can't be empty"),
-  //       email: z.string().trim().min(1, "Email address can't be empty"),
-  //       password: z.string().trim().min(1, "Password can't be empty"),
-  //     })
-  //   )
-  //   .mutation(async ({ ctx, input }) => {
-  //     const exists = await ctx.prisma.user.findFirst({
-  //       where: {
-  //         email: input.email,
-  //       },
-  //     });
-
-  //     if (exists) {
-  //       throw new TRPCError({
-  //         code: "CONFLICT",
-  //         message: "User already exists.",
-  //       });
-  //     }
-
-  //     return ctx.prisma.user.create({
-  //       data: {
-  //         name: input.name,
-  //         email: input.email,
-  //       },
-  //     });
-  //   }),
-
-  updateSaved: protectedProcedure
-    .input(
-      z.object({
-        userId: z.string().trim().min(1, "User ID can't be empty"),
-        listingId: z.string().trim().min(1, "Listing ID can't be empty"),
-        clusterId: z.string().trim().min(1, "Cluster ID can't be empty"),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      const [user, property] = await ctx.prisma.$transaction([
-        ctx.prisma.user.findFirst({
-          where: {
-            id: input.userId,
-          },
-        }),
-        ctx.prisma.property.findFirst({
-          where: {
-            id: input.listingId,
-          },
-        }),
-      ]);
-
-      if (!user) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "User does not exist.",
-        });
-      } else if (!property) {
-        // CREATE Property(FK) AND UserSavedProperty
-        return await ctx.prisma.property.create({
-          data: {
-            id: input.listingId,
-            clusterId: input.clusterId,
-            userSaved: {
-              create: {
-                userId: input.userId,
-              },
-            },
-          },
-        });
-      }
-
-      return await ctx.prisma.userSavedProperty.create({
-        data: {
-          userId: input.userId,
-          propertyId: input.listingId,
-        },
-      });
-    }),
-
-  // getUserSaved: publicProcedure
-  //   .input(
-  //     z.object({
-  //       email: z.string().trim().min(1, "User ID can't be empty"),
-  //     })
-  //   )
-  //   .query(({ input, ctx }) => ctx.prisma.userSavedProperty.findMany({
-  //     where: {
-  //       User: {
-  //         email: input.email,
-  //       }
-  //     }
-  //   })),
-
-  //#endregion  //*======== Account ===========
 });

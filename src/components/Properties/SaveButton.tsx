@@ -44,7 +44,6 @@ export const SaveButton = ({
   const currentUser: User | null = useAccountStore.use.currentUser();
   const savedListings: SavedListing[] = useAccountStore.use.savedListings();
 
-  // const useAccountSaveProperty = api.account.updateSaved.useMutation();
   const useAccountSaveProperty = api.account.saveProperty.useMutation();
   const useAccountUnsaveProperty = api.account.unsaveProperty.useMutation();
 
