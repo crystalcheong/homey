@@ -12,18 +12,24 @@ export type PaginationInfo = {
   currentCount: number;
   pageSize: number;
   pageNum: number;
+  hasNext: boolean;
 };
 
 interface State {
   currentListing: Listing | null;
   savedListings: Listing[];
   listings: Map<ListingType, Listing[]>;
+  queryListings: Map<ListingType, Listing[]>;
   neighbourhoods: Record<string, string>;
   pagination: Map<ListingType, PaginationInfo>;
 }
 
 interface Mutators {
-  updateListings: (listingType: ListingType, newListings: Listing[]) => void;
+  updateListings: (
+    listingType: ListingType,
+    newListings: Listing[],
+    overwrite?: boolean
+  ) => void;
   getMoreListings: (listingType: ListingType) => void;
   getListing: (
     listingType: ListingType,
@@ -40,33 +46,63 @@ export const defaultPaginationInfo: PaginationInfo = {
   currentCount: 0,
   pageSize: 30,
   pageNum: 1,
+  hasNext: true,
 };
+export const neighbourhoodNames: string[] = [
+  "aljunied",
+  "ang-mo-kio",
+  "bedok",
+  "bishan",
+  "boon-lay",
+  "bugis",
+  "bukit-batok",
+  "bukit-merah",
+  "bukit-panjang",
+  "bukit-timah",
+  "cbd",
+  "changi",
+  "chinatown",
+  "choa-chu-kang",
+  "clarke-quay",
+  "clementi",
+  "clifford-pier",
+  // "geylang",
+  // "robertson-quay",
+  "holland",
+  "hougang",
+  "jurong-east",
+  "jurong-west",
+  "kallang",
+  "kranji",
+  "little-india",
+  "macritchie-reservoir",
+  "marine-parade",
+  "marsiling",
+  "newton",
+  "novena",
+  "orchard",
+  "pasir-ris",
+  "paya-lebar-airbase",
+  "pioneer",
+  "punggol",
+  "queenstown",
+  "river-valley",
+  "seletar",
+  "sembawang",
+  "sengkang",
+  "sentosa",
+  "serangoon",
+  "tampines",
+  "tanglin",
+  "tanjong-pagar",
+  "tiong-bahru",
+  "toa-payoh",
+  "tuas",
+  "woodlands",
+  "yishun",
+];
 
 export const getPredefinedNeighbourhoods = (): Record<string, string> => {
-  const neighbourhoodNames: string[] = [
-    "novena",
-    "	orchard",
-    "pasir-ris",
-    "paya-lebar-airbase",
-    "pioneer",
-    "punggol",
-    "queenstown",
-    "river-valley",
-    "seletar",
-    "sembawang",
-    "sengkang",
-    "sentosa",
-    "serangoon",
-    "tampines",
-    "tanglin",
-    "tanjong-pagar",
-    "tiong-bahru",
-    "toa-payoh",
-    "tuas",
-    "woodlands",
-    "yishun",
-  ];
-
   const baseUrl = `https://www.99.co/spa-assets/images/neighbourhoods-landing-page/thumb`;
 
   const neighbourhoods: Record<string, string> = neighbourhoodNames.reduce(
@@ -83,14 +119,16 @@ export const getPredefinedNeighbourhoods = (): Record<string, string> => {
 const updateListings = (
   listingType: ListingType,
   newListings: Listing[],
-  state: Store
+  state: Store,
+  isQuery?: boolean
 ): Partial<Store> => {
   //#endregion  //*======== Listings ===========
-  const currentListings = state.listings;
+  const listingsKey: keyof State = isQuery ? "queryListings" : "listings";
+  const currentListings = state[listingsKey];
   const updatedListings: Listing[] = getUniqueObjectList(
     (currentListings.get(listingType) ?? []).concat(newListings),
     "id"
-  );
+  ).sort(() => 0.5 - Math.random());
 
   currentListings.set(listingType, updatedListings);
   //#endregion  //*======== Listings ===========
@@ -100,21 +138,28 @@ const updateListings = (
   const { currentCount, pageNum, pageSize } =
     currentPagination.get(listingType) ?? defaultPaginationInfo;
   const updatedCurrentCount = (currentCount ?? 0) + updatedListings.length;
-  const updatePageNum = (pageNum ?? 0) + 1;
+  const updatedPageNum = (pageNum ?? 0) + 1;
+  const updatedHasNext = newListings.length >= pageSize;
+
   const updatedPaginationInfo = {
-    pageSize,
+    pageSize: pageSize,
     currentCount: updatedCurrentCount,
-    pageNum: updatePageNum,
+    pageNum: updatedPageNum,
+    hasNext: updatedHasNext,
   };
 
   currentPagination.set(listingType, updatedPaginationInfo);
   //#endregion  //*======== Pagination Info ===========
 
   const updatedState: Partial<Store> = {
-    listings: currentListings,
+    [listingsKey]: currentListings,
     pagination: currentPagination,
   };
-  logger("NinetyNine/updateListings", listingType, { updatedState });
+  logger("NinetyNine/updateListings", listingType, {
+    isQuery,
+    updatedState,
+    newListings: newListings.length,
+  });
   return updatedState;
 };
 
@@ -129,6 +174,9 @@ const store = create<Store>()(
       listings: new Map<ListingType, Listing[]>(
         ListingTypes.map((type) => [type as ListingType, [] as Listing[]])
       ),
+      queryListings: new Map<ListingType, Listing[]>(
+        ListingTypes.map((type) => [type as ListingType, [] as Listing[]])
+      ),
       pagination: new Map<ListingType, PaginationInfo>(
         ListingTypes.map((type) => [
           type as ListingType,
@@ -139,8 +187,10 @@ const store = create<Store>()(
           } as PaginationInfo,
         ])
       ),
-      updateListings: (listingType, newListings) =>
-        set((state) => updateListings(listingType, newListings, state)),
+      updateListings: (listingType, newListings, overwrite = false) =>
+        set((state) =>
+          updateListings(listingType, newListings, state, overwrite)
+        ),
       getMoreListings: async (listingType) => {
         // const currentPagination = get().pagination;
         const currentPagination = get().pagination;

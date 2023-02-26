@@ -8,6 +8,7 @@ import {
 import { cleanNotifications, showNotification } from "@mantine/notifications";
 import { PropertyType, User } from "@prisma/client";
 import { useRouter } from "next/router";
+import { IconBaseProps } from "react-icons";
 import { TbBookmark } from "react-icons/tb";
 
 import { Listing, ListingTypes } from "@/data/clients/ninetyNine";
@@ -22,6 +23,7 @@ interface Props {
   listing: Listing;
   showLabel?: boolean;
 
+  overwriteIconProps?: IconBaseProps;
   overwriteButtonProps?: ButtonProps;
   overwriteActionIconProps?: ActionIconProps;
 }
@@ -29,6 +31,7 @@ interface Props {
 export const SaveButton = ({
   listing,
   showLabel = false,
+  overwriteIconProps,
   overwriteButtonProps,
   overwriteActionIconProps,
 }: Props) => {
@@ -107,9 +110,10 @@ export const SaveButton = ({
 
   const Icon = () => (
     <TbBookmark
-      size={showLabel ? 16 : 25}
+      size={16}
       color={showLabel || isSaved ? theme.fn.primaryColor() : "#fff"}
       fill={isSaved ? theme.colors.violet[5] : "none"}
+      {...overwriteIconProps}
     />
   );
 

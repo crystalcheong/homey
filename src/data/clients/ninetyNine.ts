@@ -1,3 +1,5 @@
+import { PaginationInfo } from "@/data/stores";
+
 import { logger } from "@/utils/debug";
 import { HTTP } from "@/utils/http";
 
@@ -25,6 +27,12 @@ export type ListingPhoto = {
 export type Neighbourhood = {
   categories: {
     name: string;
+    key: string;
+    data: {
+      name: string;
+      id: string;
+      station_options: Record<string, string>[];
+    }[];
   }[];
 };
 
@@ -106,7 +114,11 @@ export class NinetyNine {
   getListings = async (
     listingType: ListingType = ListingTypes[0],
     listingCategory: ListingCategory = ListingCategories[0],
-    { pageSize = 30, pageNum = 1 }
+    extraParams: Record<string, string> = {},
+    pagination: Omit<PaginationInfo, "currentCount" | "hasNext"> = {
+      pageSize: 30,
+      pageNum: 1,
+    }
   ) => {
     const listings: Listing[] = [];
     if (!listingType.length) return listings;
@@ -116,12 +128,13 @@ export class NinetyNine {
       listing_type: listingType,
       main_category: listingCategory,
       rental_type: "unit",
-      page_size: pageSize.toString(),
-      page_num: pageNum.toString(),
+      page_size: pagination.pageSize.toString(),
+      page_num: pagination.pageNum.toString(),
       show_cluster_preview: "true",
       show_internal_linking: "true",
       show_meta_description: "true",
       show_description: "true",
+      ...extraParams,
     };
     const url = this.http.path("listings", {}, params);
 
@@ -136,11 +149,40 @@ export class NinetyNine {
       console.error("NinetyNine/getListings", url, error);
     }
 
-    logger("NinetyNine/getListings", { listings: listings.length, params });
+    logger("NinetyNine/getListings", {
+      url: url.toString(),
+      listings: listings.length,
+      params,
+      extraParams,
+    });
     return listings;
   };
 
-  getClusterListing = async (
+  getZoneListings = async (
+    zoneId: string,
+    listingType: ListingType = ListingTypes[0],
+    listingCategory: ListingCategory = ListingCategories[0],
+    pagination: Omit<PaginationInfo, "currentCount" | "hasNext"> = {
+      pageSize: 30,
+      pageNum: 1,
+    }
+  ) => {
+    const extraParams = {
+      query_ids: zoneId,
+      query_type: "zone",
+    };
+
+    logger("NinetyNine/getZoneListings", { extraParams });
+
+    return this.getListings(
+      listingType,
+      listingCategory,
+      extraParams,
+      pagination
+    );
+  };
+
+  getClusterListings = async (
     listingType: ListingType = ListingTypes[0],
     listingId: string,
     clusterId: string

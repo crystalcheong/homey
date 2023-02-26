@@ -1,7 +1,10 @@
 import { z } from "zod";
 
 import { NinetyNine } from "@/data/clients/ninetyNine";
-import { getPredefinedNeighbourhoods } from "@/data/stores/ninetyNine";
+import {
+  defaultPaginationInfo,
+  getPredefinedNeighbourhoods,
+} from "@/data/stores/ninetyNine";
 
 import { createTRPCRouter, publicProcedure } from "../trpc";
 
@@ -19,11 +22,50 @@ export const ninetyNineRouter = createTRPCRouter({
     )
     .query(
       async ({ input }) =>
-        await client.getListings(input.listingType, input.listingCategory, {
-          pageSize: input.pageSize,
-          pageNum: input.pageNum,
-        })
+        await client.getListings(
+          input.listingType,
+          input.listingCategory,
+          {},
+          {
+            pageNum: input.pageNum ?? defaultPaginationInfo.pageNum,
+            pageSize: input.pageSize ?? defaultPaginationInfo.pageSize,
+          }
+        )
     ),
+
+  getZoneListings: publicProcedure
+    .input(
+      z.object({
+        zoneId: z.string().trim().optional(),
+        listingType: z.string().trim().min(1),
+        listingCategory: z.string().trim().optional(),
+        pageSize: z.number().optional(),
+        pageNum: z.number().optional(),
+      })
+    )
+    .query(async ({ input }) => {
+      if (input.zoneId) {
+        return await client.getZoneListings(
+          input.zoneId,
+          input.listingType,
+          input.listingCategory,
+          {
+            pageNum: input.pageNum ?? defaultPaginationInfo.pageNum,
+            pageSize: input.pageSize ?? defaultPaginationInfo.pageSize,
+          }
+        );
+      }
+
+      return await client.getListings(
+        input.listingType,
+        input.listingCategory,
+        {},
+        {
+          pageNum: input.pageNum ?? defaultPaginationInfo.pageNum,
+          pageSize: input.pageSize ?? defaultPaginationInfo.pageSize,
+        }
+      );
+    }),
 
   getCluster: publicProcedure
     .input(
@@ -33,7 +75,7 @@ export const ninetyNineRouter = createTRPCRouter({
     )
     .query(async ({ input }) => await client.getCluster(input.clusterId)),
 
-  getClusterListing: publicProcedure
+  getClusterListings: publicProcedure
     .input(
       z.object({
         listingType: z.string().trim().min(1),
@@ -43,7 +85,7 @@ export const ninetyNineRouter = createTRPCRouter({
     )
     .query(
       async ({ input }) =>
-        await client.getClusterListing(
+        await client.getClusterListings(
           input.listingType,
           input.listingId,
           input.clusterId

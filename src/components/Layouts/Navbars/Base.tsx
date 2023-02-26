@@ -236,7 +236,10 @@ export function HeaderMegaMenu() {
             >
               {NavRoutes.map(({ label, href, nodes = [] }) => {
                 const hasNodes = !!nodes.length;
-                const isActiveRoute: boolean = router.asPath === href;
+                const isActiveRoute: boolean =
+                  href === "/"
+                    ? router.asPath === href
+                    : router.asPath.includes(href);
                 const isLinksOpened: boolean = hasNodes && linksOpened == label;
 
                 const action = () => {

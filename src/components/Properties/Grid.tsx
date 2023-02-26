@@ -22,6 +22,7 @@ interface Props extends BoxProps {
   placeholderCount?: number;
   maxViewableCount?: number;
   title?: string;
+  subtitle?: ReactNode;
 
   isLoading?: boolean;
   showTitle?: boolean;
@@ -35,6 +36,7 @@ interface Props extends BoxProps {
 export const Grid = ({
   listings = [],
   title = "",
+  subtitle,
   isLoading = false,
   showTitle = true,
   showMoreCTA = false,
@@ -75,7 +77,7 @@ export const Grid = ({
               py="md"
               tt="capitalize"
             >
-              {title || `${listingType} Listings`.trim()}
+              {`${title || listingType} Listings`.trim()}
             </Title>
           )}
 
@@ -93,8 +95,9 @@ export const Grid = ({
           )}
         </Group>
       )}
+      {subtitle}
 
-      {showEmptyFallback ? (
+      {showEmptyFallback && !isLoading ? (
         emptyFallback
       ) : (
         <>

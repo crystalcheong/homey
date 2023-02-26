@@ -99,11 +99,6 @@ export const Card = ({
             order={1}
             size="h4"
             truncate
-            sx={
-              {
-                // maxWidth: isTablet ? "auto" : "180px",
-              }
-            }
           >
             {address_name}
           </Title>
@@ -151,7 +146,14 @@ export const Card = ({
             compact: true,
           }}
         />
-        {allowSaveListing && <SaveButton listing={listing} />}
+        {allowSaveListing && (
+          <SaveButton
+            listing={listing}
+            overwriteIconProps={{
+              size: 30,
+            }}
+          />
+        )}
       </Group>
     </MCard>
   );

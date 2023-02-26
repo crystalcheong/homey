@@ -445,6 +445,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authStep, validateStates]);
+
   const nextStep = () => {
     if (!canProceedStep) return;
     if (!isSubmitEnabled) {
@@ -545,7 +546,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
               color={isDark ? "red" : "red.7"}
             >
               <Text color="dimmed">
-                {authErrorState.code !== TRPC_ERROR_CODES_BY_KEY.NOT_FOUND
+                {authErrorState.code === TRPC_ERROR_CODES_BY_KEY.NOT_FOUND
                   ? authErrorState.message
                   : "Unable to authenticate with the given credentials"}
               </Text>

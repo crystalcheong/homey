@@ -1,6 +1,6 @@
-import { Box, Title } from "@mantine/core";
 import { PropertyType } from "@prisma/client";
 import { useSession } from "next-auth/react";
+import { TbBookmark } from "react-icons/tb";
 
 import { Listing, ListingTypes } from "@/data/clients/ninetyNine";
 import {
@@ -10,9 +10,12 @@ import {
 } from "@/data/stores";
 
 import { Layout, Property, Provider } from "@/components";
+import UnknownState from "@/components/Layouts/UnknownState";
 
 import { api } from "@/utils/api";
 import { logger } from "@/utils/debug";
+
+import EmptySaved from "~/assets/images/empty-saved.svg";
 
 const AccountSavedPage = () => {
   const { data: sessionData } = useSession();
@@ -24,7 +27,7 @@ const AccountSavedPage = () => {
     api.useQueries((t) =>
       userSavedListings.map(({ property }) => {
         const isRent: boolean = property.type === PropertyType.RENT;
-        return t.ninetyNine.getClusterListing(
+        return t.ninetyNine.getClusterListings(
           {
             listingId: property.id,
             listingType: ListingTypes[isRent ? 0 : 1],
@@ -58,21 +61,23 @@ const AccountSavedPage = () => {
   //#endregion  //*======== Pre-Render Checks ===========
 
   return (
-    <Layout.Base>
+    <Layout.Base showAffix={!!allSavedListings.length}>
       <Provider.RenderGuard renderIf={isAuth}>
         <Property.Grid
           listings={allSavedListings}
           allowSaveListing={isAuth}
-          title="Saved Listings"
+          title="Saved"
           emptyFallback={
-            <Box>
-              <Title
-                order={2}
-                size="h5"
-              >
-                Browse more listings and save them here
-              </Title>
-            </Box>
+            <UnknownState
+              svgNode={<EmptySaved />}
+              title="No saved listings"
+              subtitle={
+                <>
+                  You can add an item to your favourites by clicking{" "}
+                  <TbBookmark style={{ verticalAlign: "middle" }} />
+                </>
+              }
+            />
           }
         />
       </Provider.RenderGuard>

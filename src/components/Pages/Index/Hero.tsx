@@ -4,22 +4,22 @@ import {
   Button,
   Divider,
   Group,
+  MultiSelect,
   Tabs,
   Text,
-  TextInput,
   Title,
   useMantineTheme,
 } from "@mantine/core";
-import { DatePicker } from "@mantine/dates";
 import { useRouter } from "next/router";
-import { ChangeEvent, useState } from "react";
-import { TbCalendar, TbSearch } from "react-icons/tb";
+import { useState } from "react";
+import { TbSearch } from "react-icons/tb";
 
 import { ListingType, ListingTypes } from "@/data/clients/ninetyNine";
+import { neighbourhoodNames } from "@/data/stores";
 
-import { addYears } from "@/utils/date";
 import { logger } from "@/utils/debug";
 import { useIsMobile } from "@/utils/dom";
+import { toTitleCase } from "@/utils/helpers";
 
 const SearchTypes: string[] = ["rent", "buy"];
 export type SearchType = (typeof SearchTypes)[number];
@@ -33,11 +33,16 @@ const SearchListingTypes: {
   {}
 );
 
+const LocationSelection = neighbourhoodNames.map((name) => ({
+  label: toTitleCase(name.replace(/-/g, " ")),
+  value: name,
+}));
+
 const InitalFormState: {
-  location: string;
+  location: string[];
   moveInDate: Date | null;
 } = {
-  location: "",
+  location: [],
   moveInDate: null,
 };
 
@@ -51,7 +56,7 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
   const theme = useMantineTheme();
   const isMobile = useIsMobile(theme);
 
-  const today: Date = new Date();
+  // const today: Date = new Date();
 
   //#endregion  //*======== Search Type ===========
 
@@ -67,20 +72,27 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
   const [formState, setFormState] =
     useState<typeof InitalFormState>(InitalFormState);
 
-  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const inputValue = (event.currentTarget.value ?? "").trim();
+  // const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+  //   const inputValue = (event.currentTarget.value ?? "").trim();
+  //   setFormState({
+  //     ...formState,
+  //     [event.currentTarget.id]: inputValue,
+  //   });
+  // };
+
+  const handleSelectChange = (selectedLocations: string[]) => {
     setFormState({
       ...formState,
-      [event.currentTarget.id]: inputValue,
+      location: selectedLocations,
     });
   };
 
-  const handleDateChange = (inputDate: Date) => {
-    setFormState({
-      ...formState,
-      moveInDate: inputDate,
-    });
-  };
+  // const handleDateChange = (inputDate: Date) => {
+  //   setFormState({
+  //     ...formState,
+  //     moveInDate: inputDate,
+  //   });
+  // };
 
   const handleOnBrowseClick = () => {
     const searchRoute = SearchListingTypes[searchType];
@@ -89,6 +101,10 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
         .filter(([, v]) => !!v)
         .map(([k, v]) => [k, JSON.stringify(v)])
     );
+    if (!formState.location.length) {
+      delete formParams.location;
+    }
+
     logger("index.tsx line 67", {
       searchRoute,
       formState,
@@ -245,7 +261,8 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
                     placeItems: "start",
                     gap: theme.spacing.sm,
                     "&>*": {
-                      width: isMobile ? "100%" : "auto",
+                      // width: isMobile ? "100%" : "auto",
+                      width: "100%",
                     },
                     ...(!isMobile && {
                       flexDirection: "row",
@@ -253,14 +270,33 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
                     }),
                   }}
                 >
-                  <TextInput
+                  {/* <TextInput
                     placeholder="Search Location"
                     label="Where"
                     id="location"
                     value={formState.location}
                     onChange={handleInputChange}
+                  /> */}
+
+                  <MultiSelect
+                    data={LocationSelection}
+                    searchable
+                    label="Where"
+                    placeholder="Search Location"
+                    id="locations"
+                    value={formState.location}
+                    onChange={handleSelectChange}
+                    maxDropdownHeight={160}
+                    limit={20}
+                    clearable
+                    clearButtonLabel="Clear search locations"
+                    maxSelectedValues={3}
+                    transitionDuration={150}
+                    transition="pop-top-left"
+                    transitionTimingFunction="ease"
                   />
-                  <DatePicker
+
+                  {/* <DatePicker
                     placeholder="Select Move-in Date"
                     label="When"
                     icon={<TbCalendar size={16} />}
@@ -271,7 +307,7 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
                     dropdownType={isMobile ? "modal" : "popover"}
                     minDate={today}
                     maxDate={addYears(today, 2)}
-                  />
+                  /> */}
                 </Box>
                 <Button
                   rightIcon={<TbSearch size={14} />}

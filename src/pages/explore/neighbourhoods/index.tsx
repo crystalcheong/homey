@@ -14,7 +14,14 @@ const NeighbourhoodsPage = () => {
 
   return (
     <Layout.Base>
-      <SimpleGrid cols={3}>
+      <SimpleGrid
+        cols={3}
+        spacing="xl"
+        breakpoints={[
+          { maxWidth: "md", cols: 2, spacing: "lg" },
+          { maxWidth: "xs", cols: 1, spacing: "sm" },
+        ]}
+      >
         {Object.entries(neighbourhoodsData).map(([name, assetUrl]) => (
           <Box
             key={`neighbourhood-${name}`}
@@ -29,12 +36,14 @@ const NeighbourhoodsPage = () => {
               fit="cover"
               height={150}
               alt={name}
+              radius="md"
             />
 
             <Overlay
               opacity={0.6}
               color="#000"
               zIndex={1}
+              radius="md"
             />
             <Text
               sx={{
@@ -47,8 +56,8 @@ const NeighbourhoodsPage = () => {
                 placeItems: "center",
               }}
               align="center"
-              fw={500}
-              tt="capitalize"
+              fw={800}
+              tt="uppercase"
               color="white"
             >
               {name.replace(/-/g, " ")}

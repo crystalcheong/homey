@@ -64,7 +64,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     transformer: superjson,
   });
 
-  await ssg.ninetyNine.getClusterListing.prefetch({
+  await ssg.ninetyNine.getClusterListings.prefetch({
     listingType: paramType,
     listingId: paramId,
     clusterId: paramClusterId,
@@ -93,7 +93,7 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
 
   const [modalOpened, setModalOpened] = useState<Listing["photos"][number]>();
 
-  api.ninetyNine.getClusterListing.useQuery(
+  api.ninetyNine.getClusterListings.useQuery(
     {
       listingType: id,
       listingId: type,
@@ -216,7 +216,7 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
           sx={{
             display: "flex",
             flexDirection: "column",
-            gap: theme.spacing.sm,
+            gap: theme.spacing.xl,
           }}
         >
           <Group position="apart">
@@ -269,8 +269,6 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
 
           {listing && (
             <Group position="apart">
-              <EnquiryButtonGroup listing={listing} />
-
               <Group>
                 <SaveButton
                   listing={listing}
@@ -297,6 +295,11 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
                   )}
                 </CopyButton>
               </Group>
+
+              <EnquiryButtonGroup
+                listing={listing}
+                hideLabels={isMobile}
+              />
             </Group>
           )}
         </Box>
