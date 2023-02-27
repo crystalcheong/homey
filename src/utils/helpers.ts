@@ -9,6 +9,19 @@ export const getUniqueObjectList = <T>(array: T[], key: keyof T): T[] =>
 export const getUniqueSetList = <T>(array: T[]): T[] =>
   Array.from(new Set(array));
 
+export const getPartialClonedObject = <T extends object, K extends keyof T>(
+  obj: T,
+  keysToInclude: K[],
+  includeKeys = false
+): Pick<T, K> | Omit<T, K> =>
+  Object.fromEntries(
+    Object.entries(obj).filter(([key]) =>
+      includeKeys
+        ? keysToInclude.includes(key as K)
+        : !keysToInclude.includes(key as K)
+    )
+  ) as Pick<T, K> | Omit<T, K>;
+
 /**
  * @title Array Limiter
  * @description Limits an array while considering if the given array is less than the specified limit

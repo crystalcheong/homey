@@ -54,6 +54,7 @@ model User {
   email         String?             @unique
   password      String?
   image         String?
+  emailVerified DateTime?
   accounts      Account[]
   sessions      Session[]
   propertySaved UserSavedProperty[]
@@ -84,4 +85,5 @@ enum PropertyType {
 model Neighbourhood {
   name     String @unique
   assetUrl String
+  zoneId   String
 }

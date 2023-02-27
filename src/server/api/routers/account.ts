@@ -110,6 +110,53 @@ export const accountRouter = createTRPCRouter({
         },
       });
     }),
+
+  deleteUser: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().trim().min(1),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const user = await ctx.prisma.user.findFirst({
+        where: {
+          id: input.id,
+        },
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User does not exist.",
+        });
+      }
+
+      return ctx.prisma.user.delete({
+        where: {
+          id: input.id,
+        },
+      });
+    }),
+
+  updateUser: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().trim().min(1),
+        name: z.string().trim().min(1),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      //TODO: Update password
+      return await ctx.prisma.user.upsert({
+        where: {
+          id: input.id,
+        },
+        create: {},
+        update: {
+          name: input.name,
+        },
+      });
+    }),
   //#endregion  //*======== Auth ===========
 
   //#endregion  //*======== UserSavedProperty ===========

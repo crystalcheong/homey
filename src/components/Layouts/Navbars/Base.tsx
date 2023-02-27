@@ -119,6 +119,8 @@ export function HeaderMegaMenu() {
   const [, setUserMenuOpened] = useState<boolean>(false);
   const [linksOpened, setLinkOpened] = useState<string>("");
 
+  const currentUser = useAccountStore.use.currentUser();
+
   const drawerScrollTo = (position: "top" | "center" | "bottom" = "top") => {
     if (!drawerViewport) return;
     switch (position) {
@@ -143,7 +145,7 @@ export function HeaderMegaMenu() {
     }
   };
 
-  const { data: userData } = api.account.getUserByEmail.useQuery(
+  api.account.getUserByEmail.useQuery(
     {
       email: sessionData?.user?.email ?? "",
     },
@@ -338,7 +340,7 @@ export function HeaderMegaMenu() {
                 color={theme.primaryColor}
                 orientation="vertical"
               />
-              {userData ? (
+              {currentUser ? (
                 <Group>
                   <Menu
                     width={260}
@@ -352,7 +354,7 @@ export function HeaderMegaMenu() {
                   >
                     <Menu.Target>
                       <UserButton
-                        name={userData.name ?? ""}
+                        name={currentUser.name ?? ""}
                         icon={<TbChevronDown />}
                       />
                     </Menu.Target>
@@ -537,9 +539,9 @@ export function HeaderMegaMenu() {
           />
 
           <Container>
-            {userData && (
+            {currentUser && (
               <UserButton
-                name={userData.name ?? ""}
+                name={currentUser.name ?? ""}
                 onClick={toggleAccDrawer}
                 icon={
                   accDrawerOpened ? (

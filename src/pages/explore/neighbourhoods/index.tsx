@@ -2,15 +2,25 @@ import { Box, Image, Overlay, SimpleGrid, Text } from "@mantine/core";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
+import { useNinetyNineStore } from "@/data/stores";
+
 import { Layout } from "@/components";
 
 import { api } from "@/utils/api";
+import { logger } from "@/utils/debug";
 
 const NeighbourhoodsPage = () => {
   const router = useRouter();
 
-  const { data: neighbourhoodsData = {} } =
-    api.ninetyNine.getNeighbourhoods.useQuery();
+  const neighbourhoods = useNinetyNineStore.use.neighbourhoods();
+  api.ninetyNine.getNeighbourhoods.useQuery(undefined, {
+    onSuccess(data) {
+      logger("index.tsx line 19", { data });
+      useNinetyNineStore.setState(() => ({
+        neighbourhoods: data,
+      }));
+    },
+  });
 
   return (
     <Layout.Base>
@@ -22,7 +32,7 @@ const NeighbourhoodsPage = () => {
           { maxWidth: "xs", cols: 1, spacing: "sm" },
         ]}
       >
-        {Object.entries(neighbourhoodsData).map(([name, assetUrl]) => (
+        {Object.values(neighbourhoods).map(({ name, assetUrl }) => (
           <Box
             key={`neighbourhood-${name}`}
             component={Link}

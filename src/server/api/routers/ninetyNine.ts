@@ -1,3 +1,4 @@
+import { Neighbourhood } from "@prisma/client";
 import { z } from "zod";
 
 import { NinetyNine } from "@/data/clients/ninetyNine";
@@ -103,21 +104,22 @@ export const ninetyNineRouter = createTRPCRouter({
   //   .query(async ({ input }) => await client.getPostalInfo(input.postalCode)),
 
   getNeighbourhoods: publicProcedure.query(async ({ ctx }) => {
-    const neighbourhoods = getPredefinedNeighbourhoods();
-    await Object.entries(neighbourhoods).forEach(async ([name, assetUrl]) => {
-      await ctx.prisma.neighbourhood.upsert({
-        where: {
-          name: name,
-        },
-        create: {
-          name,
-          assetUrl,
-        },
-        update: {
-          assetUrl,
-        },
-      });
-    });
+    const neighbourhoods: Record<string, Neighbourhood> =
+      getPredefinedNeighbourhoods();
+    await Object.entries(neighbourhoods).forEach(
+      async ([name, neighbourhood]) => {
+        await ctx.prisma.neighbourhood.upsert({
+          where: {
+            name,
+          },
+          create: neighbourhood,
+          update: {
+            assetUrl: neighbourhood.assetUrl,
+            zoneId: neighbourhood.zoneId,
+          },
+        });
+      }
+    );
 
     return neighbourhoods;
   }),

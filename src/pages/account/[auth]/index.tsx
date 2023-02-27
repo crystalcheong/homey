@@ -1,12 +1,10 @@
 import {
   Alert,
-  Autocomplete,
   Box,
   Button,
   Container,
   Divider,
   Group,
-  PasswordInput,
   Stepper,
   StepProps,
   Text,
@@ -15,10 +13,8 @@ import {
   Transition,
   useMantineTheme,
 } from "@mantine/core";
-import { useTimeout } from "@mantine/hooks";
 import { DefaultErrorShape } from "@trpc/server";
 import { InferGetServerSidePropsType, NextPage } from "next";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { ProviderType } from "next-auth/providers";
 import {
@@ -41,9 +37,15 @@ import { FaGithub, FaGoogle } from "react-icons/fa";
 import { TbAlertCircle } from "react-icons/tb";
 
 import { Layout, Provider } from "@/components";
+import AuthEmail from "@/components/Pages/Auth/AuthEmail";
+import AuthPassword, {
+  PasswordFormState,
+} from "@/components/Pages/Auth/AuthPassword";
 
 import { api } from "@/utils/api";
 import { logger } from "@/utils/debug";
+import { getPartialClonedObject } from "@/utils/helpers";
+import { isEmail, isName } from "@/utils/validations";
 
 //#endregion  //*======== Utilities ===========
 
@@ -57,14 +59,14 @@ export const ProviderIcons: {
   GitHub: FaGithub,
 };
 
-const InitalFormState: Record<string, string> = {
+export const InitalFormState: Record<string, string> = {
   email: "",
   password: "",
   confirmPassword: "",
   name: "",
 };
 
-const FormErrorMessages: {
+export const FormErrorMessages: {
   [key in keyof typeof InitalFormState]: string;
 } = {
   name: "Invalid Name",
@@ -80,18 +82,14 @@ export const getEmailSuggestions = (input: string) =>
       )
     : [];
 
-const validateAuthInput = (id: string, value: string, refVal = "") => {
+export const validateAuthInput = (id: string, value: string, refVal = "") => {
   const validations: {
     [key in keyof typeof InitalFormState]: (
       val: string,
       refVal?: string
     ) => boolean;
   } = {
-    email: (val: string) => {
-      const regexEmail = /^[\w-.]+@([\w-]+.)+[\w-]{2,4}$/g;
-      const isValid: boolean = !!val.length && !!val.match(regexEmail);
-      return isValid;
-    },
+    email: (val: string) => isEmail(val),
     password: (val: string) => {
       const isValid = !!val.length;
       return isValid;
@@ -100,10 +98,7 @@ const validateAuthInput = (id: string, value: string, refVal = "") => {
       const isValid = !!val.length && ref === val;
       return isValid;
     },
-    name: (val: string) => {
-      const isValid = !!val.length;
-      return isValid;
-    },
+    name: (val: string) => isName(val),
   };
   return validations[id](value);
 };
@@ -151,12 +146,12 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
   const [authErrorState, setAuthErrorState] = useState<DefaultErrorShape>();
   const [isLoadingProvider, setIsLoadingProvider] = useState<string>("");
 
-  const { start: revertToInitialState } = useTimeout(() => {
+  const revertToInitialState = () => {
     setFormState(InitalFormState);
     setErrorState(InitalFormState);
     setAuthStep(0);
     setIsLoadingProvider("");
-  }, 1000);
+  };
 
   const updateFormState = (id: string, value: string) => {
     value = value ?? "";
@@ -366,59 +361,35 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
       }: Record<string, boolean> = {}): ReactNode =>
         credentialProviders.map(({ id, name, type }) => (
           <Fragment key={name}>
-            <Autocomplete
+            <AuthEmail
               value={formState.email}
               onChange={(value) => handleRawInput("email", value)}
               label="Email"
               id="email"
               placeholder="Email"
-              data={getEmailSuggestions(formState.email)}
               error={errorState.email}
+              data={[]}
             />
 
-            <PasswordInput
-              value={formState.password}
-              onChange={handleInputChange}
-              error={errorState.password}
-              label={
-                <Group position="apart">
-                  <Text>Password</Text>
-                  {!hideForgotPassword && (
-                    <Text
-                      component={Link}
-                      href="#forgot-password"
-                      color="primary"
-                    >
-                      Forgot password?
-                    </Text>
-                  )}
-                </Group>
+            <AuthPassword
+              formState={
+                getPartialClonedObject(
+                  formState,
+                  ["password", "confirmPassword"],
+                  true
+                ) as PasswordFormState
               }
-              id="password"
-              placeholder="Password"
-              sx={{
-                label: {
-                  width: "100%",
-                },
-              }}
+              errorState={
+                getPartialClonedObject(
+                  errorState,
+                  ["password", "confirmPassword"],
+                  true
+                ) as PasswordFormState
+              }
+              onChange={handleInputChange}
+              showForgotPassword={!hideForgotPassword}
+              showConfirmPassword={showConfirmPassword}
             />
-
-            <Transition
-              transition="slide-down"
-              mounted={!!formState.password.length && showConfirmPassword}
-            >
-              {(transitionStyles) => (
-                <PasswordInput
-                  value={formState.confirmPassword}
-                  onChange={handleInputChange}
-                  error={errorState.confirmPassword}
-                  label="Confirm Password"
-                  id="confirmPassword"
-                  placeholder="Confirm Password"
-                  style={transitionStyles}
-                />
-              )}
-            </Transition>
 
             {!hideActionButton && (
               <Button

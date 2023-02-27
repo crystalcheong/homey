@@ -1,3 +1,4 @@
+import { Neighbourhood } from "@prisma/client";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
@@ -20,7 +21,7 @@ interface State {
   savedListings: Listing[];
   listings: Map<ListingType, Listing[]>;
   queryListings: Map<ListingType, Listing[]>;
-  neighbourhoods: Record<string, string>;
+  neighbourhoods: Record<string, Neighbourhood>;
   pagination: Map<ListingType, PaginationInfo>;
 }
 
@@ -102,16 +103,26 @@ export const neighbourhoodNames: string[] = [
   "yishun",
 ];
 
-export const getPredefinedNeighbourhoods = (): Record<string, string> => {
+export const getPredefinedNeighbourhoods = (): Record<
+  string,
+  Neighbourhood
+> => {
   const baseUrl = `https://www.99.co/spa-assets/images/neighbourhoods-landing-page/thumb`;
+  const zoneIdPreifx = `zo`;
 
-  const neighbourhoods: Record<string, string> = neighbourhoodNames.reduce(
-    (neighbourhoodMap: Record<string, string> = {}, name: string) => {
-      neighbourhoodMap[name] = `${baseUrl}/${name}.jpg`;
-      return neighbourhoodMap;
-    },
-    {}
-  );
+  const neighbourhoods: Record<string, Neighbourhood> =
+    neighbourhoodNames.reduce(
+      (neighbourhoodMap: Record<string, Neighbourhood>, name) => {
+        const neighbourhood: Neighbourhood = {
+          name,
+          assetUrl: `${baseUrl}/${name}.jpg`,
+          zoneId: `${zoneIdPreifx}${name}`,
+        };
+        neighbourhoodMap[name] = neighbourhood;
+        return neighbourhoodMap;
+      },
+      {}
+    );
 
   return neighbourhoods;
 };
