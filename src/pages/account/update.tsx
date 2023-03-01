@@ -100,9 +100,6 @@ const AccountUpdatePage = () => {
     if (!isAuth || !currentUser) return false;
 
     const isUpdatingPassword = !!formState.password.length;
-    logger("update.tsx line 76", {
-      isUpdatingPassword,
-    });
 
     const requiredFields: (keyof typeof UpdateFormState)[] = isUpdatingPassword
       ? Object.keys(UpdateFormState)
@@ -178,12 +175,8 @@ const AccountUpdatePage = () => {
       router.replace("/account/signIn");
       return;
     }
-
-    setFormState({
-      ...formState,
-      name: currentUser.name ?? formState.name,
-    });
-  }, [isAuth, router, currentUser, formState]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuth, currentUser]);
 
   //#endregion  //*======== Pre-Render Checks ===========
 
