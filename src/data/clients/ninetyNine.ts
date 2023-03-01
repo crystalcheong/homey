@@ -10,6 +10,7 @@ const Routes: Record<string, string> = {
   cluster: `/v1/web/clusters/:clusterId/general`,
   postal: `/v1/web/dashboard/listing-util/address`,
   neighbourhood: `/v1/web/neighbourhoods/:name/places-of-interest`,
+  newLaunches: `/v1/web/new-launches/list-all-projects`,
 };
 
 export const ListingTypes = ["rent", "sale"];
@@ -34,6 +35,16 @@ export type Neighbourhood = {
       station_options: Record<string, string>[];
     }[];
   }[];
+};
+
+export type ProjectLaunch = {
+  development_id: string;
+  name: string;
+  location: string;
+  details: string;
+  photo_url: string;
+  formatted_launch_date: string;
+  percentage_sold: number;
 };
 
 export type Listing = {
@@ -110,6 +121,41 @@ export class NinetyNine {
   //   logger("NinetyNine/getMRTs", { mrtList: mrtList.length });
   //   return mrtList;
   // };
+
+  getLaunches = async (
+    pagination = {
+      itemOffset: 0,
+      itemLimit: 30,
+      sortType: "launch_date",
+    }
+  ) => {
+    const launches: ProjectLaunch[] = [];
+    const params = {
+      item_offset: pagination.itemOffset.toString(),
+      item_limit: pagination.itemLimit.toString(),
+      sort_order: "desc",
+      sort_type: "launch_date",
+    };
+    const url = this.http.path("newLaunches", {}, params);
+
+    try {
+      const response = await this.http.get({ url });
+      if (!response.ok) return launches;
+      const result = await response.json();
+      const launchesData: ProjectLaunch[] = (result?.data?.projects ??
+        []) as ProjectLaunch[];
+      launches.push(...launchesData);
+    } catch (error) {
+      console.error("NinetyNine/getLaunches", url, error);
+    }
+
+    logger("NinetyNine/getLaunches", {
+      url: url.toString(),
+      launches: launches.length,
+      params,
+    });
+    return launches;
+  };
 
   getListings = async (
     listingType: ListingType = ListingTypes[0],

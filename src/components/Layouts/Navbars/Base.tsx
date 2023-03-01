@@ -23,6 +23,7 @@ import { Fragment, useRef, useState } from "react";
 import { IconType } from "react-icons";
 import {
   TbBookmarks,
+  TbBuildingSkyscraper,
   TbBuildingWarehouse,
   TbChevronDown,
   TbChevronLeft,
@@ -75,7 +76,13 @@ const NavRoutes: (Route & {
         icon: TbBuildingWarehouse,
         label: "Neighbourhoods",
         href: "/explore/neighbourhoods",
-        description: "This Pokémon’s cry is very loud and distracting",
+        description: "Find a neighbourhood you'll love to live in",
+      },
+      {
+        icon: TbBuildingSkyscraper,
+        label: "New Launches",
+        href: "/explore/new-launches",
+        description: "Check out the latest projects launches to hit the market",
       },
     ],
   },

@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { NinetyNine } from "@/data/clients/ninetyNine";
 import {
+  defaultLaunchPaginationInfo,
   defaultPaginationInfo,
   getPredefinedNeighbourhoods,
 } from "@/data/stores/ninetyNine";
@@ -32,6 +33,24 @@ export const ninetyNineRouter = createTRPCRouter({
             pageSize: input.pageSize ?? defaultPaginationInfo.pageSize,
           }
         )
+    ),
+
+  getLaunches: publicProcedure
+    .input(
+      z.object({
+        itemOffset: z.number().optional(),
+        itemLimit: z.number().optional(),
+        sortType: z.string().optional(),
+      })
+    )
+    .query(
+      async ({ input }) =>
+        await client.getLaunches({
+          itemLimit: input.itemLimit ?? defaultLaunchPaginationInfo.itemLimit,
+          itemOffset:
+            input.itemOffset ?? defaultLaunchPaginationInfo.itemOffset,
+          sortType: input.sortType ?? defaultLaunchPaginationInfo.sortType,
+        })
     ),
 
   getZoneListings: publicProcedure

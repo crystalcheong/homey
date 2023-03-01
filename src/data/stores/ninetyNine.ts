@@ -49,6 +49,11 @@ export const defaultPaginationInfo: PaginationInfo = {
   pageNum: 1,
   hasNext: true,
 };
+export const defaultLaunchPaginationInfo = {
+  itemOffset: 0,
+  itemLimit: 30,
+  sortType: "launch_date",
+};
 export const neighbourhoodNames: string[] = [
   "aljunied",
   "ang-mo-kio",
