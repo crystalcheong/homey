@@ -8,6 +8,7 @@ import {
 import { cleanNotifications, showNotification } from "@mantine/notifications";
 import { PropertyType, User } from "@prisma/client";
 import { useRouter } from "next/router";
+import { useState } from "react";
 import { IconBaseProps } from "react-icons";
 import { TbBookmark } from "react-icons/tb";
 
@@ -47,8 +48,8 @@ export const SaveButton = ({
   const useAccountSaveProperty = api.account.saveProperty.useMutation();
   const useAccountUnsaveProperty = api.account.unsaveProperty.useMutation();
 
-  const useAccountGetSaved = useAccountStore.use.getSavedListing();
-  const isSaved = !!useAccountGetSaved(listingId);
+  const useAccountGetSaved = useAccountStore.use.getSavedListing()(listingId);
+  const [isSaved, setIsSaved] = useState<boolean>(!!useAccountGetSaved);
 
   const handleOnToastClick = () => {
     if (!currentUser) return;
@@ -67,43 +68,45 @@ export const SaveButton = ({
     e.preventDefault();
 
     if (!currentUser) return;
+    setIsSaved(!isSaved);
+
+    const isRent: boolean = listing_type === ListingTypes[0];
+    const baseParams = {
+      userId: currentUser.id,
+      listingId,
+    };
+    const saveParams = {
+      ...baseParams,
+      listingType: isRent ? PropertyType.RENT : PropertyType.SALE,
+      clusterId,
+    };
+
+    const onSave = (data: SavedListing[]) => {
+      logger("SaveButton.tsx line 35", { data, savedListings });
+      useAccountStore.setState(() => ({ savedListings: data }));
+
+      if (!isSaved) {
+        showNotification({
+          onClick: handleOnToastClick,
+          icon: <TbBookmark />,
+          title: "Listing Saved!",
+          message: "Click to view your saved listings",
+        });
+      }
+    };
 
     if (!isSaved) {
-      const isRent: boolean = listing_type === ListingTypes[0];
-      useAccountSaveProperty.mutate(
-        {
-          userId: currentUser.id,
-          listingType: isRent ? PropertyType.RENT : PropertyType.SALE,
-          listingId,
-          clusterId,
+      useAccountSaveProperty.mutate(saveParams, {
+        onSuccess(data) {
+          onSave(data);
         },
-        {
-          onSuccess(data) {
-            logger("SaveButton.tsx line 35", { data, savedListings });
-            useAccountStore.setState(() => ({ savedListings: data }));
-
-            showNotification({
-              onClick: handleOnToastClick,
-              icon: <TbBookmark />,
-              title: "Listing Saved!",
-              message: "Click to view your saved listings",
-            });
-          },
-        }
-      );
+      });
     } else {
-      useAccountUnsaveProperty.mutate(
-        {
-          userId: currentUser.id,
-          listingId,
+      useAccountUnsaveProperty.mutate(baseParams, {
+        onSuccess(data) {
+          onSave(data);
         },
-        {
-          onSuccess(data) {
-            logger("SaveButton.tsx line 69", { data });
-            useAccountStore.setState(() => ({ savedListings: data }));
-          },
-        }
-      );
+      });
     }
   };
 

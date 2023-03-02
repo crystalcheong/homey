@@ -25,16 +25,18 @@ export type ListingPhoto = {
   url: string;
 };
 
-export type Neighbourhood = {
-  categories: {
+export type AreaCategory = {
+  name: string;
+  key: string;
+  data: {
     name: string;
-    key: string;
-    data: {
-      name: string;
-      id: string;
-      station_options: Record<string, string>[];
-    }[];
+    id: string;
+    station_options: Record<string, string>[];
   }[];
+};
+
+export type Neighbourhood = {
+  categories: AreaCategory[];
 };
 
 export type ProjectLaunch = {
