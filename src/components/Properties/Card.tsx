@@ -1,4 +1,6 @@
 import {
+  Badge,
+  Box,
   Card as MCard,
   CardProps,
   Group,
@@ -6,15 +8,18 @@ import {
   Skeleton,
   Text,
   Title,
+  useMantineTheme,
 } from "@mantine/core";
 import Link from "next/link";
 import { IconType } from "react-icons";
 import { FaPhoneAlt, FaWhatsapp } from "react-icons/fa";
+import { TbBed, TbResize } from "react-icons/tb";
 
 import { Listing, ListingType, ListingTypes } from "@/data/clients/ninetyNine";
 
-import EnquiryButtonGroup from "@/components/Properties/EnquiryButtonGroup";
 import SaveButton from "@/components/Properties/SaveButton";
+
+import { getLimitedArray } from "@/utils/helpers";
 
 export const EnquiryTypes: string[] = ["call", "whatsapp"];
 export type EnquiryType = (typeof EnquiryTypes)[number];
@@ -48,6 +53,8 @@ export const Card = ({
   allowSaveListing = false,
   ...rest
 }: Props) => {
+  const theme = useMantineTheme();
+
   const {
     id,
     listing_type,
@@ -56,85 +63,130 @@ export const Card = ({
     main_category,
     address_name,
     cluster_mappings,
+    formatted_tags,
   } = listing;
 
   const isPlaceholder = !Object.keys(listing).length;
   const isSkeleton: boolean = isLoading || isPlaceholder;
-  const strPrice = `${attributes?.price_formatted ?? `$-.--`} ${
-    PriceListingTypes[listing_type]
-  }`;
+  const strPrice = `${attributes?.price_formatted ?? `$-.--`}`;
 
   const clusterId: string =
     cluster_mappings?.development?.[0] ?? cluster_mappings?.local?.[0] ?? "";
   const listingRelativeLink = `/property/${listing_type}/${id}?clusterId=${clusterId}`;
 
+  const formattedTag = getLimitedArray(formatted_tags ?? [], 1)?.[0] ?? null;
+
   return (
     <MCard
       shadow="sm"
-      p="lg"
+      p="sm"
+      pb="xs"
       radius="md"
       withBorder
       component={Link}
       href={listingRelativeLink}
       {...rest}
     >
-      <MCard.Section>
+      <MCard.Section
+        sx={{
+          position: "relative",
+        }}
+      >
+        {!!formattedTag && (
+          <Badge
+            key={`${id}-${formattedTag.color}`}
+            radius="xs"
+            variant="gradient"
+            gradient={{ from: "violet.4", to: "violet.8" }}
+            tt="uppercase"
+            styles={{
+              root: {
+                position: "absolute",
+                bottom: -theme.spacing.xs,
+                left: 0,
+                zIndex: 10,
+
+                borderTopRightRadius: theme.radius.sm,
+                borderBottomRightRadius: theme.radius.sm,
+              },
+            }}
+          >
+            {formattedTag?.text}
+          </Badge>
+        )}
+
+        {allowSaveListing && (
+          <SaveButton
+            listing={listing}
+            overwriteIconProps={{
+              size: 30,
+            }}
+            sx={{
+              position: "absolute",
+              top: theme.spacing.xs,
+              right: theme.spacing.xs,
+              zIndex: 10,
+            }}
+          />
+        )}
+
         <Image
           src={photo_url}
           height={160}
           alt={id}
           fit="cover"
           withPlaceholder
+          sx={{
+            opacity: 1,
+          }}
         />
       </MCard.Section>
 
       <Skeleton visible={isSkeleton}>
         <Group
           position="apart"
-          mt="md"
+          mt="xl"
           mb="xs"
           spacing="xs"
         >
           <Title
             order={1}
-            size="h4"
-            truncate
+            size="p"
+            color="dimmed"
+            weight={400}
+            fz="sm"
           >
-            {address_name}
+            <Text
+              component="span"
+              weight={800}
+              fz="xl"
+              variant="gradient"
+              gradient={{ from: "violet.4", to: "violet.8" }}
+            >
+              {strPrice}
+            </Text>
+            &nbsp;{PriceListingTypes[listing_type]}
           </Title>
 
-          {/* <Badge
-            color="pink"
-            variant="light"
-          >
-            {listing_type}
-          </Badge> */}
+          <Badge>{main_category}</Badge>
         </Group>
+
+        <Title
+          order={2}
+          size="h4"
+          truncate
+        >
+          {address_name}
+        </Title>
       </Skeleton>
 
-      <Skeleton visible={isSkeleton}>
-        <Text tt="capitalize">
-          <Text
-            tt="uppercase"
-            component="span"
-          >
-            {main_category}
-          </Text>
-          &nbsp;&middot;&nbsp;
-          {attributes?.bedrooms_formatted}
-        </Text>
-        <Text
-          component="p"
-          weight={500}
-        >
-          {strPrice}
-        </Text>
-      </Skeleton>
+      <Skeleton visible={isSkeleton}></Skeleton>
 
       {children}
 
-      <Group
+      {/* <Group
         position="apart"
+        mt="lg"
         sx={{
           position: "relative",
           zIndex: 100,
@@ -154,7 +206,57 @@ export const Card = ({
             }}
           />
         )}
-      </Group>
+      </Group> */}
+
+      <Box>
+        <Group
+          mt="md"
+          spacing="xs"
+        >
+          <Group spacing="xs">
+            <TbBed
+              size={16}
+              color={theme.fn.primaryColor()}
+            />
+            <Text
+              component="p"
+              fz="xs"
+              truncate
+            >
+              {attributes?.bedrooms ?? 0} Beds
+            </Text>
+          </Group>
+          <Group spacing="xs">
+            <TbBed
+              size={16}
+              color={theme.fn.primaryColor()}
+            />
+            <Text
+              component="p"
+              fz="xs"
+              truncate
+            >
+              {attributes?.bathrooms ?? 0} Baths
+            </Text>
+          </Group>
+
+          {!!attributes?.area_size_formatted && (
+            <Group spacing="xs">
+              <TbResize
+                size={16}
+                color={theme.fn.primaryColor()}
+              />
+              <Text
+                component="p"
+                fz="xs"
+                truncate
+              >
+                {attributes?.area_size_formatted}
+              </Text>
+            </Group>
+          )}
+        </Group>
+      </Box>
     </MCard>
   );
 };

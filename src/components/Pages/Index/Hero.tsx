@@ -4,6 +4,7 @@ import {
   Button,
   Divider,
   Group,
+  Menu,
   MultiSelect,
   Tabs,
   Text,
@@ -12,9 +13,17 @@ import {
 } from "@mantine/core";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { TbSearch } from "react-icons/tb";
+import { IconType } from "react-icons";
+import { HiHomeModern } from "react-icons/hi2";
+import { MdApartment, MdOutlineRealEstateAgent } from "react-icons/md";
+import { TbChevronDown, TbSearch } from "react-icons/tb";
 
-import { ListingType, ListingTypes } from "@/data/clients/ninetyNine";
+import {
+  ListingCategories,
+  ListingCategory,
+  ListingType,
+  ListingTypes,
+} from "@/data/clients/ninetyNine";
 import { neighbourhoodNames } from "@/data/stores";
 
 import { logger } from "@/utils/debug";
@@ -38,12 +47,20 @@ const LocationSelection = neighbourhoodNames.map((name) => ({
   value: name,
 }));
 
+const ListingCategoryIcons: {
+  [key in ListingCategory]: IconType;
+} = {
+  [ListingCategories[0]]: MdOutlineRealEstateAgent,
+  [ListingCategories[1]]: MdApartment,
+  [ListingCategories[2]]: HiHomeModern,
+};
+
 const InitalFormState: {
   location: string[];
-  moveInDate: Date | null;
+  category: ListingCategory;
 } = {
   location: [],
-  moveInDate: null,
+  category: "",
 };
 
 interface Props extends BoxProps {
@@ -55,6 +72,8 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
   const router = useRouter();
   const theme = useMantineTheme();
   const isMobile = useIsMobile(theme);
+
+  const isDark: boolean = theme.colorScheme === "dark";
 
   // const today: Date = new Date();
 
@@ -80,19 +99,12 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
   //   });
   // };
 
-  const handleSelectChange = (selectedLocations: string[]) => {
+  const handleLocationChange = (selectedLocations: string[]) => {
     setFormState({
       ...formState,
       location: selectedLocations,
     });
   };
-
-  // const handleDateChange = (inputDate: Date) => {
-  //   setFormState({
-  //     ...formState,
-  //     moveInDate: inputDate,
-  //   });
-  // };
 
   const handleOnBrowseClick = () => {
     const searchRoute = SearchListingTypes[searchType];
@@ -115,7 +127,7 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
     if (Object.keys(formParams).length) {
       const params = new URLSearchParams(formParams);
       searchQuery += `?${params}`;
-      logger("Hero.tsx line 100", searchQuery, params);
+      logger("Hero.tsx line 100", searchQuery, formParams);
     }
 
     router.push(searchQuery, undefined, {
@@ -166,7 +178,8 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
             <Title
               order={3}
               size="h3"
-              color={theme.primaryColor}
+              variant="gradient"
+              gradient={{ from: "violet.4", to: "violet.8" }}
             >
               50k+
             </Title>
@@ -185,7 +198,8 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
             <Title
               order={3}
               size="h3"
-              color={theme.primaryColor}
+              variant="gradient"
+              gradient={{ from: "violet.4", to: "violet.8" }}
             >
               10k+
             </Title>
@@ -208,7 +222,7 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
               padding: theme.spacing.sm,
               ...(!isMobile && {
                 padding: theme.spacing.md,
-                maxWidth: theme.breakpoints.xs,
+                maxWidth: theme.breakpoints.sm,
               }),
             },
             tabsList: {
@@ -241,54 +255,41 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
                   flexDirection: "column",
                   placeContent: "start",
                   placeItems: "start",
-                  gap: theme.spacing.md,
+                  gap: theme.spacing.xs,
                   "&>*": {
                     width: isMobile ? "100%" : "auto",
                   },
-
                   ...(!isMobile && {
                     flexDirection: "row",
-                    placeItems: "end",
+                    placeItems: "start",
                   }),
                 }}
               >
                 <Box
                   sx={{
                     flex: 1,
+
                     display: "flex",
                     flexDirection: "column",
                     placeContent: "start",
                     placeItems: "start",
-                    gap: theme.spacing.sm,
+                    gap: theme.spacing.xs,
+
                     "&>*": {
-                      // width: isMobile ? "100%" : "auto",
                       width: "100%",
                     },
-                    ...(!isMobile && {
-                      flexDirection: "row",
-                      placeItems: "center",
-                    }),
                   }}
                 >
-                  {/* <TextInput
-                    placeholder="Search Location"
-                    label="Where"
-                    id="location"
-                    value={formState.location}
-                    onChange={handleInputChange}
-                  /> */}
-
                   <MultiSelect
                     data={LocationSelection}
                     searchable
-                    label="Where"
+                    clearable
                     placeholder="Search Location"
+                    nothingFound="No matching locations"
                     id="locations"
                     value={formState.location}
-                    onChange={handleSelectChange}
+                    onChange={handleLocationChange}
                     maxDropdownHeight={160}
-                    limit={20}
-                    clearable
                     clearButtonLabel="Clear search locations"
                     maxSelectedValues={3}
                     transitionDuration={150}
@@ -296,23 +297,83 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
                     transitionTimingFunction="ease"
                   />
 
-                  {/* <DatePicker
-                    placeholder="Select Move-in Date"
-                    label="When"
-                    icon={<TbCalendar size={16} />}
-                    id="moveInDate"
-                    value={formState.moveInDate}
-                    onChange={handleDateChange}
-                    firstDayOfWeek="monday"
-                    dropdownType={isMobile ? "modal" : "popover"}
-                    minDate={today}
-                    maxDate={addYears(today, 2)}
-                  /> */}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "row",
+                      placeContent: "start",
+                      placeItems: "center",
+                      gap: theme.spacing.md,
+                    }}
+                  >
+                    <Menu
+                      shadow="md"
+                      width={110}
+                    >
+                      <Menu.Target>
+                        <Button
+                          variant="subtle"
+                          p={0}
+                          px={2}
+                          rightIcon={<TbChevronDown size={16} />}
+                        >
+                          {formState.category.length
+                            ? `Type: ${formState.category}`
+                            : "Property Type"}
+                        </Button>
+                      </Menu.Target>
+
+                      <Menu.Dropdown>
+                        {ListingCategories.map((category) => {
+                          const CategoryIcon: IconType =
+                            ListingCategoryIcons[category];
+                          const isCategorySelected: boolean =
+                            formState.category === category;
+                          const isSelected = !!formState.category.length;
+
+                          const CategoryColor = isCategorySelected
+                            ? theme.fn.primaryColor()
+                            : isDark
+                            ? theme.white
+                            : theme.black;
+
+                          const handleOnClick = () => {
+                            setFormState({
+                              ...formState,
+                              category:
+                                isCategorySelected && isSelected
+                                  ? InitalFormState.category
+                                  : category,
+                            });
+                          };
+
+                          return (
+                            <Menu.Item
+                              key={category}
+                              icon={
+                                <CategoryIcon
+                                  size={14}
+                                  color={CategoryColor}
+                                />
+                              }
+                              onClick={handleOnClick}
+                            >
+                              {category}
+                            </Menu.Item>
+                          );
+                        })}
+                      </Menu.Dropdown>
+                    </Menu>
+                  </Box>
                 </Box>
+
                 <Button
+                  // mt={isMobile ? 0 : "xl"}
                   rightIcon={<TbSearch size={14} />}
                   loaderPosition="right"
                   onClick={handleOnBrowseClick}
+                  variant="gradient"
+                  gradient={{ from: "violet.4", to: "violet.8" }}
                 >
                   Browse properties
                 </Button>

@@ -3,6 +3,7 @@ import {
   Button,
   Container,
   ContainerProps,
+  LoadingOverlay,
   Paper,
   Transition,
 } from "@mantine/core";
@@ -14,12 +15,14 @@ import { Footer, Navbar } from "@/components/Layouts";
 
 export type BaseLayoutProps = PropsWithChildren & {
   showAffix?: boolean;
+  isLoading?: boolean;
   layoutStylesOverwrite?: ContainerProps["styles"];
 };
 
 export const BaseLayout = ({
   children,
   showAffix = true,
+  isLoading = false,
   layoutStylesOverwrite,
 }: BaseLayoutProps) => {
   const [scroll, scrollTo] = useWindowScroll();
@@ -42,6 +45,12 @@ export const BaseLayout = ({
             ...layoutStylesOverwrite,
           }}
         >
+          {isLoading && (
+            <LoadingOverlay
+              visible={isLoading}
+              overlayBlur={2}
+            />
+          )}
           {children}
         </Container>
         {showAffix && (

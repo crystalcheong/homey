@@ -6,6 +6,15 @@
 export const getUniqueObjectList = <T>(array: T[], key: keyof T): T[] =>
   Array.from(new Map(array.map((item) => [item[key], item])).values());
 
+export const getUniqueObjectListwithKeys = <T>(
+  list: T[],
+  keys: (keyof T)[]
+): T[] =>
+  list.filter(
+    (item, index, self) =>
+      index === self.findIndex((t) => keys.every((key) => t[key] === item[key]))
+  );
+
 export const getUniqueSetList = <T>(array: T[]): T[] =>
   Array.from(new Set(array));
 

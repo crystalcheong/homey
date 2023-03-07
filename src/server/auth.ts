@@ -58,7 +58,6 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     jwt: async ({ token, user }) => {
-      logger("auth.ts line 53", { token, user });
       if (user) {
         token.userId = user.id;
         token.email = user.email;
@@ -77,7 +76,6 @@ export const authOptions: NextAuthOptions = {
           id: token.sub,
         };
       }
-      logger("auth.ts line 53", { session, user, token });
       return session;
     },
   },

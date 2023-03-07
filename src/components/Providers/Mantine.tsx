@@ -14,7 +14,7 @@ const theme = (colorScheme: ColorScheme): MantineThemeOverride => {
 
   return {
     black: isDark ? "#1F1F1F" : "#212121",
-    white: isDark ? "#F5F5F5" : "#fafafa",
+    white: isDark ? "#F5F5F5" : "#F1F3F5",
     primaryShade: { light: 5, dark: 5 },
     primaryColor: "violet",
     colorScheme,

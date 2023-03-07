@@ -1,10 +1,17 @@
 import { Box, Button, Chip, Group, Text, useMantineTheme } from "@mantine/core";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
-import { Listing, ListingType, ListingTypes } from "@/data/clients/ninetyNine";
 import {
+  Listing,
+  ListingCategories,
+  ListingCategory,
+  ListingType,
+  ListingTypes,
+} from "@/data/clients/ninetyNine";
+import {
+  defaultListingMap,
   defaultPaginationInfo,
   PaginationInfo,
   useNinetyNineStore,
@@ -38,7 +45,7 @@ const getLocations = (paramLocation: string) => {
 const PropertyTypePage = () => {
   const router = useRouter();
   const theme = useMantineTheme();
-  const { type, location } = router.query;
+  const { type, location, category } = router.query;
 
   const { data: sessionData } = useSession();
 
@@ -48,15 +55,16 @@ const PropertyTypePage = () => {
   const isValidType: boolean =
     (ListingTypes.includes(paramType) && !!paramType.length) ?? false;
 
+  const paramCategory: string = (category ?? "")
+    .toString()
+    .replace(/^"(.+(?="$))"$/, "$1");
+  const isValidCategory: boolean =
+    (ListingCategories.includes(paramCategory) && !!paramCategory.length) ??
+    false;
+
   const paramLocation: string = (location ?? "").toString();
-  useMemo(() => {
-    logger("index.tsx line 53", {
-      paramLocation,
-    });
-  }, [paramLocation]);
   const [locations, setLocations] = useState<string[]>([]);
   const paramLocations: string[] = useMemo(() => {
-    logger("index.tsx line 58", { paramLocation });
     const locationList = getLocations(paramLocation);
     setLocations(locationList);
     return locationList;
@@ -65,13 +73,40 @@ const PropertyTypePage = () => {
   const isZonal = !!zoneIds.length;
 
   const listingType: ListingType = paramType;
+  const listingCategory: ListingCategory = paramCategory;
   const listingsKey = isZonal ? "queryListings" : "listings";
 
   const listings: Listing[] =
-    useNinetyNineStore.use[listingsKey]().get(listingType) ?? [];
+    (useNinetyNineStore.use[listingsKey]() ?? defaultListingMap).get(
+      listingType
+    ) ?? [];
   const pagination: PaginationInfo =
     useNinetyNineStore.use.pagination().get(listingType) ??
     defaultPaginationInfo;
+
+  const getFilteredListings = useCallback(
+    (listings: Listing[]) => {
+      let filteredListings: Listing[] = listings ?? [];
+      if (listingCategory.length)
+        filteredListings = filteredListings.filter(
+          ({ main_category }) =>
+            main_category.toLowerCase() === listingCategory.toLowerCase()
+        );
+      if (zoneIds.length)
+        filteredListings = filteredListings.filter(({ cluster_mappings }) =>
+          zoneIds.includes(cluster_mappings?.zone?.[0] ?? "")
+        );
+
+      return filteredListings;
+    },
+    [zoneIds, listingCategory]
+  );
+
+  const viewableListings = useMemo(
+    () => getFilteredListings(listings),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [listings, zoneIds, listingCategory]
+  );
 
   const updateListings = useNinetyNineStore.use.updateListings();
 
@@ -82,17 +117,22 @@ const PropertyTypePage = () => {
         pageNum: pagination.pageNum,
         pageSize: pagination.pageSize,
         zoneId: zoneIds,
+        listingCategory,
       },
       {
-        enabled: isValidType && !listings.length,
+        enabled:
+          (isValidType || isValidCategory) &&
+          viewableListings.length < pagination.pageSize &&
+          pagination.hasNext,
         onSuccess(data) {
-          if (!data.length) return;
-
           logger("index.tsx line 89/getZoneListings/onSuccess", {
             data,
             locations,
             paramLocations,
+            defaultListingMap,
           });
+
+          if (!data.length) return;
 
           updateListings(listingType, data as Listing[], isZonal);
         },
@@ -108,13 +148,7 @@ const PropertyTypePage = () => {
     <Layout.Base showAffix={!!listings.length}>
       <Provider.RenderGuard renderIf={isValidType}>
         <Property.Grid
-          listings={
-            !zoneIds.length
-              ? listings
-              : listings.filter(({ cluster_mappings }) =>
-                  zoneIds.includes(cluster_mappings.zone[0] ?? "")
-                )
-          }
+          listings={viewableListings}
           isLoading={isLoading}
           allowSaveListing={isAuth}
           title={listingType}

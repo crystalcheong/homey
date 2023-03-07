@@ -6,7 +6,7 @@ import { Listing, ListingType, ListingTypes } from "@/data/clients/ninetyNine";
 
 import { innerApi } from "@/utils/api";
 import { logger } from "@/utils/debug";
-import { getUniqueObjectList } from "@/utils/helpers";
+import { getUniqueObjectListwithKeys } from "@/utils/helpers";
 import { createSelectors } from "@/utils/store";
 
 export type PaginationInfo = {
@@ -54,6 +54,10 @@ export const defaultLaunchPaginationInfo = {
   itemLimit: 30,
   sortType: "launch_date",
 };
+export const defaultListingMap = new Map<ListingType, Listing[]>(
+  ListingTypes.map((type) => [type as ListingType, [] as Listing[]])
+);
+
 export const neighbourhoodNames: string[] = [
   "aljunied",
   "ang-mo-kio",
@@ -140,10 +144,15 @@ const updateListings = (
 ): Partial<Store> => {
   //#endregion  //*======== Listings ===========
   const listingsKey: keyof State = isQuery ? "queryListings" : "listings";
-  const currentListings = state[listingsKey];
-  const updatedListings: Listing[] = getUniqueObjectList(
+  const currentListings = state[listingsKey] ?? defaultListingMap;
+  logger("ninetyNine.ts line 148", {
+    currentListings,
+    listingsKey,
+    state,
+  });
+  const updatedListings: Listing[] = getUniqueObjectListwithKeys(
     (currentListings.get(listingType) ?? []).concat(newListings),
-    "id"
+    ["id", "address_name"]
   ).sort(() => 0.5 - Math.random());
 
   currentListings.set(listingType, updatedListings);
@@ -175,6 +184,7 @@ const updateListings = (
     isQuery,
     updatedState,
     newListings: newListings.length,
+    listingsKey,
   });
   return updatedState;
 };
@@ -187,20 +197,12 @@ const store = create<Store>()(
       currentListing: null,
       savedListings: [],
       neighbourhoods: getPredefinedNeighbourhoods(),
-      listings: new Map<ListingType, Listing[]>(
-        ListingTypes.map((type) => [type as ListingType, [] as Listing[]])
-      ),
-      queryListings: new Map<ListingType, Listing[]>(
-        ListingTypes.map((type) => [type as ListingType, [] as Listing[]])
-      ),
+      listings: defaultListingMap,
+      queryListings: defaultListingMap,
       pagination: new Map<ListingType, PaginationInfo>(
         ListingTypes.map((type) => [
           type as ListingType,
-          {
-            currentCount: 0,
-            pageSize: 30,
-            pageNum: 1,
-          } as PaginationInfo,
+          defaultPaginationInfo as PaginationInfo,
         ])
       ),
       updateListings: (listingType, newListings, overwrite = false) =>
@@ -208,9 +210,7 @@ const store = create<Store>()(
           updateListings(listingType, newListings, state, overwrite)
         ),
       getMoreListings: async (listingType) => {
-        // const currentPagination = get().pagination;
         const currentPagination = get().pagination;
-        // const { pageNum } = currentPagination[listingType];
         const { pageNum } =
           currentPagination.get(listingType as ListingType) ??
           defaultPaginationInfo;

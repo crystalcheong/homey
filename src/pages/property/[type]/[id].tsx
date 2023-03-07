@@ -1,5 +1,6 @@
 import { Carousel } from "@mantine/carousel";
 import {
+  Badge,
   Box,
   Button,
   CopyButton,
@@ -21,7 +22,7 @@ import { TbCheck, TbCurrentLocation, TbShare } from "react-icons/tb";
 import superjson from "superjson";
 
 import { Listing, ListingTypes } from "@/data/clients/ninetyNine";
-import { useNinetyNineStore } from "@/data/stores";
+import { defaultListingMap, useNinetyNineStore } from "@/data/stores";
 
 import { Layout, Provider } from "@/components";
 import UnknownState from "@/components/Layouts/UnknownState";
@@ -105,7 +106,14 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
     {
       enabled: !listing && isValidProperty && isMounted,
       onSuccess(data) {
-        logger("[id].tsx line 45/onSuccess", { data, clusterId, id, type });
+        logger("[id].tsx line 45/onSuccess", {
+          data,
+          clusterId,
+          id,
+          type,
+          defaultListingMap,
+          listing,
+        });
 
         // if (!data) {
         //   router.push(`${router.basePath}/property/${type}`, undefined, {
@@ -229,25 +237,72 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
             gap: theme.spacing.xl,
           }}
         >
-          <Group position="apart">
-            <Title
-              order={1}
-              size="h3"
-              sx={{
-                wordBreak: "break-word",
-              }}
-            >
-              {listing?.attributes?.bedrooms_formatted}
-              &nbsp;in&nbsp;{listing?.address_name}
-            </Title>
-            <Title
-              order={2}
-              size="h4"
-            >
-              {listing?.attributes?.price_formatted ?? `$-.--`}{" "}
-              {PriceListingTypes[listing?.listing_type ?? ListingTypes[0]]}
-            </Title>
-          </Group>
+          <Box
+            component="article"
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <Group position="apart">
+              <Title
+                order={1}
+                size="h3"
+                sx={{
+                  wordBreak: "break-word",
+                }}
+              >
+                {listing?.attributes?.bedrooms_formatted}
+                &nbsp;in&nbsp;{listing?.address_name}
+              </Title>
+
+              <Title
+                order={2}
+                size="p"
+                color="dimmed"
+                weight={400}
+                fz="sm"
+              >
+                <Text
+                  component="span"
+                  weight={800}
+                  fz="xl"
+                  variant="gradient"
+                  gradient={{ from: "violet.4", to: "violet.8" }}
+                >
+                  {listing?.attributes?.price_formatted ?? `$-.--`}&nbsp;
+                </Text>
+                {PriceListingTypes[listing?.listing_type ?? ListingTypes[0]]}
+              </Title>
+            </Group>
+
+            <Group position="apart">
+              {listing?.address_line_2 && (
+                <Text
+                  component="p"
+                  color="dimmed"
+                  pt={0}
+                  lh={0}
+                >
+                  {listing?.address_line_2}
+                </Text>
+              )}
+
+              <Group spacing="sm">
+                {(listing?.formatted_tags ?? []).map((tag, idx) => (
+                  <Badge
+                    key={`${id}-${idx}-${tag?.color}`}
+                    radius="sm"
+                    tt="uppercase"
+                    variant="gradient"
+                    gradient={{ from: "violet.4", to: "violet.8" }}
+                  >
+                    {tag?.text}
+                  </Badge>
+                ))}
+              </Group>
+            </Group>
+          </Box>
 
           <SimpleGrid
             cols={2}
@@ -259,20 +314,24 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
           >
             {details.map(({ label, attribute }) => (
               <Group
-                position="apart"
+                position="left"
                 key={`detail-${label}`}
               >
                 <Text
                   component="p"
                   weight={700}
                   py={0}
-                  sx={{
-                    lineHeight: 0,
-                  }}
+                  lh={0}
+                  w={120}
                 >
                   {label}
                 </Text>
-                <Text>{attribute}</Text>
+                <Text
+                  component="p"
+                  color="dimmed"
+                >
+                  {attribute}
+                </Text>
               </Group>
             ))}
           </SimpleGrid>
@@ -340,7 +399,8 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
             <Text
               component="p"
               fw={500}
-              color={theme.fn.primaryColor()}
+              variant="gradient"
+              gradient={{ from: "violet.4", to: "violet.8" }}
               onClick={() => setModalOpened(listing?.photos?.[0])}
             >
               See more
@@ -364,24 +424,14 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
                 alt={listing?.photos?.[0]?.category}
                 onClick={() => setModalOpened(listing?.photos?.[0])}
                 caption={
-                  <Text
-                    sx={{
-                      position: "absolute",
-                      bottom: "0.5em",
-                      left: "0.5em",
-                      padding: "0.2em",
-
-                      background: `rgba(0,0,0,.4)`,
-                      color: theme.white,
-                    }}
-                  >
-                    {listing?.photos?.[0].category ?? ""}
-                  </Text>
+                  <ImageCaption>
+                    {listing?.photos?.[0]?.category ?? ""}
+                  </ImageCaption>
                 }
               />
             </Skeleton>
             <Grid gutter="md">
-              {getLimitedArray(listing?.photos.slice(1) ?? [], 3).map(
+              {getLimitedArray((listing?.photos ?? []).slice(1) ?? [], 3).map(
                 (photo, idx) => (
                   <Grid.Col
                     key={`tourGrid-${photo.id}-${idx}`}

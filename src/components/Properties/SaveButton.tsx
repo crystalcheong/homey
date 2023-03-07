@@ -3,6 +3,7 @@ import {
   ActionIconProps,
   Button,
   ButtonProps,
+  DefaultProps,
   useMantineTheme,
 } from "@mantine/core";
 import { cleanNotifications, showNotification } from "@mantine/notifications";
@@ -20,7 +21,7 @@ import { Provider } from "@/components";
 import { api } from "@/utils/api";
 import { logger } from "@/utils/debug";
 
-interface Props {
+interface Props extends DefaultProps {
   listing: Listing;
   showLabel?: boolean;
 
@@ -35,6 +36,7 @@ export const SaveButton = ({
   overwriteIconProps,
   overwriteButtonProps,
   overwriteActionIconProps,
+  ...rest
 }: Props) => {
   const { id: listingId, cluster_mappings, listing_type } = listing;
   const clusterId: string =
@@ -129,6 +131,7 @@ export const SaveButton = ({
           disabled={!listing}
           leftIcon={<Icon />}
           {...overwriteButtonProps}
+          {...rest}
         >
           {isSaved ? "Saved" : "Save"}
         </Button>
@@ -137,6 +140,7 @@ export const SaveButton = ({
           onClick={handleOnSave}
           disabled={!listing}
           {...overwriteActionIconProps}
+          {...rest}
         >
           <Icon />
         </ActionIcon>

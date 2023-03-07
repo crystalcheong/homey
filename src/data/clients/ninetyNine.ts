@@ -16,7 +16,7 @@ const Routes: Record<string, string> = {
 export const ListingTypes = ["rent", "sale"];
 export type ListingType = (typeof ListingTypes)[number];
 
-export const ListingCategories = ["HDB", "Condo"];
+export const ListingCategories = ["HDB", "Condo", "Landed"];
 export type ListingCategory = (typeof ListingCategories)[number];
 
 export type ListingPhoto = {
@@ -43,10 +43,20 @@ export type ProjectLaunch = {
   development_id: string;
   name: string;
   location: string;
+  address_line: string;
   details: string;
   photo_url: string;
   formatted_launch_date: string;
   percentage_sold: number;
+  formatted_tags: Record<string, string>[];
+  within_distance_from_query: {
+    closest_mrt: {
+      colors: string[];
+      lines: Record<string, string>[];
+      title: string;
+      walking_time_in_mins: string;
+    };
+  };
 };
 
 export type Listing = {
@@ -54,8 +64,10 @@ export type Listing = {
   listing_type: ListingType;
   photo_url: string;
   address_name: string;
+  address_line_2: string;
   main_category: ListingCategory;
   sub_category_formatted: string;
+  formatted_tags: Record<string, string>[];
   date_formatted: string;
   attributes: Record<string, string | number>;
   tags: string[];
@@ -171,6 +183,7 @@ export class NinetyNine {
     const listings: Listing[] = [];
     if (!listingType.length) return listings;
 
+    logger("ninetyNine.ts line 185", { listingCategory });
     const params = {
       property_segments: "residential",
       listing_type: listingType,
@@ -220,7 +233,13 @@ export class NinetyNine {
       query_type: "zone",
     };
 
-    logger("NinetyNine/getZoneListings", { extraParams });
+    logger("NinetyNine/getZoneListings", {
+      extraParams,
+      standardParams: {
+        listingCategory,
+        pagination,
+      },
+    });
 
     return this.getListings(
       listingType,
