@@ -95,6 +95,7 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
   const [isMounted, setIsMounted] = useState<boolean>(false);
   const listing: Listing | null = useNinetyNineStore.use.getListing()(type, id);
 
+  const [baseUrl, setBaseUrl] = useState<string>(getBaseUrl());
   const [modalOpened, setModalOpened] = useState<Listing["photos"][number]>();
 
   api.ninetyNine.getClusterListings.useQuery(
@@ -114,12 +115,6 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
           defaultListingMap,
           listing,
         });
-
-        // if (!data) {
-        //   router.push(`${router.basePath}/property/${type}`, undefined, {
-        //     scroll: true,
-        //   });
-        // }
         useNinetyNineStore.setState(() => ({ currentListing: data }));
       },
     }
@@ -132,7 +127,9 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
    */
   useEffect(() => {
     setIsMounted(true);
-    logger("[id].tsx line 91", { listing, baseUrl: getBaseUrl() });
+    if (typeof window !== "undefined" && window.location.origin)
+      setBaseUrl(window.location.origin);
+    logger("[id].tsx line 91", { listing });
   }, [listing]);
 
   const PRIMARY_COL_HEIGHT = 300;
@@ -346,7 +343,7 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
                 />
 
                 <CopyButton
-                  value={`${getBaseUrl()}/property/${type}/${id}?clusterId=${clusterId}`}
+                  value={`${baseUrl}/property/${type}/${id}?clusterId=${clusterId}`}
                 >
                   {({ copied, copy }) => (
                     <Button
