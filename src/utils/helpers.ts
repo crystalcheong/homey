@@ -58,3 +58,12 @@ export const toTitleCase = (str: string) =>
     /(^\w|\s\w)(\S*)/g,
     (_, m1, m2) => m1.toUpperCase() + m2.toLowerCase()
   );
+
+export const getObjectValueCount = <T extends Record<string, unknown>>(
+  obj: T
+): number =>
+  Object.values(obj).filter((value: unknown) =>
+    Array.isArray(value)
+      ? value.length > 0
+      : value !== null && value !== undefined && value !== ""
+  ).length;

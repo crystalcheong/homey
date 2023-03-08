@@ -42,12 +42,12 @@ const SearchListingTypes: {
   {}
 );
 
-const LocationSelection = neighbourhoodNames.map((name) => ({
+export const LocationSelection = neighbourhoodNames.map((name) => ({
   label: toTitleCase(name.replace(/-/g, " ")),
   value: name,
 }));
 
-const ListingCategoryIcons: {
+export const ListingCategoryIcons: {
   [key in ListingCategory]: IconType;
 } = {
   [ListingCategories[0]]: MdOutlineRealEstateAgent,
@@ -55,7 +55,7 @@ const ListingCategoryIcons: {
   [ListingCategories[2]]: HiHomeModern,
 };
 
-const InitalFormState: {
+export const FilterFormState: {
   location: string[];
   category: ListingCategory;
 } = {
@@ -89,7 +89,7 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
   //#endregion  //*======== Query Form Group ===========
 
   const [formState, setFormState] =
-    useState<typeof InitalFormState>(InitalFormState);
+    useState<typeof FilterFormState>(FilterFormState);
 
   // const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
   //   const inputValue = (event.currentTarget.value ?? "").trim();
@@ -179,7 +179,6 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
               order={3}
               size="h3"
               variant="gradient"
-              gradient={{ from: "violet.4", to: "violet.8" }}
             >
               50k+
             </Title>
@@ -199,7 +198,6 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
               order={3}
               size="h3"
               variant="gradient"
-              gradient={{ from: "violet.4", to: "violet.8" }}
             >
               10k+
             </Title>
@@ -306,15 +304,14 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
                       gap: theme.spacing.md,
                     }}
                   >
-                    <Menu
-                      shadow="md"
-                      width={110}
-                    >
+                    <Menu shadow="md">
                       <Menu.Target>
                         <Button
                           variant="subtle"
                           p={0}
                           px={2}
+                          w={130}
+                          ta="start"
                           rightIcon={<TbChevronDown size={16} />}
                         >
                           {formState.category.length
@@ -342,7 +339,7 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
                               ...formState,
                               category:
                                 isCategorySelected && isSelected
-                                  ? InitalFormState.category
+                                  ? FilterFormState.category
                                   : category,
                             });
                           };
@@ -373,7 +370,6 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
                   loaderPosition="right"
                   onClick={handleOnBrowseClick}
                   variant="gradient"
-                  gradient={{ from: "violet.4", to: "violet.8" }}
                 >
                   Browse properties
                 </Button>

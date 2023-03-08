@@ -268,7 +268,6 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
                   weight={800}
                   fz="xl"
                   variant="gradient"
-                  gradient={{ from: "violet.4", to: "violet.8" }}
                 >
                   {listing?.attributes?.price_formatted ?? `$-.--`}&nbsp;
                 </Text>
@@ -295,7 +294,6 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
                     radius="sm"
                     tt="uppercase"
                     variant="gradient"
-                    gradient={{ from: "violet.4", to: "violet.8" }}
                   >
                     {tag?.text}
                   </Badge>
@@ -400,7 +398,6 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
               component="p"
               fw={500}
               variant="gradient"
-              gradient={{ from: "violet.4", to: "violet.8" }}
               onClick={() => setModalOpened(listing?.photos?.[0])}
             >
               See more

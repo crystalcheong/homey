@@ -97,7 +97,6 @@ export const Card = ({
             key={`${id}-${formattedTag.color}`}
             radius="xs"
             variant="gradient"
-            gradient={{ from: "violet.4", to: "violet.8" }}
             tt="uppercase"
             styles={{
               root: {
@@ -161,7 +160,6 @@ export const Card = ({
               weight={800}
               fz="xl"
               variant="gradient"
-              gradient={{ from: "violet.4", to: "violet.8" }}
             >
               {strPrice}
             </Text>

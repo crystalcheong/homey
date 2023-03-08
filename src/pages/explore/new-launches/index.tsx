@@ -9,6 +9,7 @@ import BetaWarning from "@/components/Layouts/BetaWarning";
 import LaunchCard from "@/components/Properties/LaunchCard";
 
 import { api } from "@/utils/api";
+import { logger } from "@/utils/debug";
 
 const NewLaunchesPage = () => {
   const theme = useMantineTheme();
@@ -17,6 +18,7 @@ const NewLaunchesPage = () => {
     typeof defaultLaunchPaginationInfo
   >(defaultLaunchPaginationInfo);
   const [launches, setLaunches] = useState<ProjectLaunch[]>([]);
+  const [hasNext, setHasNext] = useState<boolean>(true);
 
   const placeholderCount = 3;
 
@@ -28,10 +30,21 @@ const NewLaunchesPage = () => {
         sortType: pagination.sortType,
       },
       {
-        enabled: !launches.length,
+        enabled: !launches.length && hasNext,
         onSuccess(data) {
           if (data) {
-            setLaunches(data);
+            if (!data) {
+              setHasNext(false);
+              return;
+            }
+
+            setLaunches(launches.concat(data));
+            setHasNext(launches.length <= pagination.itemLimit * 2);
+            logger("index.tsx line 41", {
+              hasNext,
+              launches: launches.length,
+              limit: pagination.itemLimit * 2,
+            });
             setPagination({
               ...pagination,
               itemOffset: pagination.itemOffset + pagination.itemLimit,
@@ -42,7 +55,7 @@ const NewLaunchesPage = () => {
     );
 
   const handleLoadMoreListings = () => {
-    if (isLoading) return;
+    if (isLoading || !hasNext) return;
     refetch();
   };
 
@@ -85,23 +98,25 @@ const NewLaunchesPage = () => {
         )}
       </SimpleGrid>
 
-      <Box
-        component="aside"
-        mt={20}
-      >
-        <Button
-          onClick={handleLoadMoreListings}
-          loading={isLoading}
-          variant="gradient"
-          gradient={{
-            from: theme.primaryColor,
-            to: theme.colors.violet[3],
-            deg: 45,
-          }}
+      {hasNext && (
+        <Box
+          component="aside"
+          mt={20}
         >
-          Load More
-        </Button>
-      </Box>
+          <Button
+            onClick={handleLoadMoreListings}
+            loading={isLoading}
+            variant="gradient"
+            gradient={{
+              from: theme.primaryColor,
+              to: theme.colors.violet[3],
+              deg: 45,
+            }}
+          >
+            Load More
+          </Button>
+        </Box>
+      )}
     </Layout.Base>
   );
 };

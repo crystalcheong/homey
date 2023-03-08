@@ -85,7 +85,6 @@ export const Grid = ({
               size="sm"
               fw={500}
               variant="gradient"
-              gradient={{ from: "violet.4", to: "violet.8" }}
             >
               See More
             </Text>

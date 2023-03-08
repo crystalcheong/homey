@@ -27,7 +27,6 @@ const Logo = ({ hideBrand = false }: Props) => {
       {!hideBrand && (
         <Text
           variant="gradient"
-          gradient={{ from: "violet.4", to: "violet.8" }}
           component="p"
           ta="center"
           fw={700}

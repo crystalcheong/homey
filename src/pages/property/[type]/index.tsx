@@ -1,7 +1,17 @@
-import { Box, Button, Chip, Group, Text, useMantineTheme } from "@mantine/core";
+import {
+  Box,
+  Button,
+  Group,
+  Menu,
+  MultiSelect,
+  Text,
+  useMantineTheme,
+} from "@mantine/core";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { useCallback, useMemo, useState } from "react";
+import { IconType } from "react-icons";
+import { TbChevronDown, TbLocation } from "react-icons/tb";
 
 import {
   Listing,
@@ -19,9 +29,15 @@ import {
 
 import { Layout, Property, Provider } from "@/components";
 import UnknownState from "@/components/Layouts/UnknownState";
+import {
+  FilterFormState,
+  ListingCategoryIcons,
+  LocationSelection,
+} from "@/components/Pages/Index/Hero";
 
 import { api } from "@/utils/api";
 import { logger } from "@/utils/debug";
+import { getObjectValueCount } from "@/utils/helpers";
 
 import EmptySearch from "~/assets/images/empty-search.svg";
 import ErrorClient from "~/assets/images/error-client.svg";
@@ -51,6 +67,10 @@ const PropertyTypePage = () => {
   const { data: sessionData } = useSession();
 
   const isAuth = !!sessionData;
+  const isDark: boolean = theme.colorScheme === "dark";
+
+  const [formState, setFormState] =
+    useState<typeof FilterFormState>(FilterFormState);
 
   const paramType: string = (type ?? "").toString();
   const isValidType: boolean =
@@ -64,18 +84,26 @@ const PropertyTypePage = () => {
     false;
 
   const paramLocation: string = (location ?? "").toString();
-  const [locations, setLocations] = useState<string[]>([]);
-  const paramLocations: string[] = useMemo(() => {
-    const locationList = getLocations(paramLocation);
-    setLocations(locationList);
-    return locationList;
-  }, [paramLocation]);
-  const zoneIds: string = useMemo(() => getZoneIds(locations), [locations]);
+  const paramLocations: string[] = useMemo(
+    () => getLocations(paramLocation),
+    [paramLocation]
+  );
+  const zoneIds: string = useMemo(
+    () => getZoneIds(formState.location),
+    [formState.location]
+  );
   const isZonal = !!zoneIds.length;
 
+  const listingsKey = isZonal ? "queryListings" : "listings";
   const listingType: ListingType = paramType;
   const listingCategory: ListingCategory = paramCategory;
-  const listingsKey = isZonal ? "queryListings" : "listings";
+
+  useMemo(() => {
+    setFormState({
+      location: paramLocations,
+      category: listingCategory,
+    });
+  }, [listingCategory, paramLocations]);
 
   const listings: Listing[] =
     (useNinetyNineStore.use[listingsKey]() ?? defaultListingMap).get(
@@ -88,10 +116,10 @@ const PropertyTypePage = () => {
   const getFilteredListings = useCallback(
     (listings: Listing[]) => {
       let filteredListings: Listing[] = listings ?? [];
-      if (listingCategory.length)
+      if (formState.category.length)
         filteredListings = filteredListings.filter(
           ({ main_category }) =>
-            main_category.toLowerCase() === listingCategory.toLowerCase()
+            main_category.toLowerCase() === formState.category.toLowerCase()
         );
       if (zoneIds.length)
         filteredListings = filteredListings.filter(({ cluster_mappings }) =>
@@ -100,13 +128,13 @@ const PropertyTypePage = () => {
 
       return filteredListings;
     },
-    [zoneIds, listingCategory]
+    [zoneIds, formState.category]
   );
 
   const viewableListings = useMemo(
     () => getFilteredListings(listings),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [listings, zoneIds, listingCategory]
+    [listings, zoneIds, formState.category]
   );
 
   const updateListings = useNinetyNineStore.use.updateListings();
@@ -118,7 +146,7 @@ const PropertyTypePage = () => {
         pageNum: pagination.pageNum,
         pageSize: pagination.pageSize,
         zoneId: zoneIds,
-        listingCategory,
+        listingCategory: formState.category,
       },
       {
         enabled:
@@ -128,7 +156,7 @@ const PropertyTypePage = () => {
         onSuccess(data) {
           logger("index.tsx line 89/getZoneListings/onSuccess", {
             data,
-            locations,
+            locations: formState.location,
             paramLocations,
             defaultListingMap,
           });
@@ -163,47 +191,118 @@ const PropertyTypePage = () => {
           allowSaveListing={isAuth}
           title={listingType}
           subtitle={
-            paramLocations.length ? (
-              <Group
-                align="center"
-                mb={theme.spacing.xl}
+            <Group
+              align="center"
+              mb={theme.spacing.xl}
+            >
+              <Text
+                component="p"
+                size="sm"
+                color="dimmed"
+                fw={500}
               >
+                Filters (
                 <Text
-                  component="p"
+                  component="span"
                   size="sm"
-                  color="dimmed"
-                  fw={500}
+                  color={theme.fn.primaryColor()}
+                  fw={800}
                 >
-                  Locations (
-                  <Text
-                    component="span"
-                    size="sm"
-                    color={theme.fn.primaryColor()}
-                    fw={800}
-                  >
-                    {locations.length}
-                  </Text>
-                  ):
+                  {getObjectValueCount(formState)}
                 </Text>
-                <Chip.Group
-                  multiple
-                  defaultValue={locations}
-                  onChange={setLocations}
-                  align="center"
-                  position="left"
-                >
-                  {paramLocations.map((location) => (
-                    <Chip
-                      key={`chip-${location}`}
-                      value={location}
-                      tt="capitalize"
-                    >
-                      {location.replace(/-/g, " ")}
-                    </Chip>
-                  ))}
-                </Chip.Group>
-              </Group>
-            ) : undefined
+                ):
+              </Text>
+
+              <MultiSelect
+                data={LocationSelection}
+                searchable
+                clearable
+                placeholder="Search Location"
+                nothingFound="No matching locations"
+                id="locations"
+                value={formState.location}
+                icon={<TbLocation color={theme.fn.primaryColor()} />}
+                onChange={(selectedLocations: string[]) => {
+                  setFormState({
+                    ...formState,
+                    location: selectedLocations,
+                  });
+                }}
+                maxDropdownHeight={160}
+                clearButtonLabel="Clear search locations"
+                maxSelectedValues={3}
+                transitionDuration={150}
+                transition="pop-top-left"
+                transitionTimingFunction="ease"
+                styles={{
+                  root: {
+                    flex: 1,
+                  },
+                  defaultValue: {
+                    background: theme.fn.gradient(),
+                    fontWeight: 700,
+                    color: isDark ? theme.white : theme.black,
+                  },
+                }}
+              />
+              <Menu shadow="md">
+                <Menu.Target>
+                  <Button
+                    variant="subtle"
+                    p={0}
+                    px={2}
+                    w={130}
+                    ta="start"
+                    rightIcon={<TbChevronDown size={16} />}
+                  >
+                    {formState.category.length
+                      ? `Type: ${formState.category}`
+                      : "Property Type"}
+                  </Button>
+                </Menu.Target>
+
+                <Menu.Dropdown>
+                  {ListingCategories.map((category) => {
+                    const CategoryIcon: IconType =
+                      ListingCategoryIcons[category];
+                    const isCategorySelected: boolean =
+                      formState.category === category;
+                    const isSelected = !!formState.category.length;
+
+                    const CategoryColor = isCategorySelected
+                      ? theme.fn.primaryColor()
+                      : isDark
+                      ? theme.white
+                      : theme.black;
+
+                    const handleOnClick = () => {
+                      setFormState({
+                        ...formState,
+                        category:
+                          isCategorySelected && isSelected
+                            ? FilterFormState.category
+                            : category,
+                      });
+                    };
+
+                    return (
+                      <Menu.Item
+                        key={category}
+                        icon={
+                          <CategoryIcon
+                            size={14}
+                            color={CategoryColor}
+                          />
+                        }
+                        onClick={handleOnClick}
+                      >
+                        {category}
+                      </Menu.Item>
+                    );
+                  })}
+                </Menu.Dropdown>
+              </Menu>
+            </Group>
           }
           emptyFallback={
             <UnknownState
@@ -222,11 +321,6 @@ const PropertyTypePage = () => {
                 onClick={handleLoadMoreListings}
                 loading={isLoading}
                 variant="gradient"
-                gradient={{
-                  from: theme.primaryColor,
-                  to: theme.colors.violet[3],
-                  deg: 45,
-                }}
               >
                 Load More
               </Button>
