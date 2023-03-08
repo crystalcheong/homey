@@ -50,6 +50,7 @@ const AccountUpdatePage = () => {
     useState<typeof UpdateFormState>(UpdateFormState);
   const [errorState, setErrorState] =
     useState<typeof UpdateFormErrors>(UpdateFormState);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const useAccountDeleteUser = api.account.deleteUser.useMutation();
   const useAccountUpdateUser = api.account.updateUser.useMutation();
@@ -132,8 +133,9 @@ const AccountUpdatePage = () => {
   };
 
   const handleAccountDelete = () => {
-    if (!isAuth || !currentUser) return;
+    if (!isAuth || !currentUser || isLoading) return;
 
+    setIsLoading(true);
     useAccountDeleteUser.mutate(
       {
         id: currentUser.id,
@@ -148,6 +150,8 @@ const AccountUpdatePage = () => {
         },
       }
     );
+
+    setIsLoading(false);
   };
 
   const handleAccountUpdate = () => {
@@ -265,7 +269,7 @@ const AccountUpdatePage = () => {
               color="red"
               variant="outline"
               onClick={handleAccountDelete}
-              // loading={isLoadingProvider === id}
+              loading={isLoading}
             >
               Delete Account
             </Button>

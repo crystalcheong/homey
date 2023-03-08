@@ -304,8 +304,6 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
       logger("index.tsx line 295", {
         err,
       });
-    } finally {
-      revertToInitialState();
     }
   };
 
