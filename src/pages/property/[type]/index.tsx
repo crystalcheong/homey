@@ -24,6 +24,7 @@ import { api } from "@/utils/api";
 import { logger } from "@/utils/debug";
 
 import EmptySearch from "~/assets/images/empty-search.svg";
+import ErrorClient from "~/assets/images/error-client.svg";
 
 const getZoneIds = (locations: string[]) =>
   locations
@@ -146,7 +147,16 @@ const PropertyTypePage = () => {
 
   return (
     <Layout.Base showAffix={!!listings.length}>
-      <Provider.RenderGuard renderIf={isValidType}>
+      <Provider.RenderGuard
+        renderIf={isValidType}
+        fallbackComponent={
+          <UnknownState
+            svgNode={<ErrorClient />}
+            title="Listing type not found"
+            subtitle="Hey, you aren't supposed to be here"
+          />
+        }
+      >
         <Property.Grid
           listings={viewableListings}
           isLoading={isLoading}
