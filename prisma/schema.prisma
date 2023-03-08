@@ -3,9 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider     = "mysql"
-  url          = env("DATABASE_URL")
-  relationMode = "prisma"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Account {
@@ -24,7 +23,6 @@ model Account {
   user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
-  @@index([userId])
 }
 
 model Session {
@@ -48,7 +46,7 @@ model VerificationToken {
 model Property {
   id        String              @id
   clusterId String
-  type      PropertyType        @default(RENT)
+  type      PropertyType        @default(rent)
   userSaved UserSavedProperty[]
 
   @@unique([id, clusterId])
@@ -73,17 +71,15 @@ model UserSavedProperty {
   User       User     @relation(fields: [userId], references: [id])
 
   @@id([propertyId, userId])
-  @@index([userId])
-  @@index([propertyId])
-}
-
-enum PropertyType {
-  RENT
-  SALE
 }
 
 model Neighbourhood {
   name     String @unique
   assetUrl String
   zoneId   String
+}
+
+enum PropertyType {
+  rent
+  sale
 }

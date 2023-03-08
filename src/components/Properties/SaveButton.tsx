@@ -79,7 +79,7 @@ export const SaveButton = ({
     };
     const saveParams = {
       ...baseParams,
-      listingType: isRent ? PropertyType.RENT : PropertyType.SALE,
+      listingType: isRent ? PropertyType.rent : PropertyType.sale,
       clusterId,
     };
 

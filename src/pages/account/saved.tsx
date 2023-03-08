@@ -26,7 +26,7 @@ const AccountSavedPage = () => {
   const [...allSavedListings]: Listing[] = (
     api.useQueries((t) =>
       userSavedListings.map(({ property }) => {
-        const isRent: boolean = property.type === PropertyType.RENT;
+        const isRent: boolean = property.type === PropertyType.rent;
         return t.ninetyNine.getClusterListings(
           {
             listingId: property.id,
