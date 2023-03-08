@@ -207,16 +207,15 @@ export class NinetyNine {
     pagination: Omit<PaginationInfo, "currentCount" | "hasNext"> = {
       pageSize: 30,
       pageNum: 1,
-    }
+    },
+    ignoreCategory = false
   ) => {
     const listings: Listing[] = [];
     if (!listingType.length) return listings;
 
-    logger("ninetyNine.ts line 185", { listingCategory });
-    const params = {
+    const params: Record<string, string> = {
       property_segments: "residential",
       listing_type: listingType,
-      main_category: listingCategory,
       rental_type: "unit",
       page_size: pagination.pageSize.toString(),
       page_num: pagination.pageNum.toString(),
@@ -226,6 +225,17 @@ export class NinetyNine {
       show_description: "true",
       ...extraParams,
     };
+    if (!ignoreCategory) {
+      params["main_category"] = listingCategory;
+    }
+
+    logger("ninetyNine.ts line 185", {
+      listingCategory,
+      ignoreCategory,
+      params,
+      extraParams,
+    });
+
     const url = this.http.path("listings", {}, params);
     const isFirstQuery: boolean =
       !Object.keys(extraParams).length && pagination.pageNum === 1;
@@ -310,28 +320,27 @@ export class NinetyNine {
   ) => {
     let listing: Listing | null = null;
 
-    const params = {
-      property_segments: "residential",
-      listing_type: listingType,
+    const extraParams = {
       query_type: "cluster",
       query_ids: clusterId,
-      show_cluster_preview: "true",
-      show_internal_linking: "true",
-      show_meta_description: "true",
-      show_description: "true",
     };
 
-    const url = this.http.path("listings", {}, params);
-    const response = await this.http.get({ url });
-    if (!response.ok) return listing;
-    const result = await response.json();
+    try {
+      const listingsData: Listing[] = await this.getListings(
+        listingType,
+        undefined,
+        extraParams,
+        undefined,
+        true
+      );
 
-    const listingsData: Listing[] = (
-      (result?.data?.sections?.[0]?.listings ?? []) as Listing[]
-    ).filter(({ id }) => id === listingId);
-
-    listing = listingsData[0] ?? null;
-    logger("NinetyNine/getClusterListing/listingsData", listingsData);
+      const matchedListings: Listing[] = listingsData.filter(
+        ({ id }) => id === listingId
+      );
+      listing = matchedListings?.[0] ?? null;
+    } catch (error) {
+      console.error("NinetyNine/getClusterListing", error);
+    }
 
     return listing;
   };

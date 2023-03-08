@@ -99,8 +99,8 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
 
   api.ninetyNine.getClusterListings.useQuery(
     {
-      listingType: id,
-      listingId: type,
+      listingType: type,
+      listingId: id,
       clusterId: clusterId,
     },
     {
