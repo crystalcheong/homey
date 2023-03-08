@@ -36,6 +36,7 @@
     "@trpc/next": "^10.13.2",
     "@trpc/react-query": "^10.13.2",
     "@trpc/server": "^10.13.2",
+    "@upstash/redis": "^1.20.1",
     "argon2": "^0.30.3",
     "embla-carousel-autoplay": "^7.0.9",
     "embla-carousel-react": "^7.0.9",

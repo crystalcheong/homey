@@ -24,6 +24,7 @@ model Account {
   user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@index([userId])
 }
 
 model Session {
@@ -32,6 +33,8 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model VerificationToken {
@@ -70,6 +73,8 @@ model UserSavedProperty {
   User       User     @relation(fields: [userId], references: [id])
 
   @@id([propertyId, userId])
+  @@index([userId])
+  @@index([propertyId])
 }
 
 enum PropertyType {

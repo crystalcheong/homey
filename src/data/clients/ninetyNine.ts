@@ -1,5 +1,8 @@
+import { Redis } from "@upstash/redis";
+
 import { PaginationInfo } from "@/data/stores";
 
+import { env } from "@/env.mjs";
 import { logger } from "@/utils/debug";
 import { HTTP } from "@/utils/http";
 
@@ -91,9 +94,14 @@ export type Cluster = {
 
 export class NinetyNine {
   private http: HTTP<typeof Routes>;
+  private redis: Redis;
 
   constructor() {
     this.http = new HTTP(Endpoint, Routes);
+    this.redis = new Redis({
+      url: env.UPSTASH_REDIS_REST_URL,
+      token: env.UPSTASH_REDIS_REST_TOKEN,
+    });
   }
 
   // getPostalInfo = async (postalCode = 0) => {
@@ -151,23 +159,44 @@ export class NinetyNine {
       sort_type: "launch_date",
     };
     const url = this.http.path("newLaunches", {}, params);
+    const isFirstQuery: boolean = pagination.itemOffset === 0;
+    const cacheKey = "launches";
 
-    try {
+    fetchLaunches: try {
+      if (isFirstQuery) {
+        const cachedLaunchesData: ProjectLaunch[] = ((await this.redis.get(
+          cacheKey
+        )) ?? []) as ProjectLaunch[];
+        launches.push(...cachedLaunchesData);
+        logger("ninetyNine.ts line 170", {
+          isFirstQuery,
+          cachedLaunchesData: cachedLaunchesData.length,
+        });
+        if (launches.length) {
+          break fetchLaunches;
+        }
+      }
+
       const response = await this.http.get({ url });
       if (!response.ok) return launches;
       const result = await response.json();
       const launchesData: ProjectLaunch[] = (result?.data?.projects ??
         []) as ProjectLaunch[];
       launches.push(...launchesData);
+
+      // Serialize cache
+      if (isFirstQuery) {
+        this.redis.set(cacheKey, launchesData);
+      }
+      logger("NinetyNine/getLaunches", {
+        url: url.toString(),
+        launches: launches.length,
+        params,
+      });
     } catch (error) {
       console.error("NinetyNine/getLaunches", url, error);
     }
 
-    logger("NinetyNine/getLaunches", {
-      url: url.toString(),
-      launches: launches.length,
-      params,
-    });
     return launches;
   };
 
@@ -198,24 +227,49 @@ export class NinetyNine {
       ...extraParams,
     };
     const url = this.http.path("listings", {}, params);
+    const isFirstQuery: boolean =
+      !Object.keys(extraParams).length && pagination.pageNum === 1;
 
-    try {
+    fetchListings: try {
+      if (isFirstQuery) {
+        const cachedListingsData: Listing[] = ((await this.redis.get(
+          listingType
+        )) ?? []) as Listing[];
+        listings.push(...cachedListingsData);
+        logger("ninetyNine.ts line 217", {
+          isFirstQuery,
+          cachedListingsData: cachedListingsData.length,
+        });
+        if (listings.length) {
+          break fetchListings;
+        }
+      }
+
       const response = await this.http.get({ url });
       if (!response.ok) return listings;
       const result = await response.json();
       const listingsData: Listing[] = (result?.data?.sections?.[0]?.listings ??
         []) as Listing[];
+      logger("ninetyNine.ts line 217", {
+        isFirstQuery,
+        listingsData: listingsData.length,
+      });
       listings.push(...listingsData);
+
+      // Serialize cache
+      if (isFirstQuery) {
+        this.redis.set(listingType, listingsData);
+      }
+      logger("NinetyNine/getListings", {
+        url: url.toString(),
+        listings: listings.length,
+        params,
+        extraParams,
+      });
     } catch (error) {
       console.error("NinetyNine/getListings", url, error);
     }
 
-    logger("NinetyNine/getListings", {
-      url: url.toString(),
-      listings: listings.length,
-      params,
-      extraParams,
-    });
     return listings;
   };
 
@@ -302,12 +356,17 @@ export class NinetyNine {
     const url = this.http.path("neighbourhood", {
       name,
     });
-    const response = await this.http.get({ url });
-    if (!response.ok) return neighbourhood;
-    const result = await response.json();
 
-    neighbourhood = result?.data ?? null;
-    logger("NinetyNine/getNeighbourhood", neighbourhood);
+    try {
+      const response = await this.http.get({ url });
+      if (!response.ok) return neighbourhood;
+      const result = await response.json();
+
+      neighbourhood = result?.data ?? null;
+      logger("NinetyNine/getNeighbourhood", neighbourhood);
+    } catch (error) {
+      console.error("NinetyNine/getNeighbourhood", url, error);
+    }
 
     return neighbourhood;
   };
