@@ -1,9 +1,9 @@
 import {
-  Box,
   Button,
   Group,
   Menu,
   MultiSelect,
+  Pagination,
   Text,
   useMantineTheme,
 } from "@mantine/core";
@@ -71,6 +71,7 @@ const PropertyTypePage = () => {
 
   const [formState, setFormState] =
     useState<typeof FilterFormState>(FilterFormState);
+  const [pageNum, setPageNum] = useState<number>(1);
 
   const paramType: string = (type ?? "").toString();
   const isValidType: boolean =
@@ -139,39 +140,33 @@ const PropertyTypePage = () => {
 
   const updateListings = useNinetyNineStore.use.updateListings();
 
-  const { isFetching: isLoading, refetch } =
-    api.ninetyNine.getZoneListings.useQuery(
-      {
-        listingType,
-        pageNum: pagination.pageNum,
-        pageSize: pagination.pageSize,
-        zoneId: zoneIds,
-        listingCategory: formState.category,
+  const { isFetching: isLoading } = api.ninetyNine.getZoneListings.useQuery(
+    {
+      listingType,
+      pageNum: pagination.pageNum,
+      pageSize: pagination.pageSize,
+      zoneId: zoneIds,
+      listingCategory: formState.category,
+    },
+    {
+      enabled:
+        (isValidType || isValidCategory) &&
+        viewableListings.length < pagination.pageSize * pageNum &&
+        pagination.hasNext,
+      onSuccess: (data) => {
+        logger("index.tsx line 89/getZoneListings/onSuccess", {
+          data,
+          locations: formState.location,
+          paramLocations,
+          defaultListingMap,
+        });
+
+        if (!data.length) return;
+
+        updateListings(listingType, data as Listing[], isZonal);
       },
-      {
-        enabled:
-          (isValidType || isValidCategory) &&
-          viewableListings.length < pagination.pageSize &&
-          pagination.hasNext,
-        onSuccess(data) {
-          logger("index.tsx line 89/getZoneListings/onSuccess", {
-            data,
-            locations: formState.location,
-            paramLocations,
-            defaultListingMap,
-          });
-
-          if (!data.length) return;
-
-          updateListings(listingType, data as Listing[], isZonal);
-        },
-      }
-    );
-
-  const handleLoadMoreListings = () => {
-    if (isLoading) return;
-    refetch();
-  };
+    }
+  );
 
   return (
     <Layout.Base showAffix={!!listings.length}>
@@ -186,7 +181,10 @@ const PropertyTypePage = () => {
         }
       >
         <Property.Grid
-          listings={viewableListings}
+          listings={viewableListings.slice(
+            pagination.pageSize * (pageNum - 1),
+            pagination.pageSize * pageNum
+          )}
           isLoading={isLoading}
           allowSaveListing={isAuth}
           title={listingType}
@@ -234,7 +232,7 @@ const PropertyTypePage = () => {
                 transitionDuration={150}
                 transition="pop-top-left"
                 transitionTimingFunction="ease"
-                styles={{
+                styles={(theme) => ({
                   root: {
                     flex: 1,
                   },
@@ -243,7 +241,7 @@ const PropertyTypePage = () => {
                     fontWeight: 700,
                     color: isDark ? theme.white : theme.black,
                   },
-                }}
+                })}
               />
               <Menu shadow="md">
                 <Menu.Target>
@@ -313,18 +311,21 @@ const PropertyTypePage = () => {
           }
         >
           {pagination.hasNext && (
-            <Box
-              component="aside"
-              mt={20}
-            >
-              <Button
-                onClick={handleLoadMoreListings}
-                loading={isLoading}
-                variant="gradient"
-              >
-                Load More
-              </Button>
-            </Box>
+            <Pagination
+              withEdges
+              total={5 + 5 * (pageNum * +pagination.hasNext)}
+              page={pageNum}
+              onChange={setPageNum}
+              mt="xl"
+              position="center"
+              styles={(theme) => ({
+                item: {
+                  "&[data-active]": {
+                    backgroundImage: theme.fn.gradient(),
+                  },
+                },
+              })}
+            />
           )}
         </Property.Grid>
       </Provider.RenderGuard>

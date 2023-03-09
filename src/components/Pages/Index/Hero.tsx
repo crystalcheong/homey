@@ -213,7 +213,7 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
         <Tabs
           value={searchType}
           onTabChange={handleSearchTypeChange}
-          styles={{
+          styles={(theme) => ({
             root: {
               boxShadow: theme.shadows.md,
               borderRadius: theme.radius.lg,
@@ -229,7 +229,7 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
             tabLabel: {
               textTransform: "capitalize",
             },
-          }}
+          })}
         >
           <Tabs.List grow={isMobile}>
             {SearchTypes.map((type) => (

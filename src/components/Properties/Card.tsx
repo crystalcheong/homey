@@ -98,7 +98,7 @@ export const Card = ({
             radius="xs"
             variant="gradient"
             tt="uppercase"
-            styles={{
+            styles={(theme) => ({
               root: {
                 position: "absolute",
                 bottom: -theme.spacing.xs,
@@ -108,7 +108,7 @@ export const Card = ({
                 borderTopRightRadius: theme.radius.sm,
                 borderBottomRightRadius: theme.radius.sm,
               },
-            }}
+            })}
           >
             {formattedTag?.text}
           </Badge>

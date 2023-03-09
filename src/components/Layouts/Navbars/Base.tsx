@@ -225,13 +225,13 @@ export function HeaderMegaMenu() {
                     onClick={action}
                     compact
                     variant={isActiveRoute ? "light" : "subtle"}
-                    styles={{
+                    styles={(theme) => ({
                       inner: {
                         ...(!isActiveRoute && {
                           color: isDark ? theme.white : theme.black,
                         }),
                       },
-                    }}
+                    })}
                   >
                     {label}
                     {hasNodes && (
@@ -258,7 +258,7 @@ export function HeaderMegaMenu() {
                         key={`link-${label}`}
                         compact
                         variant={isActiveRoute ? "light" : "subtle"}
-                        styles={{
+                        styles={(theme) => ({
                           root: {
                             display: "flex",
                             flexDirection: "row",
@@ -270,7 +270,7 @@ export function HeaderMegaMenu() {
                               color: isDark ? theme.white : theme.black,
                             }),
                           },
-                        }}
+                        })}
                       >
                         {label}
 
@@ -420,7 +420,7 @@ export function HeaderMegaMenu() {
             </Group>
           }
           zIndex={1000000}
-          styles={{
+          styles={(theme) => ({
             header: {
               marginBottom: theme.spacing.xs,
               marginTop: theme.spacing.xs,
@@ -428,7 +428,7 @@ export function HeaderMegaMenu() {
             title: {
               width: "100%",
             },
-          }}
+          })}
         >
           <ScrollArea
             viewportRef={drawerViewport}
@@ -473,7 +473,7 @@ export function HeaderMegaMenu() {
                       onClick={action}
                       compact
                       variant={isActiveRoute ? "light" : "subtle"}
-                      styles={{
+                      styles={(theme) => ({
                         root: {
                           height: 42,
                           display: "flex",
@@ -483,7 +483,7 @@ export function HeaderMegaMenu() {
                         inner: {
                           color: isDark ? theme.white : theme.black,
                         },
-                      }}
+                      })}
                     >
                       {label}
 
@@ -522,7 +522,7 @@ export function HeaderMegaMenu() {
                     })}
                     compact
                     variant={isActiveRoute ? "light" : "subtle"}
-                    styles={{
+                    styles={(theme) => ({
                       root: {
                         height: 42,
                         display: "flex",
@@ -532,7 +532,7 @@ export function HeaderMegaMenu() {
                       inner: {
                         color: isDark ? theme.white : theme.black,
                       },
-                    }}
+                    })}
                   >
                     {item.label}
                   </Button>

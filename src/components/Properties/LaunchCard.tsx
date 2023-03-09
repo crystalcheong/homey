@@ -71,7 +71,7 @@ const LaunchCard = ({
             radius="sm"
             variant="filled"
             tt="uppercase"
-            styles={{
+            styles={(theme) => ({
               root: {
                 background: tag?.background_color,
                 color: tag?.color,
@@ -81,7 +81,7 @@ const LaunchCard = ({
                 left: theme.spacing.xs,
                 zIndex: 10,
               },
-            }}
+            })}
           >
             {tag?.text}
           </Badge>
