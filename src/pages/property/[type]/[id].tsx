@@ -26,7 +26,6 @@ import { IconType } from "react-icons";
 import { FaBirthdayCake } from "react-icons/fa";
 import { MdOutlinePhotoLibrary } from "react-icons/md";
 import {
-  TbBallpen,
   TbBath,
   TbBed,
   TbBuildingCommunity,
@@ -110,7 +109,6 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
   const theme = useMantineTheme();
 
   const isTablet: boolean = useIsTablet(theme);
-
   const isDark: boolean = theme.colorScheme === "dark" ?? false;
 
   const [scroll] = useWindowScroll();
@@ -388,276 +386,228 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
           </SimpleGrid>
         </Box>
 
-        <Grid
-          grow
-          gutter="xl"
-        >
-          <Grid.Col
-            span={9}
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              gap: theme.spacing.xl,
-            }}
-          >
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                placeContent: "start",
-                placeItems: "start",
-                gap: theme.spacing.md,
-                "&>*": {
-                  width: isTablet ? "100%" : "auto",
-                },
-                ...(!isTablet && {
-                  flexDirection: "row",
-                  placeItems: "start",
-                }),
-              }}
-            >
-              {getLimitedArray(details, 4).map(
-                ({ label, attribute, icon: AttrIcon }, idx) => (
-                  <Box
-                    key={`detail-${label}-${idx}`}
-                    sx={{
-                      display: "flex",
-                      flexDirection: "column",
-                      placeContent: "start",
-                      placeItems: "start",
-                      gap: "0.5em",
-                    }}
-                  >
-                    <Text
-                      component="p"
-                      size="sm"
-                      truncate
-                      tt="capitalize"
-                      m={0}
-                    >
-                      {label}
-                    </Text>
-                    <Group spacing="xs">
-                      <AttrIcon
-                        size={20}
-                        color={theme.fn.primaryColor()}
-                      />
-                      <Text
-                        component="p"
-                        size="sm"
-                        fw={800}
-                        m={0}
-                        truncate
-                      >
-                        {attribute}
-                      </Text>
-                    </Group>
-                  </Box>
-                )
-              )}
-            </Box>
-
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                gap: theme.spacing.sm,
-              }}
-            >
-              <Title order={3}>About this home</Title>
-              <Group spacing="sm">
-                {(listing?.formatted_tags ?? []).map((tag, idx) => (
-                  <Badge
-                    key={`${id}-${idx}-${tag?.color}`}
-                    radius="sm"
-                    tt="uppercase"
-                    variant="gradient"
-                  >
-                    {tag?.text}
-                  </Badge>
-                ))}
-              </Group>
-
-              <Text
-                color="dimmed"
-                component="p"
-                size="md"
-                fs={cluster?.description.length ? "normal" : "italic"}
-              >
-                {cluster?.description ?? "No description available"}
-              </Text>
-            </Box>
-
-            <Accordion defaultValue="information">
-              <Accordion.Item value="information">
-                <Accordion.Control>
-                  <Title order={4}>Information</Title>
-                </Accordion.Control>
-                <Accordion.Panel>
-                  <SimpleGrid
-                    cols={2}
-                    spacing="xl"
-                    breakpoints={[
-                      { maxWidth: "md", cols: 2, spacing: "lg" },
-                      { maxWidth: "xs", cols: 1, spacing: "sm" },
-                    ]}
-                  >
-                    {details.map(({ label, attribute }) => (
-                      <Group
-                        position="left"
-                        key={`detail-${label}`}
-                      >
-                        <Text
-                          component="p"
-                          size="sm"
-                          weight={400}
-                          py={0}
-                          lh={0}
-                        >
-                          {label}
-                        </Text>
-                        <Text
-                          component="p"
-                          size="sm"
-                          color="dimmed"
-                        >
-                          {attribute}
-                        </Text>
-                      </Group>
-                    ))}
-                  </SimpleGrid>
-                </Accordion.Panel>
-              </Accordion.Item>
-            </Accordion>
-
-            <Box>
+        <Group>
+          {getLimitedArray(details, 4).map(
+            ({ label, attribute, icon: AttrIcon }, idx) => (
               <Box
-                component="iframe"
-                width="100%"
-                height="500"
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                src={mapsUrl.toString()}
-                sx={{
-                  border: 0,
-                  borderRadius: theme.radius.md,
-                }}
-              ></Box>
-            </Box>
-
-            {listing?.user && (
-              <Box
+                key={`detail-${label}-${idx}`}
                 sx={{
                   display: "flex",
                   flexDirection: "column",
-                  gap: theme.spacing.sm,
-                  background: theme.fn.gradient(),
-                  padding: theme.spacing.sm,
-                  borderRadius: theme.radius.sm,
-                  position: "relative",
-
-                  "&::before": {
-                    background: isDark ? theme.black : theme.white,
-                    content: '""',
-                    position: "absolute",
-                    inset: "2px",
-                    zIndex: 1,
-                    borderRadius: theme.radius.xs,
-                  },
-
-                  "&>*": {
-                    position: "relative",
-                    zIndex: 2,
-                  },
+                  placeContent: "start",
+                  placeItems: "start",
+                  gap: "0.5em",
                 }}
               >
                 <Text
                   component="p"
-                  fw={600}
+                  size="sm"
+                  truncate
+                  tt="capitalize"
                   m={0}
                 >
-                  Listed by
+                  {label}
                 </Text>
-                <Group position="apart">
-                  <Group>
-                    <Avatar
-                      src={listing?.user?.photo_url}
-                      alt="User Avatar"
-                      radius="xl"
-                      size="md"
-                    />
-                    <Text
-                      component="p"
-                      fw={600}
-                    >
-                      {listing?.user?.name}
-                    </Text>
-                  </Group>
-
-                  <Group spacing="xs">
-                    <EnquiryButtonGroup
-                      listing={listing}
-                      hideLabels={isTablet}
-                    />
-                  </Group>
+                <Group spacing="xs">
+                  <AttrIcon
+                    size={20}
+                    color={theme.fn.primaryColor()}
+                  />
+                  <Text
+                    component="p"
+                    size="sm"
+                    fw={800}
+                    m={0}
+                    truncate
+                  >
+                    {attribute}
+                  </Text>
                 </Group>
               </Box>
-            )}
+            )
+          )}
 
+          <Title
+            order={2}
+            size="p"
+            color="dimmed"
+            weight={400}
+            fz="sm"
+            sx={{
+              marginLeft: "auto",
+              textAlign: "center",
+            }}
+          >
             <Text
-              component="p"
-              color="dimmed"
-              size="xs"
+              component="span"
+              weight={800}
+              fz="xl"
+              variant="gradient"
             >
-              You agree to Homey's Terms of Use & Privacy Policy. By choosing to
-              contact a property, you also agree that Homey Group, landlords,
-              and property managers may call or text you about any inquiries you
-              submit through our services, which may involve use of automated
-              means and prerecorded/artificial voices. You don't need to consent
-              as a condition of renting any property, or buying any other goods
-              or services. Message/data rates may apply.
+              {listing?.attributes?.price_formatted ?? `$-.--`}&nbsp;
             </Text>
-          </Grid.Col>
-          <Grid.Col
-            span={3}
+            {PriceListingTypes[listing?.listing_type ?? ListingTypes[0]]}
+          </Title>
+        </Group>
+
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: theme.spacing.sm,
+          }}
+        >
+          <Title order={3}>About this home</Title>
+          <Group spacing="sm">
+            {(listing?.formatted_tags ?? []).map((tag, idx) => (
+              <Badge
+                key={`${id}-${idx}-${tag?.color}`}
+                radius="sm"
+                tt="uppercase"
+                variant="gradient"
+              >
+                {tag?.text}
+              </Badge>
+            ))}
+          </Group>
+
+          <Text
+            color="dimmed"
+            component="p"
+            size="md"
+            fs={cluster?.description.length ? "normal" : "italic"}
+          >
+            {cluster?.description ?? "No description available"}
+          </Text>
+        </Box>
+
+        <Accordion defaultValue="information">
+          <Accordion.Item value="information">
+            <Accordion.Control>
+              <Title order={4}>Information</Title>
+            </Accordion.Control>
+            <Accordion.Panel>
+              <SimpleGrid
+                cols={2}
+                spacing="xl"
+                breakpoints={[
+                  { maxWidth: "md", cols: 2, spacing: "lg" },
+                  { maxWidth: "xs", cols: 1, spacing: "sm" },
+                ]}
+              >
+                {details.map(({ label, attribute }) => (
+                  <Group
+                    position="left"
+                    key={`detail-${label}`}
+                  >
+                    <Text
+                      component="p"
+                      size="sm"
+                      weight={400}
+                      py={0}
+                      lh={0}
+                    >
+                      {label}
+                    </Text>
+                    <Text
+                      component="p"
+                      size="sm"
+                      color="dimmed"
+                    >
+                      {attribute}
+                    </Text>
+                  </Group>
+                ))}
+              </SimpleGrid>
+            </Accordion.Panel>
+          </Accordion.Item>
+        </Accordion>
+
+        <Box
+          component="iframe"
+          width="100%"
+          height="500"
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+          src={mapsUrl.toString()}
+          sx={{
+            border: 0,
+            borderRadius: theme.radius.md,
+          }}
+        />
+
+        {listing?.user && (
+          <Box
             sx={{
               display: "flex",
               flexDirection: "column",
               gap: theme.spacing.sm,
+              background: theme.fn.gradient(),
+              padding: theme.spacing.sm,
+              borderRadius: theme.radius.sm,
+              position: "relative",
+
+              "&::before": {
+                background: isDark ? theme.black : theme.white,
+                content: '""',
+                position: "absolute",
+                inset: "2px",
+                zIndex: 1,
+                borderRadius: theme.radius.xs,
+              },
+
+              "&>*": {
+                position: "relative",
+                zIndex: 2,
+              },
             }}
           >
-            <Group>
-              <Title
-                order={2}
-                size="p"
-                color="dimmed"
-                weight={400}
-                fz="sm"
-              >
+            <Text
+              component="p"
+              fw={600}
+              m={0}
+            >
+              Listed by
+            </Text>
+            <Group position="apart">
+              <Group>
+                <Avatar
+                  src={listing?.user?.photo_url}
+                  alt="User Avatar"
+                  radius="xl"
+                  size="md"
+                />
                 <Text
-                  component="span"
-                  weight={800}
-                  fz="xl"
-                  variant="gradient"
+                  component="p"
+                  fw={600}
                 >
-                  {listing?.attributes?.price_formatted ?? `$-.--`}&nbsp;
+                  {listing?.user?.name}
                 </Text>
-                {PriceListingTypes[listing?.listing_type ?? ListingTypes[0]]}
-              </Title>
+              </Group>
 
-              <Button
-                fullWidth={!isTablet}
-                leftIcon={<TbBallpen size={16} />}
-                disabled
-                sx={{
-                  flex: 1,
-                }}
-              >
-                Apply Now
-              </Button>
+              <Group spacing="xs">
+                <EnquiryButtonGroup
+                  listing={listing}
+                  hideLabels={isTablet}
+                />
+              </Group>
             </Group>
-          </Grid.Col>
-        </Grid>
+          </Box>
+        )}
+
+        <Text
+          component="p"
+          color="dimmed"
+          size="xs"
+        >
+          You agree to Homey's Terms of Use & Privacy Policy. By choosing to
+          contact a property, you also agree that Homey Group, landlords, and
+          property managers may call or text you about any inquiries you submit
+          through our services, which may involve use of automated means and
+          prerecorded/artificial voices. You don't need to consent as a
+          condition of renting any property, or buying any other goods or
+          services. Message/data rates may apply.
+        </Text>
 
         <Affix position={{ bottom: 20, left: 20 }}>
           <Transition
