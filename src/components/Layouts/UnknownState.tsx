@@ -14,6 +14,7 @@ interface Props extends BoxProps {
   svgNode: ReactNode;
   title: string | ReactNode;
   subtitle: string | ReactNode;
+  hideBackButton?: boolean;
 }
 
 const UnknownState = ({
@@ -21,6 +22,7 @@ const UnknownState = ({
   title,
   subtitle,
   children,
+  hideBackButton = false,
   ...rest
 }: Props) => {
   const router = useRouter();
@@ -74,14 +76,17 @@ const UnknownState = ({
         {subtitle}
       </Text>
 
-      <Button
-        variant="light"
-        onClick={() => router.back()}
-        leftIcon={<TbArrowNarrowLeft />}
-        mt={8}
-      >
-        Go back
-      </Button>
+      {!hideBackButton && (
+        <Button
+          variant="light"
+          onClick={() => router.back()}
+          leftIcon={<TbArrowNarrowLeft />}
+          mt={8}
+        >
+          Go back
+        </Button>
+      )}
+
       {children}
     </Box>
   );

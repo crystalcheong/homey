@@ -187,7 +187,7 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
       icon: TbBath,
     },
     {
-      label: `Area`,
+      label: `Living Space`,
       attribute: `${listing?.attributes?.area_size_sqm_formatted ?? "--"}`,
       icon: TbDimensions,
     },
@@ -477,7 +477,15 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
                   </Badge>
                 ))}
               </Group>
-              <Text>{cluster?.description ?? "No description available"}</Text>
+
+              <Text
+                color="dimmed"
+                component="p"
+                size="md"
+                fs={cluster?.description.length ? "normal" : "italic"}
+              >
+                {cluster?.description ?? "No description available"}
+              </Text>
             </Box>
 
             <Accordion defaultValue="information">
@@ -595,6 +603,20 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
                 </Group>
               </Box>
             )}
+
+            <Text
+              component="p"
+              color="dimmed"
+              size="xs"
+            >
+              You agree to Homey's Terms of Use & Privacy Policy. By choosing to
+              contact a property, you also agree that Homey Group, landlords,
+              and property managers may call or text you about any inquiries you
+              submit through our services, which may involve use of automated
+              means and prerecorded/artificial voices. You don't need to consent
+              as a condition of renting any property, or buying any other goods
+              or services. Message/data rates may apply.
+            </Text>
           </Grid.Col>
           <Grid.Col
             span={3}

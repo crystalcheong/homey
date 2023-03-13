@@ -137,6 +137,7 @@ export const SaveButton = ({
         </Button>
       ) : (
         <ActionIcon
+          variant="transparent"
           onClick={handleOnSave}
           disabled={!listing}
           {...overwriteActionIconProps}
