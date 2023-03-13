@@ -1,6 +1,5 @@
 import { Component, ErrorInfo, PropsWithChildren } from "react";
 
-import { Layout } from "@/components";
 import UnknownState from "@/components/Layouts/UnknownState";
 
 import ErrorServer from "~/assets/images/error-server.svg";
@@ -31,21 +30,11 @@ export class ErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <Layout.Base
-          showAffix={false}
-          layoutStylesOverwrite={{
-            display: "flex",
-            flexDirection: "column",
-            placeContent: "center",
-            placeItems: "center",
-          }}
-        >
-          <UnknownState
-            svgNode={<ErrorServer />}
-            title="Something went wrong"
-            subtitle="a component error occurred"
-          />
-        </Layout.Base>
+        <UnknownState
+          svgNode={<ErrorServer />}
+          title="Something went wrong"
+          subtitle="a component error occurred"
+        />
       );
     }
 

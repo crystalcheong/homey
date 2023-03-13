@@ -7,6 +7,7 @@ import {
   GroupProps,
   useMantineTheme,
 } from "@mantine/core";
+import { IconBaseProps } from "react-icons";
 
 import { Listing } from "@/data/clients/ninetyNine";
 
@@ -16,6 +17,7 @@ interface Props {
   listing: Listing;
   hideLabels?: boolean;
 
+  overwriteIconProps?: IconBaseProps;
   overwriteGroupProps?: GroupProps;
   overwriteButtonProps?: ButtonProps;
   overwriteActionIconProps?: ActionIconProps;
@@ -24,6 +26,7 @@ interface Props {
 export const EnquiryButtonGroup = ({
   listing,
   hideLabels = false,
+  overwriteIconProps,
   overwriteGroupProps,
   overwriteButtonProps,
   overwriteActionIconProps,
@@ -56,6 +59,7 @@ export const EnquiryButtonGroup = ({
           <EnquiryIcon
             size={16}
             color={theme.fn.primaryColor()}
+            {...overwriteIconProps}
           />
         );
 

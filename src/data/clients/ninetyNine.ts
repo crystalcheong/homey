@@ -347,7 +347,7 @@ export class NinetyNine {
 
   getCluster = async (clusterId: string) => {
     let cluster: Cluster | null = null;
-    const url = this.http.path("listings", {
+    const url = this.http.path("cluster", {
       clusterId,
     });
     const response = await this.http.get({ url });

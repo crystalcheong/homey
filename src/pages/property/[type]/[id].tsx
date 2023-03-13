@@ -1,5 +1,7 @@
-import { Carousel } from "@mantine/carousel";
 import {
+  Accordion,
+  Affix,
+  Avatar,
   Badge,
   Box,
   Button,
@@ -7,21 +9,38 @@ import {
   Grid,
   Group,
   Image,
+  Paper,
   SimpleGrid,
   Skeleton,
   Text,
   Title,
+  Transition,
   useMantineTheme,
 } from "@mantine/core";
+import { useWindowScroll } from "@mantine/hooks";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
-import Autoplay from "embla-carousel-autoplay";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
-import { TbCheck, TbCurrentLocation, TbShare } from "react-icons/tb";
+import { useEffect, useState } from "react";
+import { IconType } from "react-icons";
+import { FaBirthdayCake } from "react-icons/fa";
+import { MdOutlinePhotoLibrary } from "react-icons/md";
+import {
+  TbBallpen,
+  TbBath,
+  TbBed,
+  TbBuildingCommunity,
+  TbCheck,
+  TbClock,
+  TbCurrentLocation,
+  TbDimensions,
+  TbEdit,
+  TbShare,
+} from "react-icons/tb";
+import { TiChartAreaOutline } from "react-icons/ti";
 import superjson from "superjson";
 
-import { Listing, ListingTypes } from "@/data/clients/ninetyNine";
+import { Cluster, Listing, ListingTypes } from "@/data/clients/ninetyNine";
 import { defaultListingMap, useNinetyNineStore } from "@/data/stores";
 
 import { Layout, Provider } from "@/components";
@@ -39,7 +58,7 @@ import { appRouter } from "@/server/api/root";
 import { prisma } from "@/server/db";
 import { api, getBaseUrl } from "@/utils/api";
 import { logger } from "@/utils/debug";
-import { useIsMobile } from "@/utils/dom";
+import { useIsTablet } from "@/utils/dom";
 import { getLimitedArray } from "@/utils/helpers";
 
 import EmptyListing from "~/assets/images/empty-listing.svg";
@@ -90,37 +109,54 @@ type Props = InferGetServerSidePropsType<typeof getServerSideProps>;
 const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
   const theme = useMantineTheme();
 
-  const isMobile: boolean = useIsMobile(theme);
+  const isTablet: boolean = useIsTablet(theme);
+
+  const isDark: boolean = theme.colorScheme === "dark" ?? false;
+
+  const [scroll] = useWindowScroll();
 
   const [isMounted, setIsMounted] = useState<boolean>(false);
+  const [cluster, setCluster] = useState<Cluster | null>(null);
   const listing: Listing | null = useNinetyNineStore.use.getListing()(type, id);
 
   const [baseUrl, setBaseUrl] = useState<string>(getBaseUrl());
   const [modalOpened, setModalOpened] = useState<Listing["photos"][number]>();
 
-  api.ninetyNine.getClusterListings.useQuery(
-    {
-      listingType: type,
-      listingId: id,
-      clusterId: clusterId,
-    },
-    {
-      enabled: !listing && isValidProperty && isMounted,
-      onSuccess(data) {
-        logger("[id].tsx line 45/onSuccess", {
-          data,
-          clusterId,
-          id,
-          type,
-          defaultListingMap,
-          listing,
-        });
-        useNinetyNineStore.setState(() => ({ currentListing: data }));
+  api.useQueries((t) => [
+    t.ninetyNine.getClusterListings(
+      {
+        listingType: type,
+        listingId: id,
+        clusterId: clusterId,
       },
-    }
-  );
-
-  const autoplay = useRef(Autoplay({ delay: 2000 }));
+      {
+        enabled: !listing && isValidProperty && isMounted,
+        onSuccess: (data) => {
+          logger("[id].tsx line 45/onSuccess", {
+            data,
+            clusterId,
+            id,
+            type,
+            defaultListingMap,
+            listing,
+          });
+          useNinetyNineStore.setState(() => ({ currentListing: data }));
+        },
+      }
+    ),
+    t.ninetyNine.getCluster(
+      {
+        clusterId: listing?.cluster_mappings?.["development"]?.[0] ?? "",
+      },
+      {
+        enabled: !!listing && isMounted,
+        onSuccess: (data) => {
+          logger("[id].tsx line 140", { data });
+          setCluster(data);
+        },
+      }
+    ),
+  ]);
 
   /**
    * @see https://nextjs.org/docs/messages/react-hydration-error
@@ -138,32 +174,54 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
   const details: {
     label: string;
     attribute: string;
+    icon: IconType;
   }[] = [
     {
-      label: `Price/sqft`,
-      attribute: `${listing?.attributes?.area_ppsf_formatted ?? "$-.-- psf"}`,
-    },
-    {
-      label: `Built year`,
-      attribute: `${listing?.attributes?.completed_at ?? "----"}`,
-    },
-    {
-      label: `No. of Bedrooms`,
+      label: `Bedrooms`,
       attribute: `${listing?.attributes?.bedrooms ?? "--"}`,
+      icon: TbBed,
+    },
+    {
+      label: `Bathrooms`,
+      attribute: `${listing?.attributes?.bathrooms ?? "--"}`,
+      icon: TbBath,
+    },
+    {
+      label: `Area`,
+      attribute: `${listing?.attributes?.area_size_sqm_formatted ?? "--"}`,
+      icon: TbDimensions,
     },
     {
       label: `Tenure`,
       attribute: `${listing?.attributes?.tenure ?? "--"}`,
+      icon: TbClock,
+    },
+
+    {
+      label: `Price/sqft`,
+      attribute: `${listing?.attributes?.area_ppsf_formatted ?? "$-.-- psf"}`,
+      icon: TiChartAreaOutline,
+    },
+    {
+      label: `Built year`,
+      attribute: `${listing?.attributes?.completed_at ?? "----"}`,
+      icon: FaBirthdayCake,
     },
     {
       label: `Property type`,
-      attribute: `${listing?.sub_category_formatted ?? "--"}`,
+      attribute: `${listing?.main_category ?? "--"}`.toUpperCase(),
+      icon: TbBuildingCommunity,
     },
     {
       label: `Last updated`,
       attribute: `${listing?.date_formatted ?? "--"}`,
+      icon: TbEdit,
     },
   ];
+
+  const mapsUrl = `https://www.google.com/maps/embed/v1/place?key=AIzaSyBeU0KYm091allUovk19s4Aw4KfI7l43aI&q=${encodeURIComponent(
+    listing?.address_name ?? ""
+  )}`;
 
   return (
     <Layout.Base
@@ -183,157 +241,64 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
           />
         }
       >
-        <Carousel
-          withIndicators
-          loop
-          align="start"
-          height={400}
-          slideSize="50%"
-          slideGap="sm"
-          plugins={[autoplay.current]}
-          onMouseEnter={autoplay.current.stop}
-          onMouseLeave={autoplay.current.reset}
-          breakpoints={[
-            { maxWidth: "md", slideSize: "50%", slideGap: "sm" },
-            { maxWidth: "sm", slideSize: "100%", slideGap: 0 },
-          ]}
-          styles={{
-            indicator: {
-              width: 12,
-              height: 4,
-              transition: "width 250ms ease",
-
-              "&[data-active]": {
-                width: 40,
-              },
-            },
-          }}
-        >
-          {(listing?.photos ?? []).reverse().map((photo, idx) => (
-            <Carousel.Slide key={`tourSlide-${photo.id}-${idx}`}>
-              <Image
-                height={400}
-                fit={isMobile ? "cover" : "cover"}
-                src={photo.url}
-                alt={photo.category}
-                onClick={() => setModalOpened(photo)}
-                sx={{
-                  position: "relative",
-                }}
-                caption={<ImageCaption>{photo.category}</ImageCaption>}
-              />
-            </Carousel.Slide>
-          ))}
-        </Carousel>
-
+        {/* HEADER */}
         <Box
-          component="section"
+          component={Paper}
           sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap: theme.spacing.xl,
+            position: "sticky",
+            top: "56px",
+            padding: "1em 0 2em",
+            zIndex: 20,
           }}
         >
-          <Box
-            component="article"
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-            }}
+          <Title
+            order={1}
+            size="h2"
           >
-            <Group position="apart">
-              <Title
-                order={1}
-                size="h3"
-                sx={{
-                  wordBreak: "break-word",
-                }}
+            {listing?.address_name}
+          </Title>
+
+          <Group position="apart">
+            <Title
+              order={2}
+              size="p"
+              color="dimmed"
+              fw={400}
+            >
+              {listing?.address_line_2}
+            </Title>
+
+            <Group spacing="xs">
+              <CopyButton
+                value={`${baseUrl}/property/${type}/${id}?clusterId=${clusterId}`}
               >
-                {listing?.attributes?.bedrooms_formatted}
-                &nbsp;in&nbsp;{listing?.address_name}
-              </Title>
-
-              <Title
-                order={2}
-                size="p"
-                color="dimmed"
-                weight={400}
-                fz="sm"
-              >
-                <Text
-                  component="span"
-                  weight={800}
-                  fz="xl"
-                  variant="gradient"
-                >
-                  {listing?.attributes?.price_formatted ?? `$-.--`}&nbsp;
-                </Text>
-                {PriceListingTypes[listing?.listing_type ?? ListingTypes[0]]}
-              </Title>
-            </Group>
-
-            <Group position="apart">
-              {listing?.address_line_2 && (
-                <Text
-                  component="p"
-                  color="dimmed"
-                  pt={0}
-                  lh={0}
-                >
-                  {listing?.address_line_2}
-                </Text>
-              )}
-
-              <Group spacing="sm">
-                {(listing?.formatted_tags ?? []).map((tag, idx) => (
-                  <Badge
-                    key={`${id}-${idx}-${tag?.color}`}
-                    radius="sm"
-                    tt="uppercase"
-                    variant="gradient"
+                {({ copied, copy }) => (
+                  <Button
+                    color="primary"
+                    onClick={copy}
+                    variant="outline"
+                    leftIcon={
+                      copied ? <TbCheck size={16} /> : <TbShare size={16} />
+                    }
                   >
-                    {tag?.text}
-                  </Badge>
-                ))}
-              </Group>
-            </Group>
-          </Box>
+                    {copied ? "Link copied" : "Share"}
+                  </Button>
+                )}
+              </CopyButton>
 
-          <SimpleGrid
-            cols={2}
-            spacing="xl"
-            breakpoints={[
-              { maxWidth: "md", cols: 2, spacing: "lg" },
-              { maxWidth: "xs", cols: 1, spacing: "sm" },
-            ]}
-          >
-            {details.map(({ label, attribute }) => (
-              <Group
-                position="left"
-                key={`detail-${label}`}
+              <Button
+                variant="outline"
+                component={Link}
+                target="_blank"
+                href={`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${Object.values(
+                  listing?.location.coordinates ?? {}
+                ).join(",")}&heading=-45&fov=80`}
+                leftIcon={<TbCurrentLocation size={16} />}
               >
-                <Text
-                  component="p"
-                  weight={700}
-                  py={0}
-                  lh={0}
-                  w={120}
-                >
-                  {label}
-                </Text>
-                <Text
-                  component="p"
-                  color="dimmed"
-                >
-                  {attribute}
-                </Text>
-              </Group>
-            ))}
-          </SimpleGrid>
+                Street View
+              </Button>
 
-          {listing && (
-            <Group position="apart">
-              <Group>
+              {listing && (
                 <SaveButton
                   listing={listing}
                   showLabel
@@ -341,65 +306,32 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
                     compact: false,
                   }}
                 />
-
-                <CopyButton
-                  value={`${baseUrl}/property/${type}/${id}?clusterId=${clusterId}`}
-                >
-                  {({ copied, copy }) => (
-                    <Button
-                      color="primary"
-                      onClick={copy}
-                      variant="outline"
-                      leftIcon={
-                        copied ? <TbCheck size={16} /> : <TbShare size={16} />
-                      }
-                    >
-                      {copied ? "Link copied" : "Share"}
-                    </Button>
-                  )}
-                </CopyButton>
-              </Group>
-
-              <EnquiryButtonGroup
-                listing={listing}
-                hideLabels={isMobile}
-              />
+              )}
             </Group>
-          )}
-        </Box>
-
-        <Box>
-          <Button
-            variant="outline"
-            component={Link}
-            target="_blank"
-            href={`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${Object.values(
-              listing?.location.coordinates ?? {}
-            ).join(",")}&heading=-45&fov=80`}
-            leftIcon={<TbCurrentLocation size={22} />}
-          >
-            Street View
-          </Button>
-        </Box>
-
-        <Box>
-          <Group position="apart">
-            <Title
-              order={3}
-              size="h3"
-              py="md"
-            >
-              Take a tour
-            </Title>
-            <Text
-              component="p"
-              fw={500}
-              variant="gradient"
-              onClick={() => setModalOpened(listing?.photos?.[0])}
-            >
-              See more
-            </Text>
           </Group>
+        </Box>
+
+        {/* GALLERY GRID */}
+        <Box
+          sx={{
+            position: "relative",
+          }}
+        >
+          <Button
+            variant="white"
+            leftIcon={<MdOutlinePhotoLibrary size={16} />}
+            onClick={() => setModalOpened(listing?.photos?.[0])}
+            styles={(theme) => ({
+              root: {
+                position: "absolute",
+                bottom: theme.spacing.xs,
+                right: theme.spacing.xl,
+                zIndex: 10,
+              },
+            })}
+          >
+            View all photos
+          </Button>
           <SimpleGrid
             cols={2}
             spacing="md"
@@ -455,6 +387,276 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
             </Grid>
           </SimpleGrid>
         </Box>
+
+        <Grid
+          grow
+          gutter="xl"
+        >
+          <Grid.Col
+            span={9}
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: theme.spacing.xl,
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                placeContent: "start",
+                placeItems: "start",
+                gap: theme.spacing.md,
+                "&>*": {
+                  width: isTablet ? "100%" : "auto",
+                },
+                ...(!isTablet && {
+                  flexDirection: "row",
+                  placeItems: "start",
+                }),
+              }}
+            >
+              {getLimitedArray(details, 4).map(
+                ({ label, attribute, icon: AttrIcon }, idx) => (
+                  <Box
+                    key={`detail-${label}-${idx}`}
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      placeContent: "start",
+                      placeItems: "start",
+                      gap: "0.5em",
+                    }}
+                  >
+                    <Text
+                      component="p"
+                      size="sm"
+                      truncate
+                      tt="capitalize"
+                      m={0}
+                    >
+                      {label}
+                    </Text>
+                    <Group spacing="xs">
+                      <AttrIcon
+                        size={20}
+                        color={theme.fn.primaryColor()}
+                      />
+                      <Text
+                        component="p"
+                        size="sm"
+                        fw={800}
+                        m={0}
+                        truncate
+                      >
+                        {attribute}
+                      </Text>
+                    </Group>
+                  </Box>
+                )
+              )}
+            </Box>
+
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                gap: theme.spacing.sm,
+              }}
+            >
+              <Title order={3}>About this home</Title>
+              <Group spacing="sm">
+                {(listing?.formatted_tags ?? []).map((tag, idx) => (
+                  <Badge
+                    key={`${id}-${idx}-${tag?.color}`}
+                    radius="sm"
+                    tt="uppercase"
+                    variant="gradient"
+                  >
+                    {tag?.text}
+                  </Badge>
+                ))}
+              </Group>
+              <Text>{cluster?.description ?? "No description available"}</Text>
+            </Box>
+
+            <Accordion defaultValue="information">
+              <Accordion.Item value="information">
+                <Accordion.Control>
+                  <Title order={4}>Information</Title>
+                </Accordion.Control>
+                <Accordion.Panel>
+                  <SimpleGrid
+                    cols={2}
+                    spacing="xl"
+                    breakpoints={[
+                      { maxWidth: "md", cols: 2, spacing: "lg" },
+                      { maxWidth: "xs", cols: 1, spacing: "sm" },
+                    ]}
+                  >
+                    {details.map(({ label, attribute }) => (
+                      <Group
+                        position="left"
+                        key={`detail-${label}`}
+                      >
+                        <Text
+                          component="p"
+                          size="sm"
+                          weight={400}
+                          py={0}
+                          lh={0}
+                        >
+                          {label}
+                        </Text>
+                        <Text
+                          component="p"
+                          size="sm"
+                          color="dimmed"
+                        >
+                          {attribute}
+                        </Text>
+                      </Group>
+                    ))}
+                  </SimpleGrid>
+                </Accordion.Panel>
+              </Accordion.Item>
+            </Accordion>
+
+            <Box>
+              <Box
+                component="iframe"
+                width="100%"
+                height="500"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                src={mapsUrl.toString()}
+                sx={{
+                  border: 0,
+                  borderRadius: theme.radius.md,
+                }}
+              ></Box>
+            </Box>
+
+            {listing?.user && (
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: theme.spacing.sm,
+                  background: theme.fn.gradient(),
+                  padding: theme.spacing.sm,
+                  borderRadius: theme.radius.sm,
+                  position: "relative",
+
+                  "&::before": {
+                    background: isDark ? theme.black : theme.white,
+                    content: '""',
+                    position: "absolute",
+                    inset: "2px",
+                    zIndex: 1,
+                    borderRadius: theme.radius.xs,
+                  },
+
+                  "&>*": {
+                    position: "relative",
+                    zIndex: 2,
+                  },
+                }}
+              >
+                <Text
+                  component="p"
+                  fw={600}
+                  m={0}
+                >
+                  Listed by
+                </Text>
+                <Group position="apart">
+                  <Group>
+                    <Avatar
+                      src={listing?.user?.photo_url}
+                      alt="User Avatar"
+                      radius="xl"
+                      size="md"
+                    />
+                    <Text
+                      component="p"
+                      fw={600}
+                    >
+                      {listing?.user?.name}
+                    </Text>
+                  </Group>
+
+                  <Group spacing="xs">
+                    <EnquiryButtonGroup
+                      listing={listing}
+                      hideLabels={isTablet}
+                    />
+                  </Group>
+                </Group>
+              </Box>
+            )}
+          </Grid.Col>
+          <Grid.Col
+            span={3}
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: theme.spacing.sm,
+            }}
+          >
+            <Group>
+              <Title
+                order={2}
+                size="p"
+                color="dimmed"
+                weight={400}
+                fz="sm"
+              >
+                <Text
+                  component="span"
+                  weight={800}
+                  fz="xl"
+                  variant="gradient"
+                >
+                  {listing?.attributes?.price_formatted ?? `$-.--`}&nbsp;
+                </Text>
+                {PriceListingTypes[listing?.listing_type ?? ListingTypes[0]]}
+              </Title>
+
+              <Button
+                fullWidth={!isTablet}
+                leftIcon={<TbBallpen size={16} />}
+                disabled
+                sx={{
+                  flex: 1,
+                }}
+              >
+                Apply Now
+              </Button>
+            </Group>
+          </Grid.Col>
+        </Grid>
+
+        <Affix position={{ bottom: 20, left: 20 }}>
+          <Transition
+            transition="slide-up"
+            mounted={scroll.y > 0}
+          >
+            {(transitionStyles) => (
+              <Group style={transitionStyles}>
+                <EnquiryButtonGroup
+                  listing={listing ?? ({} as Listing)}
+                  overwriteIconProps={{
+                    color: theme.white,
+                  }}
+                  overwriteButtonProps={{
+                    variant: "filled",
+                  }}
+                />
+              </Group>
+            )}
+          </Transition>
+        </Affix>
 
         <GalleryModal
           photos={listing?.photos ?? []}

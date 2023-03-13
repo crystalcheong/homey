@@ -23,6 +23,7 @@ const server = z.object({
   GITHUB_SECRET: z.string().min(1),
   GOOGLE_ID: z.string().min(1),
   GOOGLE_SECRET: z.string().min(1),
+  GOOGLE_MAPS_API: z.string().min(1),
   UPSTASH_REDIS_REST_URL: z.string().min(1),
   UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
 });
@@ -51,6 +52,7 @@ const processEnv = {
   GITHUB_SECRET: process.env.GITHUB_SECRET,
   GOOGLE_ID: process.env.GOOGLE_ID,
   GOOGLE_SECRET: process.env.GOOGLE_SECRET,
+  GOOGLE_MAPS_API: process.env.GOOGLE_SECRET,
   UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
   UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
   // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
