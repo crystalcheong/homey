@@ -239,7 +239,10 @@ const PropertyTypePage = () => {
                   defaultValue: {
                     background: theme.fn.gradient(),
                     fontWeight: 700,
-                    color: isDark ? theme.white : theme.black,
+                    color: theme.white,
+                  },
+                  defaultValueRemove: {
+                    color: theme.white,
                   },
                 })}
               />

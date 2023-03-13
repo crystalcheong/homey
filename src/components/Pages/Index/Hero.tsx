@@ -293,6 +293,19 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
                     transitionDuration={150}
                     transition="pop-top-left"
                     transitionTimingFunction="ease"
+                    styles={(theme) => ({
+                      root: {
+                        flex: 1,
+                      },
+                      defaultValue: {
+                        background: theme.fn.gradient(),
+                        fontWeight: 700,
+                        color: theme.white,
+                      },
+                      defaultValueRemove: {
+                        color: theme.white,
+                      },
+                    })}
                   />
 
                   <Box
