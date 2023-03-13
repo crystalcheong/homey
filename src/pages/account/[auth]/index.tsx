@@ -314,7 +314,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
     if (isAuth && isValidAuthType) {
       router.push(
         {
-          pathname: `/account`,
+          pathname: `/`,
         },
         undefined,
         { scroll: true }

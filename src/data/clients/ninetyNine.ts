@@ -347,6 +347,8 @@ export class NinetyNine {
 
   getCluster = async (clusterId: string) => {
     let cluster: Cluster | null = null;
+    if (clusterId.length < 3) return cluster;
+
     const url = this.http.path("cluster", {
       clusterId,
     });

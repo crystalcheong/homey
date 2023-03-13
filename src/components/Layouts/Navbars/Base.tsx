@@ -314,17 +314,22 @@ export function HeaderMegaMenu() {
                               weight={500}
                               size="sm"
                             >
-                              Get started
+                              Looking for your dream abode?
                             </Text>
                             <Text
                               size="xs"
                               color="dimmed"
                             >
-                              Their food sources have decreased, and their
-                              numbers
+                              Join us and discover the perfect property for you.
                             </Text>
                           </Box>
-                          <Button variant="default">Get started</Button>
+                          <Button
+                            variant="default"
+                            component={Link}
+                            href="/account/signUp"
+                          >
+                            Get started
+                          </Button>
                         </Group>
                       </Box>
                     </HoverCard.Dropdown>
