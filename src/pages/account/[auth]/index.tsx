@@ -334,7 +334,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
   }[] = [
     {
       label: "First step",
-      description: "Create an account",
+      description: "Register your name",
       fields: ["name"],
       content: () => (
         <TextInput
@@ -350,7 +350,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
     },
     {
       label: "Second step",
-      description: "Verify email",
+      description: "Create an account",
       fields: ["email", "password", "confirmPassword"],
       content: ({
         hideActionButton = false,
