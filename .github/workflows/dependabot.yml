@@ -9,3 +9,13 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "weekly"
+    allow:
+      # Allow both direct and indirect updates for all packages
+      - dependency-type: "all"
+    assignees:
+      - "dependabot"
+    commit-message:
+      # Prefix all commit messages with "npm: "
+      prefix: "ci(dependabot):"
+    # Allow up to 5 open pull requests for pip dependencies
+    open-pull-requests-limit: 5
