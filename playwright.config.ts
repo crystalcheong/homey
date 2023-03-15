@@ -27,7 +27,7 @@ const config: PlaywrightTestConfig = {
       "json",
       { outputFile: path.join(__dirname, "tests/results/summary.json") },
     ],
-    ["html", { outputFolder: path.join(__dirname, "tests/results/report") }],
+    ["html", { outputFolder: path.join(__dirname, "tests/report") }],
   ],
 
   // Run your local dev server before starting the tests:

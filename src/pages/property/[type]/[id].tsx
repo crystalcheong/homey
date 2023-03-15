@@ -158,7 +158,6 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
 
   useMemo(() => {
     if (!listingData) return;
-    logger("[id].tsx line 166", { listingData });
     useNinetyNineStore.setState(() => ({ currentListing: listingData }));
   }, [listingData]);
 
