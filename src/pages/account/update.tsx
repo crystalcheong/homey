@@ -190,7 +190,7 @@ const AccountUpdatePage = () => {
         <BetaWarning />
 
         <Title
-          order={1}
+          order={3}
           size="h3"
           sx={{
             wordBreak: "break-word",

@@ -149,7 +149,7 @@ export const Card = ({
           spacing="xs"
         >
           <Title
-            order={1}
+            order={3}
             size="p"
             color="dimmed"
             weight={400}

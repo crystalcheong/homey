@@ -211,7 +211,7 @@ const Neighbourhood = () => {
               align="center"
               fw={800}
               color="white"
-              order={1}
+              order={2}
               size="h2"
               tt="capitalize"
             >

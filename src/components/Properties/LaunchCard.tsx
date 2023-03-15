@@ -104,7 +104,7 @@ const LaunchCard = ({
           spacing="xs"
         >
           <Title
-            order={1}
+            order={3}
             size="h4"
             truncate
           >

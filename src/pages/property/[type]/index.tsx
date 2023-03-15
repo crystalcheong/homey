@@ -235,6 +235,7 @@ const PropertyTypePage = () => {
                 styles={(theme) => ({
                   root: {
                     flex: 1,
+                    width: "100%",
                   },
                   defaultValue: {
                     background: theme.fn.gradient(),

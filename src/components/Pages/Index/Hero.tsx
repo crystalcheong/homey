@@ -147,7 +147,12 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
       }}
       {...rest}
     >
-      <Title order={1}>{headline}</Title>
+      <Title
+        order={1}
+        data-pw="hero-text-headline"
+      >
+        {headline}
+      </Title>
       <Title
         order={2}
         size="p"
@@ -157,6 +162,7 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
             maxWidth: `calc(${theme.breakpoints.xs}px - 100px)`,
           }),
         }}
+        data-pw="hero-text-subHeading"
       >
         {subHeading}
       </Title>
@@ -266,7 +272,6 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
                 <Box
                   sx={{
                     flex: 1,
-
                     display: "flex",
                     flexDirection: "column",
                     placeContent: "start",
@@ -296,6 +301,7 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
                     styles={(theme) => ({
                       root: {
                         flex: 1,
+                        width: "100%",
                       },
                       defaultValue: {
                         background: theme.fn.gradient(),
@@ -383,6 +389,7 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
                   loaderPosition="right"
                   onClick={handleOnBrowseClick}
                   variant="gradient"
+                  data-pw={`hero-btn-browse-${type}`}
                 >
                   Browse properties
                 </Button>

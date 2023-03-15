@@ -69,10 +69,11 @@ export const Grid = ({
         <Group position="apart">
           {showTitle && (
             <Title
-              order={1}
+              order={2}
               size="h3"
               py="md"
               tt="capitalize"
+              data-pw={`grid-text-title-${title || listingType}`}
             >
               {`${title || listingType} Listings`.trim()}
             </Title>

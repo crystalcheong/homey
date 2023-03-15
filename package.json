@@ -8,7 +8,7 @@
     "start": "next start",
     "preview": "next build && next start",
     "lint": "next lint",
-    "lint:fix": "eslint src --fix && pnpm format",
+    "lint:fix": "eslint src/ tests/ --fix && pnpm format",
     "lint:strict": "eslint --max-warnings=0 src",
     "lint:tsc": "tsc --noEmit --incremental false",
     "format": "prettier -w .",
@@ -19,7 +19,8 @@
     "prisma:prepare": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:live": "pnpm prisma:update && pnpm prisma:migrate && prisma migrate deploy",
-    "prepare": "husky install && pnpm prisma:prepare"
+    "prepare": "husky install && pnpm prisma:prepare",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@emotion/react": "^11.10.6",
@@ -52,6 +53,7 @@
   "devDependencies": {
     "@commitlint/cli": "^17.4.4",
     "@commitlint/config-conventional": "^17.4.4",
+    "@playwright/test": "^1.31.2",
     "@svgr/webpack": "^6.5.1",
     "@types/crypto-js": "^4.1.1",
     "@types/node": "^18.14.4",

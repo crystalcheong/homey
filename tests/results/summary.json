@@ -1,0 +1,277 @@
+{
+  "config": {
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {},
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/ccyq/Spaces/SC26/homey.com/tests/results",
+        "repeatEach": 1,
+        "retries": 2,
+        "name": "Desktop Chrome",
+        "testDir": "/Users/ccyq/Spaces/SC26/homey.com/tests",
+        "testIgnore": [],
+        "testMatch": ["**/?(*.)@(spec|test).*"],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/ccyq/Spaces/SC26/homey.com/tests/results",
+        "repeatEach": 1,
+        "retries": 2,
+        "name": "Mobile Chrome",
+        "testDir": "/Users/ccyq/Spaces/SC26/homey.com/tests",
+        "testIgnore": [],
+        "testMatch": ["**/?(*.)@(spec|test).*"],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/ccyq/Spaces/SC26/homey.com/tests/results",
+        "repeatEach": 1,
+        "retries": 2,
+        "name": "Mobile Safari",
+        "testDir": "/Users/ccyq/Spaces/SC26/homey.com/tests",
+        "testIgnore": [],
+        "testMatch": ["**/?(*.)@(spec|test).*"],
+        "timeout": 30000
+      }
+    ],
+    "reporter": [
+      [
+        "json",
+        {
+          "outputFile": "/Users/ccyq/Spaces/SC26/homey.com/tests/results/summary.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 15000
+    },
+    "configFile": "/Users/ccyq/Spaces/SC26/homey.com/playwright.config.ts",
+    "rootDir": "/Users/ccyq/Spaces/SC26/homey.com/tests",
+    "quiet": false,
+    "shard": null,
+    "updateSnapshots": "missing",
+    "version": "1.31.2",
+    "workers": 4,
+    "webServer": {
+      "command": "pnpm run dev",
+      "url": "http://localhost:3000",
+      "timeout": 120000,
+      "reuseExistingServer": true
+    }
+  },
+  "suites": [
+    {
+      "title": "index.spec.ts",
+      "file": "index.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "page: index",
+          "file": "index.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "render: hero content",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Desktop Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 7276,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2023-03-15T03:59:45.997Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bcbd25456d68a5d49fac-fa6a767eb075d81e8990",
+              "file": "index.spec.ts",
+              "line": 6,
+              "column": 7
+            },
+            {
+              "title": "render: listings content",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Desktop Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 4730,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2023-03-15T03:59:53.648Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bcbd25456d68a5d49fac-9e2b8d1e011090dcff70",
+              "file": "index.spec.ts",
+              "line": 41,
+              "column": 7
+            },
+            {
+              "title": "render: hero content",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "status": "passed",
+                      "duration": 7280,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2023-03-15T03:59:45.995Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bcbd25456d68a5d49fac-70935cef95d497a01228",
+              "file": "index.spec.ts",
+              "line": 6,
+              "column": 7
+            },
+            {
+              "title": "render: listings content",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "status": "passed",
+                      "duration": 4677,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2023-03-15T03:59:53.652Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bcbd25456d68a5d49fac-36307d5678453a71a840",
+              "file": "index.spec.ts",
+              "line": 41,
+              "column": 7
+            },
+            {
+              "title": "render: hero content",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Mobile Safari",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "status": "passed",
+                      "duration": 8739,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2023-03-15T03:59:46.004Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bcbd25456d68a5d49fac-72444ec3a40b4495302b",
+              "file": "index.spec.ts",
+              "line": 6,
+              "column": 7
+            },
+            {
+              "title": "render: listings content",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Mobile Safari",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2023-03-15T03:59:54.974Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "bcbd25456d68a5d49fac-42625075d158b74c7f88",
+              "file": "index.spec.ts",
+              "line": 41,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": []
+}
