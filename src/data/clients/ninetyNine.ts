@@ -338,9 +338,17 @@ export class NinetyNine {
         ({ id }) => id === listingId
       );
       listing = matchedListings?.[0] ?? null;
+
+      logger("ninetyNine.ts line 342", {
+        listingsData: listingsData.length,
+        matchedListings: matchedListings.length,
+        listing,
+      });
     } catch (error) {
       console.error("NinetyNine/getClusterListing", error);
     }
+
+    logger("ninetyNine.ts line 351", { listing });
 
     return listing;
   };

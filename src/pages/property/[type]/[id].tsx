@@ -21,7 +21,7 @@ import { useWindowScroll } from "@mantine/hooks";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { IconType } from "react-icons";
 import { FaBirthdayCake } from "react-icons/fa";
 import { MdOutlinePhotoLibrary } from "react-icons/md";
@@ -40,7 +40,7 @@ import { TiChartAreaOutline } from "react-icons/ti";
 import superjson from "superjson";
 
 import { Cluster, Listing, ListingTypes } from "@/data/clients/ninetyNine";
-import { defaultListingMap, useNinetyNineStore } from "@/data/stores";
+import { useNinetyNineStore } from "@/data/stores";
 
 import { Layout, Provider } from "@/components";
 import UnknownState from "@/components/Layouts/UnknownState";
@@ -120,42 +120,6 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
   const [baseUrl, setBaseUrl] = useState<string>(getBaseUrl());
   const [modalOpened, setModalOpened] = useState<Listing["photos"][number]>();
 
-  api.useQueries((t) => [
-    t.ninetyNine.getClusterListings(
-      {
-        listingType: type,
-        listingId: id,
-        clusterId: clusterId,
-      },
-      {
-        enabled: !listing && isValidProperty && isMounted,
-        onSuccess: (data) => {
-          logger("[id].tsx line 45/onSuccess", {
-            data,
-            clusterId,
-            id,
-            type,
-            defaultListingMap,
-            listing,
-          });
-          useNinetyNineStore.setState(() => ({ currentListing: data }));
-        },
-      }
-    ),
-    t.ninetyNine.getCluster(
-      {
-        clusterId: listing?.cluster_mappings?.["development"]?.[0] ?? "",
-      },
-      {
-        enabled: !!listing && isMounted,
-        onSuccess: (data) => {
-          logger("[id].tsx line 140", { data });
-          setCluster(data);
-        },
-      }
-    ),
-  ]);
-
   /**
    * @see https://nextjs.org/docs/messages/react-hydration-error
    */
@@ -165,6 +129,38 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
       setBaseUrl(window.location.origin);
     logger("[id].tsx line 91", { listing });
   }, [listing]);
+
+  const [{ data: listingData }] = api.useQueries((t) => [
+    t.ninetyNine.getClusterListings(
+      {
+        listingType: type,
+        listingId: id,
+        clusterId,
+      },
+      {
+        enabled: !listing && isValidProperty && isMounted,
+      }
+    ),
+    t.ninetyNine.getCluster(
+      {
+        clusterId,
+      },
+      {
+        enabled:
+          !!listing && !!clusterId.length && isValidProperty && isMounted,
+        onSuccess: (data) => {
+          logger("[id].tsx line 140", { data });
+          setCluster(data);
+        },
+      }
+    ),
+  ]);
+
+  useMemo(() => {
+    if (!listingData) return;
+    logger("[id].tsx line 166", { listingData });
+    useNinetyNineStore.setState(() => ({ currentListing: listingData }));
+  }, [listingData]);
 
   const PRIMARY_COL_HEIGHT = 300;
   const SECONDARY_COL_HEIGHT = PRIMARY_COL_HEIGHT / 2 - theme.spacing.md / 2;
@@ -475,7 +471,7 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
             color="dimmed"
             component="p"
             size="md"
-            fs={cluster?.description.length ? "normal" : "italic"}
+            fs={cluster?.description?.length ? "normal" : "italic"}
           >
             {cluster?.description ?? "No description available"}
           </Text>
