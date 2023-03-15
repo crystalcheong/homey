@@ -1,7 +1,7 @@
 {
   "config": {
     "forbidOnly": false,
-    "fullyParallel": false,
+    "fullyParallel": true,
     "globalSetup": null,
     "globalTeardown": null,
     "globalTimeout": 0,
@@ -47,6 +47,12 @@
         "json",
         {
           "outputFile": "/Users/ccyq/Spaces/SC26/homey.com/tests/results/summary.json"
+        }
+      ],
+      [
+        "html",
+        {
+          "outputFolder": "/Users/ccyq/Spaces/SC26/homey.com/tests/results/report"
         }
       ]
     ],
@@ -96,12 +102,12 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 7276,
+                      "duration": 8072,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2023-03-15T03:59:45.997Z",
+                      "startTime": "2023-03-15T04:38:03.539Z",
                       "attachments": []
                     }
                   ],
@@ -125,14 +131,14 @@
                   "projectName": "Desktop Chrome",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 1,
                       "status": "passed",
-                      "duration": 4730,
+                      "duration": 5171,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2023-03-15T03:59:53.648Z",
+                      "startTime": "2023-03-15T04:38:03.535Z",
                       "attachments": []
                     }
                   ],
@@ -156,14 +162,14 @@
                   "projectName": "Mobile Chrome",
                   "results": [
                     {
-                      "workerIndex": 1,
+                      "workerIndex": 2,
                       "status": "passed",
-                      "duration": 7280,
+                      "duration": 8169,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2023-03-15T03:59:45.995Z",
+                      "startTime": "2023-03-15T04:38:03.535Z",
                       "attachments": []
                     }
                   ],
@@ -187,14 +193,14 @@
                   "projectName": "Mobile Chrome",
                   "results": [
                     {
-                      "workerIndex": 1,
+                      "workerIndex": 3,
                       "status": "passed",
-                      "duration": 4677,
+                      "duration": 5290,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2023-03-15T03:59:53.652Z",
+                      "startTime": "2023-03-15T04:38:03.551Z",
                       "attachments": []
                     }
                   ],
@@ -218,14 +224,14 @@
                   "projectName": "Mobile Safari",
                   "results": [
                     {
-                      "workerIndex": 2,
+                      "workerIndex": 4,
                       "status": "passed",
-                      "duration": 8739,
+                      "duration": 5237,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2023-03-15T03:59:46.004Z",
+                      "startTime": "2023-03-15T04:38:09.944Z",
                       "attachments": []
                     }
                   ],
@@ -249,18 +255,18 @@
                   "projectName": "Mobile Safari",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "status": "skipped",
-                      "duration": 0,
+                      "workerIndex": 5,
+                      "status": "passed",
+                      "duration": 4774,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2023-03-15T03:59:54.974Z",
+                      "startTime": "2023-03-15T04:38:10.063Z",
                       "attachments": []
                     }
                   ],
-                  "status": "skipped"
+                  "status": "expected"
                 }
               ],
               "id": "bcbd25456d68a5d49fac-42625075d158b74c7f88",

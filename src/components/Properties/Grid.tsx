@@ -125,6 +125,7 @@ export const Grid = ({
                 listing={listing}
                 isLoading={isLoading}
                 allowSaveListing={allowSaveListing}
+                data-pw={`listing-card-${idx}`}
               />
             ))}
           </SimpleGrid>

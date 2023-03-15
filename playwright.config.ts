@@ -9,6 +9,9 @@ const baseURL = `http://localhost:${PORT}`;
 
 // Reference: https://playwright.dev/docs/test-configuration
 const config: PlaywrightTestConfig = {
+  //@see https://playwright.dev/docs/api/class-testconfig#test-config-fully-parallel
+  fullyParallel: true,
+
   // Timeout per test
   timeout: 30 * 1000,
   // Test directory
@@ -24,6 +27,7 @@ const config: PlaywrightTestConfig = {
       "json",
       { outputFile: path.join(__dirname, "tests/results/summary.json") },
     ],
+    ["html", { outputFolder: path.join(__dirname, "tests/results/report") }],
   ],
 
   // Run your local dev server before starting the tests:

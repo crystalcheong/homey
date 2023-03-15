@@ -20,7 +20,8 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:live": "pnpm prisma:update && pnpm prisma:migrate && prisma migrate deploy",
     "prepare": "husky install && pnpm prisma:prepare",
-    "test:e2e": "playwright test"
+    "test": "playwright test",
+    "test:report": "playwright show-report tests/results/report"
   },
   "dependencies": {
     "@emotion/react": "^11.10.6",
