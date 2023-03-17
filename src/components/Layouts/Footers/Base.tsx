@@ -1,5 +1,6 @@
 import {
   ActionIcon,
+  Box,
   Container,
   createStyles,
   Footer,
@@ -7,12 +8,15 @@ import {
   Space,
   Text,
 } from "@mantine/core";
+import Link from "next/link";
 import React from "react";
 import {
   TbBrandInstagram,
   TbBrandTwitter,
   TbBrandYoutube,
 } from "react-icons/tb";
+
+import { ListingCategories } from "@/data/clients/ninetyNine";
 
 import { Route } from "@/components/Layouts/Navbars/Base";
 import Logo from "@/components/Logo";
@@ -32,7 +36,7 @@ const useStyles = createStyles((theme) => ({
   },
 
   logo: {
-    maxWidth: 200,
+    maxWidth: 400,
 
     [theme.fn.smallerThan("sm")]: {
       display: "flex",
@@ -131,47 +135,57 @@ export function FooterLinks({ data }: FooterLinksProps) {
   const currentYear: number = new Date().getFullYear();
   const groups = data.map((group) => {
     const links = (group.nodes ?? []).map((link, index) => (
-      <Text<"a">
+      <Text
         key={index}
         className={classes.link}
-        component="a"
+        component={Link}
         href={link.href}
-        onClick={(event) => event.preventDefault()}
+        // onClick={(event) => event.preventDefault()}
       >
         {link.label}
       </Text>
     ));
 
     return (
-      <div
+      <Box
         className={classes.wrapper}
         key={group.label}
       >
-        <Text className={classes.title}>{group.label}</Text>
+        <Text
+          className={classes.title}
+          component={Link}
+          href={group.href}
+        >
+          {group.label}
+        </Text>
         {links}
-      </div>
+      </Box>
     );
   });
 
   return (
-    <footer className={classes.footer}>
+    <Box
+      component="footer"
+      className={classes.footer}
+    >
       <Container className={classes.inner}>
-        <div className={classes.logo}>
+        <Box className={classes.logo}>
           <Logo />
           <Text
+            component="p"
             size="xs"
             color="dimmed"
             className={classes.description}
           >
             Find your dream home in Singapore
           </Text>
-        </div>
-        <div className={classes.groups}>{groups}</div>
+        </Box>
+        <Box className={classes.groups}>{groups}</Box>
       </Container>
       <Container className={classes.afterFooter}>
         <Text
           color="dimmed"
-          size="sm"
+          size="xs"
         >
           &copy; {currentYear} Homey. All rights reserved.
         </Text>
@@ -193,7 +207,7 @@ export function FooterLinks({ data }: FooterLinksProps) {
           </ActionIcon>
         </Group>
       </Container>
-    </footer>
+    </Box>
   );
 }
 
@@ -202,68 +216,32 @@ const BaseFooter = () => {
     nodes?: Route[];
   })[] = [
     {
-      label: "About",
-      href: "#",
-      nodes: [
-        {
-          label: "Features",
-          href: "#",
-        },
-        {
-          label: "Pricing",
-          href: "#",
-        },
-        {
-          label: "Support",
-          href: "#",
-        },
-        {
-          label: "Forums",
-          href: "#",
-        },
-      ],
+      label: "Buy Properties",
+      href: "/property/sale",
+      nodes: ListingCategories.map((category) => ({
+        label: `${category} for Sale`,
+        href: `/property/sale?category=${category}`,
+      })),
     },
     {
-      label: "Project",
-      href: "#",
-      nodes: [
-        {
-          label: "Contribute",
-          href: "#",
-        },
-        {
-          label: "Media assets",
-          href: "#",
-        },
-        {
-          label: "Changelog",
-          href: "#",
-        },
-        {
-          label: "Releases",
-          href: "#",
-        },
-      ],
+      label: "Rent Properties",
+      href: "/property/rent",
+      nodes: ListingCategories.map((category) => ({
+        label: `${category} for Rent`,
+        href: `/property/rent?category=${category}`,
+      })),
     },
     {
-      label: "Community",
+      label: "Explore Singapore",
       href: "#",
       nodes: [
         {
-          label: "Join Discord",
-          href: "#",
+          label: "Neighbourhoods",
+          href: "/explore/neighbourhoods",
         },
         {
-          label: "Follow on Twitter",
-          href: "#",
-        },
-        {
-          label: "Email newsletter",
-          href: "#",
-        },
-        {
-          label: "GitHub discussions",
-          href: "#",
+          label: "Condo Launches",
+          href: "/explore/new-launches",
         },
       ],
     },

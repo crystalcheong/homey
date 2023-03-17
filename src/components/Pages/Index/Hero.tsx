@@ -32,7 +32,7 @@ import { toTitleCase } from "@/utils/helpers";
 
 const SearchTypes: string[] = ["rent", "buy"];
 export type SearchType = (typeof SearchTypes)[number];
-const SearchListingTypes: {
+export const SearchListingTypes: {
   [key in SearchType]: ListingType;
 } = SearchTypes.reduce(
   (searchMap = {}, type: string, idx: number) => ({
