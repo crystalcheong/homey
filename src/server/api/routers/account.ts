@@ -8,11 +8,16 @@ import { logger } from "@/utils/debug";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 export const accountRouter = createTRPCRouter({
-  getAll: publicProcedure.query(
-    async ({ ctx }) => await ctx.prisma.user.findMany()
-  ),
+  getAll: protectedProcedure
+    .meta({
+      description: "Retrieve all users",
+    })
+    .query(async ({ ctx }) => await ctx.prisma.user.findMany()),
 
   getUser: publicProcedure
+    .meta({
+      description: "Retrieve user by ID or email",
+    })
     .input(
       z.object({
         id: z.string().trim().optional(),

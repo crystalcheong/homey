@@ -1,7 +1,11 @@
 import { Neighbourhood } from "@prisma/client";
 import { z } from "zod";
 
-import { NinetyNine } from "@/data/clients/ninetyNine";
+import {
+  ListingCategories,
+  ListingTypes,
+  NinetyNine,
+} from "@/data/clients/ninetyNine";
 import {
   defaultLaunchPaginationInfo,
   defaultPaginationInfo,
@@ -14,12 +18,25 @@ const client: NinetyNine = new NinetyNine();
 
 export const ninetyNineRouter = createTRPCRouter({
   getListings: publicProcedure
+    .meta({
+      description: "Retrieves listings",
+    })
     .input(
       z.object({
-        listingType: z.string().trim().min(1),
-        listingCategory: z.string().trim().optional(),
-        pageSize: z.number().optional(),
-        pageNum: z.number().optional(),
+        listingType: z.string().trim().min(1).describe(ListingTypes.toString()),
+        listingCategory: z
+          .string()
+          .trim()
+          .optional()
+          .describe(ListingCategories.toString()),
+        pageSize: z
+          .number()
+          .optional()
+          .describe(`${defaultPaginationInfo.pageNum.toString()} (default)`),
+        pageNum: z
+          .number()
+          .optional()
+          .describe(`${defaultPaginationInfo.pageSize.toString()} (default)`),
       })
     )
     .query(
@@ -36,11 +53,29 @@ export const ninetyNineRouter = createTRPCRouter({
     ),
 
   getLaunches: publicProcedure
+    .meta({
+      description: "Retrieves new condomium project launches",
+    })
     .input(
       z.object({
-        itemOffset: z.number().optional(),
-        itemLimit: z.number().optional(),
-        sortType: z.string().optional(),
+        itemOffset: z
+          .number()
+          .optional()
+          .describe(
+            `${defaultLaunchPaginationInfo.itemOffset.toString()} (default)`
+          ),
+        itemLimit: z
+          .number()
+          .optional()
+          .describe(
+            `${defaultLaunchPaginationInfo.itemLimit.toString()} (default)`
+          ),
+        sortType: z
+          .string()
+          .optional()
+          .describe(
+            `${defaultLaunchPaginationInfo.sortType.toString()} (default)`
+          ),
       })
     )
     .query(
@@ -54,13 +89,26 @@ export const ninetyNineRouter = createTRPCRouter({
     ),
 
   getZoneListings: publicProcedure
+    .meta({
+      description: "Retrieves listings by zone ID",
+    })
     .input(
       z.object({
         zoneId: z.string().trim().optional(),
-        listingType: z.string().trim().min(1),
-        listingCategory: z.string().trim().optional(),
-        pageSize: z.number().optional(),
-        pageNum: z.number().optional(),
+        listingType: z.string().trim().min(1).describe(ListingTypes.toString()),
+        listingCategory: z
+          .string()
+          .trim()
+          .optional()
+          .describe(ListingCategories.toString()),
+        pageSize: z
+          .number()
+          .optional()
+          .describe(`${defaultPaginationInfo.pageNum.toString()} (default)`),
+        pageNum: z
+          .number()
+          .optional()
+          .describe(`${defaultPaginationInfo.pageSize.toString()} (default)`),
       })
     )
     .query(async ({ input }) => {
@@ -88,19 +136,41 @@ export const ninetyNineRouter = createTRPCRouter({
     }),
 
   getCluster: publicProcedure
+    .meta({
+      description: "Retrieves zone cluster information",
+    })
     .input(
       z.object({
-        clusterId: z.string().trim().min(1),
+        clusterId: z
+          .string()
+          .trim()
+          .min(1)
+          .describe(
+            'unique cluster identifier, i.e, "deMewPBNuxwKQkPYJreNSyda"'
+          ),
       })
     )
     .query(async ({ input }) => await client.getCluster(input.clusterId)),
 
   getClusterListings: publicProcedure
+    .meta({
+      description: "Retrieves listings by cluster ID",
+    })
     .input(
       z.object({
-        listingType: z.string().trim().min(1),
-        listingId: z.string().trim().min(1),
-        clusterId: z.string().trim().min(1),
+        listingType: z.string().trim().min(1).describe(ListingTypes.toString()),
+        listingId: z
+          .string()
+          .trim()
+          .min(1)
+          .describe('unique listing identifier, i.e, "CoPyqumcNnd5Jynmd6soDY"'),
+        clusterId: z
+          .string()
+          .trim()
+          .min(1)
+          .describe(
+            'unique cluster identifier, i.e, "deMewPBNuxwKQkPYJreNSyda"'
+          ),
       })
     )
     .query(
@@ -122,31 +192,44 @@ export const ninetyNineRouter = createTRPCRouter({
   //   )
   //   .query(async ({ input }) => await client.getPostalInfo(input.postalCode)),
 
-  getNeighbourhoods: publicProcedure.query(async ({ ctx }) => {
-    const neighbourhoods: Record<string, Neighbourhood> =
-      getPredefinedNeighbourhoods();
-    await Object.entries(neighbourhoods).forEach(
-      async ([name, neighbourhood]) => {
-        await ctx.prisma.neighbourhood.upsert({
-          where: {
-            name,
-          },
-          create: neighbourhood,
-          update: {
-            assetUrl: neighbourhood.assetUrl,
-            zoneId: neighbourhood.zoneId,
-          },
-        });
-      }
-    );
+  getNeighbourhoods: publicProcedure
+    .meta({
+      description: "Retrieves neighbourhood assetUrl and associated zone ID",
+    })
+    .query(async ({ ctx }) => {
+      const neighbourhoods: Record<string, Neighbourhood> =
+        getPredefinedNeighbourhoods();
+      await Object.entries(neighbourhoods).forEach(
+        async ([name, neighbourhood]) => {
+          await ctx.prisma.neighbourhood.upsert({
+            where: {
+              name,
+            },
+            create: neighbourhood,
+            update: {
+              assetUrl: neighbourhood.assetUrl,
+              zoneId: neighbourhood.zoneId,
+            },
+          });
+        }
+      );
 
-    return neighbourhoods;
-  }),
+      return neighbourhoods;
+    }),
 
   getNeighbourhood: publicProcedure
+    .meta({
+      description: "Retrieves neighbourhood metadata",
+    })
     .input(
       z.object({
-        name: z.string().trim().min(1),
+        name: z
+          .string()
+          .trim()
+          .min(1)
+          .describe(
+            `neighbourhood name delimited by hyphens, i.e, 'ang-mo-kio', 'aljunied'`
+          ),
       })
     )
     .query(async ({ input }) => await client.getNeighbourhood(input.name)),
