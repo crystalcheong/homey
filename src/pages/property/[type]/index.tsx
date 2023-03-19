@@ -233,11 +233,11 @@ const PropertyTypePage = () => {
                 transition="pop-top-left"
                 transitionTimingFunction="ease"
                 styles={(theme) => ({
-                  wrapper: {
-                    flex: 1,
+                  root: {
+                    flex: "1!important",
                     width: "100%",
                   },
-                  root: {
+                  wrapper: {
                     flex: 1,
                     width: "100%",
                   },
