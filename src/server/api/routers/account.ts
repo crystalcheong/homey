@@ -20,8 +20,12 @@ export const accountRouter = createTRPCRouter({
     })
     .input(
       z.object({
-        id: z.string().trim().optional(),
-        email: z.string().trim().optional(),
+        id: z.string().cuid2("Input must be a valid user ID").trim().optional(),
+        email: z
+          .string()
+          .email("Input must be a valid email address")
+          .trim()
+          .optional(),
       })
     )
     .query(async ({ input, ctx }) => {
@@ -49,7 +53,11 @@ export const accountRouter = createTRPCRouter({
   signIn: publicProcedure
     .input(
       z.object({
-        email: z.string().trim().min(1, "Email address can't be empty"),
+        email: z
+          .string()
+          .email("Input must be a valid email address")
+          .trim()
+          .min(1, "Email address can't be empty"),
         password: z.string().trim().min(1, "Password can't be empty"),
       })
     )
@@ -87,7 +95,11 @@ export const accountRouter = createTRPCRouter({
     .input(
       z.object({
         name: z.string().trim().min(1, "Name can't be empty"),
-        email: z.string().trim().min(1, "Email address can't be empty"),
+        email: z
+          .string()
+          .email("Input must be a valid email address")
+          .trim()
+          .min(1, "Email address can't be empty"),
         password: z.string().trim().min(1, "Password can't be empty"),
       })
     )
@@ -119,7 +131,11 @@ export const accountRouter = createTRPCRouter({
   deleteUser: protectedProcedure
     .input(
       z.object({
-        id: z.string().trim().min(1),
+        id: z
+          .string()
+          .cuid2("Input must be a valid user ID")
+          .trim()
+          .min(1, "User ID can't be empty"),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -146,7 +162,11 @@ export const accountRouter = createTRPCRouter({
   updateUser: protectedProcedure
     .input(
       z.object({
-        id: z.string().trim().min(1),
+        id: z
+          .string()
+          .cuid2("Input must be a valid user ID")
+          .trim()
+          .min(1, "User ID can't be empty"),
         name: z.string().trim().min(1),
       })
     )
@@ -168,7 +188,11 @@ export const accountRouter = createTRPCRouter({
   unsaveProperty: protectedProcedure
     .input(
       z.object({
-        userId: z.string().trim().min(1, "User ID can't be empty"),
+        userId: z
+          .string()
+          .cuid2("Input must be a valid user ID")
+          .trim()
+          .min(1, "User ID can't be empty"),
         listingId: z.string().trim().min(1, "Listing ID can't be empty"),
       })
     )
@@ -198,7 +222,11 @@ export const accountRouter = createTRPCRouter({
   saveProperty: protectedProcedure
     .input(
       z.object({
-        userId: z.string().trim().min(1, "User ID can't be empty"),
+        userId: z
+          .string()
+          .cuid2("Input must be a valid user ID")
+          .trim()
+          .min(1, "User ID can't be empty"),
         listingId: z.string().trim().min(1, "Listing ID can't be empty"),
         listingType: z.nativeEnum(PropertyType),
         clusterId: z.string().trim().min(1, "Cluster ID can't be empty"),
@@ -268,8 +296,12 @@ export const accountRouter = createTRPCRouter({
   getUserSaved: publicProcedure
     .input(
       z.object({
-        id: z.string().trim().optional(),
-        email: z.string().trim().optional(),
+        id: z.string().cuid2("Input must be a valid user ID").trim().optional(),
+        email: z
+          .string()
+          .email("Input must be a valid email address")
+          .trim()
+          .optional(),
       })
     )
     .query(async ({ input, ctx }) => {
@@ -307,25 +339,35 @@ export const accountRouter = createTRPCRouter({
   getUserById: publicProcedure
     .input(
       z.object({
-        id: z.string().trim().min(1, "User ID can't be empty"),
+        id: z
+          .string()
+          .cuid2("Input must be a valid user ID")
+          .trim()
+          .min(1, "User ID can't be empty"),
       })
     )
-    .query(({ input, ctx }) =>
-      ctx.prisma.user.findFirst({
-        where: {
-          id: input.id,
-        },
-      })
+    .query(
+      async ({ input, ctx }) =>
+        await ctx.prisma.user.findFirst({
+          where: {
+            id: input.id,
+          },
+        })
     ),
 
   getUserByEmail: publicProcedure
     .input(
       z.object({
-        email: z.string().trim().min(1, "User ID can't be empty"),
+        email: z
+          .string()
+          .email("Input must be a valid email address")
+          .trim()
+          .min(1, "User ID can't be empty"),
       })
     )
-    .query(({ input, ctx }) =>
-      ctx.prisma.user.findFirst({
+    .query(async ({ input, ctx }) => {
+      logger("account.ts line 368", { input });
+      return await ctx.prisma.user.findFirst({
         where: {
           email: input.email,
         },
@@ -336,6 +378,6 @@ export const accountRouter = createTRPCRouter({
             },
           },
         },
-      })
-    ),
+      });
+    }),
 });
