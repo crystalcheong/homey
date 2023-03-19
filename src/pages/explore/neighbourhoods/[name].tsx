@@ -213,7 +213,7 @@ const Neighbourhood = () => {
               color="white"
               order={2}
               size="h2"
-              tt="capitalize"
+              tt="uppercase"
             >
               {paramName.replace(/-/g, " ")}
             </Title>
