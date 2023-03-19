@@ -10,4 +10,5 @@ export const testAccount = {
   name: "Test",
   email: "test@gmail.com",
   password: "test",
+  confirmPassword: "test",
 };
