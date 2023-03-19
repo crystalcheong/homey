@@ -5,3 +5,9 @@ export const listingTypes: string[] = ["rent", "sale"];
 // export const delay = (timeMs: number) => new Promise(function (resolve) {
 //   setTimeout(resolve, timeMs)
 // })
+
+export const testAccount = {
+  name: "Test",
+  email: "test@gmail.com",
+  password: "test",
+};

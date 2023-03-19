@@ -37,6 +37,7 @@ import { FaGithub, FaGoogle } from "react-icons/fa";
 import { TbAlertCircle } from "react-icons/tb";
 
 import { Layout, Provider } from "@/components";
+import UnknownState from "@/components/Layouts/UnknownState";
 import AuthEmail from "@/components/Pages/Auth/AuthEmail";
 import AuthPassword, {
   PasswordFormState,
@@ -46,6 +47,8 @@ import { api } from "@/utils/api";
 import { logger } from "@/utils/debug";
 import { getPartialClonedObject } from "@/utils/helpers";
 import { isEmail, isName } from "@/utils/validations";
+
+import ErrorClient from "~/assets/images/error-client.svg";
 
 //#endregion  //*======== Utilities ===========
 
@@ -432,7 +435,16 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
 
   return (
     <Layout.Base showAffix={false}>
-      <Provider.RenderGuard renderIf={isValidAuthType && !isAuth}>
+      <Provider.RenderGuard
+        renderIf={isValidAuthType && !isAuth}
+        fallbackComponent={
+          <UnknownState
+            svgNode={<ErrorClient />}
+            title="Account page not found"
+            subtitle="Hey, you aren't supposed to be here"
+          />
+        }
+      >
         <Container
           size="xs"
           py={theme.spacing.md}

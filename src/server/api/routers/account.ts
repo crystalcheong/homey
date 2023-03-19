@@ -64,7 +64,7 @@ export const accountRouter = createTRPCRouter({
 
       if (user.password) {
         const passwordsMatched: boolean = await argon2.verify(
-          user.password ?? "",
+          user.password,
           input.password
         );
         if (!passwordsMatched) {
