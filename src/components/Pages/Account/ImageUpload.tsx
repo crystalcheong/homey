@@ -1,4 +1,4 @@
-import { Avatar } from "@mantine/core";
+import { Avatar, Text } from "@mantine/core";
 import {
   Dropzone,
   DropzoneProps,
@@ -12,6 +12,7 @@ type Props = {
   placeholder: string | null;
   files: FileWithPath[];
   onDrop: DropzoneProps["onDrop"];
+  sx?: DropzoneProps["sx"];
 };
 
 export const getImageUrl = (file: FileWithPath) => {
@@ -36,13 +37,13 @@ export const getImageBase64 = async (file: FileWithPath) => {
   }
 };
 
-const ImageUpload = ({ placeholder = null, files = [], onDrop }: Props) => {
+const ImageUpload = ({ placeholder = null, files = [], onDrop, sx }: Props) => {
   logger("ImageUpload.tsx line 43", { placeholder });
 
-  const getImagePreview = (imageUrl: string, name: string) => (
+  const getImagePreview = (imageUrl: string | null, name: string) => (
     <Avatar
       key={name}
-      src={imageUrl}
+      src={imageUrl ?? null}
       alt={name}
       styles={{
         root: {
@@ -91,10 +92,20 @@ const ImageUpload = ({ placeholder = null, files = [], onDrop }: Props) => {
           placeItems: "center",
         },
       }}
+      sx={sx}
     >
-      {files.length
-        ? previews
-        : placeholder && getImagePreview(placeholder, "profilePlaceholder")}
+      {files.length ? (
+        previews
+      ) : placeholder ? (
+        getImagePreview(placeholder, "profilePlaceholder")
+      ) : (
+        <Text
+          component="p"
+          variant="gradient"
+        >
+          Upload profile image
+        </Text>
+      )}
     </Dropzone>
   );
 };

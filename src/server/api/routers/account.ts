@@ -128,6 +128,7 @@ export const accountRouter = createTRPCRouter({
           name: input.name,
           email: input.email,
           password: hashedPassword,
+          emailVerified: new Date().toISOString(),
         },
       });
     }),
@@ -173,6 +174,8 @@ export const accountRouter = createTRPCRouter({
           .min(1, "User ID can't be empty"),
         name: z.string().trim().default(""),
         image: z.string().trim().default(""),
+        password: z.string().trim().default(""),
+        removeImage: z.boolean().default(false),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -201,6 +204,13 @@ export const accountRouter = createTRPCRouter({
             imageUrl,
           });
         }
+      } else if (input.removeImage) {
+        updateData["image"] = "";
+      }
+
+      if (input.password.length) {
+        const hashedPassword: string = await argon2.hash(input.password);
+        updateData.password = hashedPassword;
       }
 
       logger("account.ts line 195", { input, updateData });
@@ -417,6 +427,64 @@ export const accountRouter = createTRPCRouter({
             },
           },
         },
+      });
+    }),
+
+  authorizeChanges: protectedProcedure
+    .input(
+      z.object({
+        id: z
+          .string()
+          .cuid2("Input must be a valid user ID")
+          .trim()
+          .min(1, "User ID can't be empty"),
+        name: z.string().trim().default(""),
+        password: z.string().trim().default(""),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const user = await ctx.prisma.user.findFirst({
+        where: {
+          id: input.id,
+        },
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "User does not exist.",
+        });
+      }
+
+      // OAuth account
+      if (!user.password?.length && input.name.length) {
+        const nameMatched: boolean = input.name === user.name;
+
+        if (!nameMatched) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "Invalid authorization confirmation.",
+          });
+        }
+        return true;
+      } else if (user.password?.length && input.password.length) {
+        const passwordsMatched: boolean = await argon2.verify(
+          user.password,
+          input.password
+        );
+        logger("account.ts line 467", { passwordsMatched });
+        if (!passwordsMatched) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "Invalid authorization confirmation.",
+          });
+        }
+        return true;
+      }
+
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Insufficient inputs for authorization confirmation.",
       });
     }),
 });
