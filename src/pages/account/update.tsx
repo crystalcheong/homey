@@ -6,6 +6,7 @@ import {
   Title,
   useMantineTheme,
 } from "@mantine/core";
+import { FileWithPath } from "@mantine/dropzone";
 import { useRouter } from "next/router";
 import { signOut, useSession } from "next-auth/react";
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
@@ -14,6 +15,10 @@ import { useAccountStore } from "@/data/stores";
 
 import { Layout, Provider } from "@/components";
 import BetaWarning from "@/components/Layouts/BetaWarning";
+import ImageUpload, {
+  getImageBase64,
+  getImageUrl,
+} from "@/components/Pages/Account/ImageUpload";
 import AuthPassword, {
   PasswordFormState,
 } from "@/components/Pages/Auth/AuthPassword";
@@ -29,13 +34,16 @@ import { getPartialClonedObject } from "@/utils/helpers";
 
 const UpdateFormState: Omit<typeof InitalFormState, "email"> & {
   currentPassword: string;
+  image: string;
 } = {
   ...getPartialClonedObject(InitalFormState, ["email"]),
   currentPassword: "",
+  image: "",
 };
 const UpdateFormErrors: typeof UpdateFormState = {
   ...getPartialClonedObject(FormErrorMessages, ["email"]),
   currentPassword: "",
+  image: "",
 };
 
 const AccountUpdatePage = () => {
@@ -50,7 +58,15 @@ const AccountUpdatePage = () => {
     useState<typeof UpdateFormState>(UpdateFormState);
   const [errorState, setErrorState] =
     useState<typeof UpdateFormErrors>(UpdateFormState);
+  const [profileImage, setProfileImage] = useState<FileWithPath[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const revertToInitialState = () => {
+    setFormState(UpdateFormState);
+    setErrorState(UpdateFormState);
+    setProfileImage([]);
+    setIsLoading(false);
+  };
 
   const useAccountDeleteUser = api.account.deleteUser.useMutation();
   const useAccountUpdateUser = api.account.updateUser.useMutation();
@@ -132,6 +148,32 @@ const AccountUpdatePage = () => {
     updateFormState(inputId, inputValue);
   };
 
+  const handleImageUpload = async (files: FileWithPath[]) => {
+    if (!files.length) return;
+
+    setProfileImage(files);
+    const imageUrl: string = getImageUrl(files[0]);
+
+    // const getBase64Image = (
+    //   imageUrl: string
+    // ) => {
+    //   if (!imageUrl.length) return null;
+
+    //   return Buffer.from(imageUrl, 'base64')
+    // }
+
+    const filePath: string = files[0].path ?? "";
+    // const base64File: Buffer | null = getBase64Image(imageUrl)
+    const base64Image: string = (await getImageBase64(files[0])) as string;
+    logger("update.tsx line 146", {
+      files,
+      imageUrl,
+      base64Image,
+      filePath,
+    });
+    updateFormState("image", base64Image);
+  };
+
   const handleAccountDelete = () => {
     if (!isAuth || !currentUser || isLoading) return;
 
@@ -155,19 +197,25 @@ const AccountUpdatePage = () => {
   };
 
   const handleAccountUpdate = () => {
-    if (!isAuth || !currentUser || !isSubmitEnabled) return;
+    if (!isAuth || !currentUser || (!isSubmitEnabled && !profileImage.length))
+      return;
 
+    setIsLoading(true);
     useAccountUpdateUser.mutate(
       {
         id: currentUser.id,
         name: formState.name.trim(),
+        image: formState.image.trim(),
       },
       {
-        onSuccess(data) {
+        onSuccess: (data) => {
           logger("SaveButton.tsx line 69", { data });
           useAccountStore.setState(() => ({
             currentUser: data,
           }));
+        },
+        onSettled: () => {
+          revertToInitialState();
         },
       }
     );
@@ -183,6 +231,14 @@ const AccountUpdatePage = () => {
   }, [isAuth, currentUser]);
 
   //#endregion  //*======== Pre-Render Checks ===========
+
+  logger("update.tsx line 233", {
+    isSubmitEnabled,
+    isLoading,
+
+    formState,
+    profileImage,
+  });
 
   return (
     <Layout.Base>
@@ -207,6 +263,12 @@ const AccountUpdatePage = () => {
             placeContent: "start",
           }}
         >
+          <ImageUpload
+            placeholder={currentUser?.image ?? null}
+            files={profileImage}
+            onDrop={handleImageUpload}
+          />
+
           <TextInput
             placeholder={currentUser?.name ?? "Full Name"}
             label="Full Name"
@@ -259,8 +321,8 @@ const AccountUpdatePage = () => {
           <Group>
             <Button
               onClick={handleAccountUpdate}
-              // loading={isLoadingProvider === id}
-              disabled={!isSubmitEnabled}
+              loading={isLoading}
+              disabled={(!isSubmitEnabled && !profileImage.length) || isLoading}
             >
               Save Changes
             </Button>

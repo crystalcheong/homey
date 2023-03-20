@@ -14,7 +14,7 @@ import { getNameInitials } from "@/utils/helpers";
 interface Props
   extends ComponentPropsWithoutRef<"button">,
     UnstyledButtonProps {
-  image?: string;
+  image: string | null;
   name: string;
   email?: string;
   icon?: ReactNode;
@@ -24,7 +24,7 @@ interface Props
 export const UserButton = forwardRef<HTMLButtonElement, Props>(
   (
     {
-      image,
+      image = null,
       name = "Account",
       email,
       icon,
@@ -49,6 +49,11 @@ export const UserButton = forwardRef<HTMLButtonElement, Props>(
           radius="xl"
           size={40}
           color="primary"
+          styles={{
+            image: {
+              objectPosition: "center",
+            },
+          }}
         >
           {getNameInitials(name)}
         </Avatar>

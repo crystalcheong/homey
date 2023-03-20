@@ -366,6 +366,7 @@ export function HeaderMegaMenu() {
                   >
                     <Menu.Target>
                       <UserButton
+                        image={currentUser.image}
                         name={currentUser.name ?? ""}
                         icon={<TbChevronDown />}
                       />
@@ -553,6 +554,7 @@ export function HeaderMegaMenu() {
           <Container>
             {currentUser && (
               <UserButton
+                image={currentUser.image}
                 name={currentUser.name ?? ""}
                 onClick={toggleAccDrawer}
                 icon={

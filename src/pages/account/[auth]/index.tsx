@@ -102,6 +102,7 @@ export const validateAuthInput = (id: string, value: string, refVal = "") => {
       return isValid;
     },
     name: (val: string) => isName(val),
+    image: (val: string) => !!val.length,
   };
   return validations[id](value);
 };

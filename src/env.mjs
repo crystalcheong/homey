@@ -26,6 +26,9 @@ const server = z.object({
   GOOGLE_MAPS_API: z.string().min(1),
   UPSTASH_REDIS_REST_URL: z.string().min(1),
   UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
+  CLOUDINARY_NAME: z.string().min(1),
+  CLOUDINARY_KEY: z.string().min(1),
+  CLOUDINARY_SECRET: z.string().min(1),
 });
 
 /**
@@ -55,6 +58,9 @@ const processEnv = {
   GOOGLE_MAPS_API: process.env.GOOGLE_SECRET,
   UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
   UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
+  CLOUDINARY_NAME: process.env.CLOUDINARY_NAME,
+  CLOUDINARY_KEY: process.env.CLOUDINARY_KEY,
+  CLOUDINARY_SECRET: process.env.CLOUDINARY_SECRET,
   // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   NEXT_PUBLIC_SHOW_LOGGER: process.env.NEXT_PUBLIC_SHOW_LOGGER,
 };
