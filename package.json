@@ -24,10 +24,13 @@
     "test:report": "playwright show-report tests/report"
   },
   "dependencies": {
+    "@cloudinary/react": "^1.11.1",
+    "@cloudinary/url-gen": "^1.9.2",
     "@emotion/react": "^11.10.6",
     "@mantine/carousel": "^5.10.5",
     "@mantine/core": "^5.10.5",
     "@mantine/dates": "^5.10.5",
+    "@mantine/dropzone": "^5.10.5",
     "@mantine/hooks": "^5.10.5",
     "@mantine/notifications": "^5.10.5",
     "@mantine/nprogress": "^5.10.5",
@@ -40,6 +43,7 @@
     "@trpc/server": "^10.16.0",
     "@upstash/redis": "^1.20.1",
     "argon2": "^0.30.3",
+    "cloudinary": "^1.35.0",
     "embla-carousel-autoplay": "^7.1.0",
     "embla-carousel-react": "^7.1.0",
     "next": "^13.2.4",

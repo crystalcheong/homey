@@ -6,7 +6,7 @@ import {
   Transition,
 } from "@mantine/core";
 import Link from "next/link";
-import { ChangeEventHandler, Fragment } from "react";
+import { ChangeEventHandler, Fragment, ReactNode } from "react";
 
 export interface PasswordFormState {
   password: string;
@@ -19,7 +19,8 @@ interface Props {
   onChange?: ChangeEventHandler<HTMLInputElement>;
 
   passwordProps?: PasswordInputProps;
-  passwordLabel?: string;
+  passwordLabel?: string | ReactNode;
+  confirmPasswordLabel?: string | ReactNode;
   confirmPasswordProps?: PasswordInputProps;
 
   showForgotPassword?: boolean;
@@ -32,6 +33,7 @@ const AuthPassword = ({
   onChange,
   passwordProps,
   passwordLabel,
+  confirmPasswordLabel,
   confirmPasswordProps,
   showForgotPassword = false,
   showConfirmPassword = true,
@@ -58,6 +60,7 @@ const AuthPassword = ({
         }
         id="password"
         placeholder="Password"
+        disabled={showConfirmPassword && !!formState.confirmPassword.length}
         sx={{
           label: {
             width: "100%",
@@ -74,8 +77,12 @@ const AuthPassword = ({
           <PasswordInput
             value={formState.confirmPassword}
             onChange={onChange}
-            error={errorState.confirmPassword}
-            label="Confirm Password"
+            error={
+              formState.confirmPassword.length
+                ? errorState.confirmPassword
+                : null
+            }
+            label={confirmPasswordLabel || "Confirm Password"}
             id="confirmPassword"
             placeholder="Confirm Password"
             style={transitionStyles}
