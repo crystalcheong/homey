@@ -4,6 +4,11 @@ import { PaginationInfo } from "@/data/stores";
 
 import { env } from "@/env.mjs";
 import { logger } from "@/utils/debug";
+import {
+  CachedData,
+  createCachedObject,
+  getTimestampAgeInDays,
+} from "@/utils/helpers";
 import { HTTP } from "@/utils/http";
 
 const Endpoint = `https://www.99.co/api`;
@@ -164,15 +169,29 @@ export class NinetyNine {
 
     fetchLaunches: try {
       if (isFirstQuery) {
-        const cachedLaunchesData: ProjectLaunch[] = ((await this.redis.get(
-          cacheKey
-        )) ?? []) as ProjectLaunch[];
-        launches.push(...cachedLaunchesData);
-        logger("ninetyNine.ts line 170", {
-          isFirstQuery,
-          cachedLaunchesData: cachedLaunchesData.length,
-        });
+        const cachedLaunchesData: CachedData<ProjectLaunch[]> =
+          (await this.redis.get(cacheKey)) as CachedData<ProjectLaunch[]>;
+
+        if (Object.keys(cachedLaunchesData).length) {
+          const cacheAgeInDays: number = getTimestampAgeInDays(
+            cachedLaunchesData.cachedAt
+          );
+
+          // Only utilize cache data if it's less than 3 days old
+          if (cacheAgeInDays < 3) {
+            const cachedLaunches: ProjectLaunch[] =
+              cachedLaunchesData.data ?? [];
+            launches.push(...cachedLaunches);
+            logger("ninetyNine.ts line 217", {
+              isFirstQuery,
+              cachedLaunches: cachedLaunches.length,
+              cacheAgeInDays,
+            });
+          }
+        }
+
         if (launches.length) {
+          logger("ninetyNine.ts line 188", { usedCached: !!launches.length });
           break fetchLaunches;
         }
       }
@@ -186,7 +205,8 @@ export class NinetyNine {
 
       // Serialize cache
       if (isFirstQuery) {
-        this.redis.set(cacheKey, launchesData);
+        const cacheData = createCachedObject(launchesData);
+        this.redis.set(cacheKey, cacheData);
       }
       logger("NinetyNine/getLaunches", {
         url: url.toString(),
@@ -242,15 +262,29 @@ export class NinetyNine {
 
     fetchListings: try {
       if (isFirstQuery) {
-        const cachedListingsData: Listing[] = ((await this.redis.get(
+        const cachedListingsData: CachedData<Listing[]> = (await this.redis.get(
           listingType
-        )) ?? []) as Listing[];
-        listings.push(...cachedListingsData);
-        logger("ninetyNine.ts line 217", {
-          isFirstQuery,
-          cachedListingsData: cachedListingsData.length,
-        });
+        )) as CachedData<Listing[]>;
+
+        if (Object.keys(cachedListingsData).length) {
+          const cacheAgeInDays: number = getTimestampAgeInDays(
+            cachedListingsData.cachedAt
+          );
+
+          // Only utilize cache data if it's less than 3 days old
+          if (cacheAgeInDays < 3) {
+            const cachedListings: Listing[] = cachedListingsData.data ?? [];
+            listings.push(...cachedListings);
+            logger("ninetyNine.ts line 217", {
+              isFirstQuery,
+              cachedListings: cachedListings.length,
+              cacheAgeInDays,
+            });
+          }
+        }
+
         if (listings.length) {
+          logger("ninetyNine.ts line 279", { usedCached: !!listings.length });
           break fetchListings;
         }
       }
@@ -268,7 +302,8 @@ export class NinetyNine {
 
       // Serialize cache
       if (isFirstQuery) {
-        this.redis.set(listingType, listingsData);
+        const cacheData = createCachedObject(listingsData);
+        this.redis.set(listingType, cacheData);
       }
       logger("NinetyNine/getListings", {
         url: url.toString(),

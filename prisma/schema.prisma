@@ -48,6 +48,7 @@ model Property {
   clusterId          String
   type               PropertyType        @default(rent)
   stringifiedListing String
+  isAvailable        Boolean             @default(true)
   userSaved          UserSavedProperty[]
 
   @@unique([id, clusterId])
