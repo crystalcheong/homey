@@ -1,4 +1,5 @@
 import { Neighbourhood } from "@prisma/client";
+import { compress, decompress } from "compress-json";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
@@ -36,6 +37,7 @@ interface Mutators {
     listingType: ListingType,
     listingId: Listing["id"]
   ) => Listing | null;
+  updateCurrentListing: (listing: Listing) => void;
 }
 
 interface Store extends State, Mutators {}
@@ -136,6 +138,12 @@ export const getPredefinedNeighbourhoods = (): Record<
   return neighbourhoods;
 };
 
+export const getStringifiedListing = (listing: Listing) =>
+  !listing ? "" : JSON.stringify(compress(listing));
+
+export const parseStringifiedListing = (stringifiedListing: string) =>
+  decompress(JSON.parse(stringifiedListing));
+
 const updateListings = (
   listingType: ListingType,
   newListings: Listing[],
@@ -205,6 +213,10 @@ const store = create<Store>()(
           defaultPaginationInfo as PaginationInfo,
         ])
       ),
+      updateCurrentListing: (listing) =>
+        set((state) => ({
+          currentListing: listing ?? state.currentListing,
+        })),
       updateListings: (listingType, newListings, overwrite = false) =>
         set((state) =>
           updateListings(listingType, newListings, state, overwrite)
@@ -228,11 +240,17 @@ const store = create<Store>()(
         const currentTypeListings: Listing[] =
           currentListings.get(listingType) ?? [];
 
+        logger("ninetyNine.ts line 240", {
+          listingType,
+          listingId,
+          currentTypeListings: currentTypeListings.length,
+        });
         if (!listingId.length) return null;
 
         // CHECK: If it matches currentListing
         if (currentListing) {
           const isCurrentListing: boolean = currentListing.id === listingId;
+          logger("ninetyNine.ts line 252", { isCurrentListing });
           if (isCurrentListing) return currentListing;
         }
         // CHECK: If it's included in savedListings
@@ -240,6 +258,7 @@ const store = create<Store>()(
           const savedListingIdx: number = savedListings.findIndex(
             ({ id }) => id === listingId
           );
+          logger("ninetyNine.ts line 260", { savedListingIdx });
           if (savedListingIdx >= 0) {
             const savedListing: Listing = savedListings[savedListingIdx];
             set((state) => ({

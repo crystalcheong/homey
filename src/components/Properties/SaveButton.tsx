@@ -14,7 +14,11 @@ import { IconBaseProps } from "react-icons";
 import { TbBookmark } from "react-icons/tb";
 
 import { Listing, ListingTypes } from "@/data/clients/ninetyNine";
-import { SavedListing, useAccountStore } from "@/data/stores";
+import {
+  getStringifiedListing,
+  SavedListing,
+  useAccountStore,
+} from "@/data/stores";
 
 import { Provider } from "@/components";
 
@@ -69,7 +73,7 @@ export const SaveButton = ({
   const handleOnSave = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.preventDefault();
 
-    if (!currentUser) return;
+    if (!currentUser || !listing) return;
     setIsSaved(!isSaved);
 
     const isRent: boolean = listing_type === ListingTypes[0];
@@ -77,10 +81,12 @@ export const SaveButton = ({
       userId: currentUser.id,
       listingId,
     };
+
     const saveParams = {
       ...baseParams,
       listingType: isRent ? PropertyType.rent : PropertyType.sale,
       clusterId,
+      stringifiedListing: getStringifiedListing(listing),
     };
 
     const onSave = (data: SavedListing[]) => {

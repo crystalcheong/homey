@@ -44,10 +44,11 @@ model VerificationToken {
 }
 
 model Property {
-  id        String              @id
-  clusterId String
-  type      PropertyType        @default(rent)
-  userSaved UserSavedProperty[]
+  id                 String              @id
+  clusterId          String
+  type               PropertyType        @default(rent)
+  stringifiedListing String
+  userSaved          UserSavedProperty[]
 
   @@unique([id, clusterId])
 }

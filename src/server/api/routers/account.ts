@@ -84,6 +84,15 @@ export const accountRouter = createTRPCRouter({
           user.password,
           input.password
         );
+
+        const hashedPassword: string = await argon2.hash(input.password);
+
+        logger("account.ts line 87", {
+          passwordsMatched,
+          user,
+          input,
+          hashedPassword,
+        });
         if (!passwordsMatched) {
           throw new TRPCError({
             code: "UNAUTHORIZED",
@@ -279,6 +288,10 @@ export const accountRouter = createTRPCRouter({
         listingId: z.string().trim().min(1, "Listing ID can't be empty"),
         listingType: z.nativeEnum(PropertyType),
         clusterId: z.string().trim().min(1, "Cluster ID can't be empty"),
+        stringifiedListing: z
+          .string()
+          .trim()
+          .min(1, "Stringified Listing can't be empty"),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -304,6 +317,7 @@ export const accountRouter = createTRPCRouter({
             id: input.listingId,
             type: input.listingType,
             clusterId: input.clusterId,
+            stringifiedListing: input.stringifiedListing,
             userSaved: {
               create: {
                 userId: input.userId,
