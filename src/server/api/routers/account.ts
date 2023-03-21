@@ -3,9 +3,13 @@ import { TRPCError } from "@trpc/server";
 import argon2 from "argon2";
 import { z } from "zod";
 
+import { Cloudinary } from "@/data/clients/cloudinary";
+
 import { logger } from "@/utils/debug";
 
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
+
+const cloudinary = new Cloudinary();
 
 export const accountRouter = createTRPCRouter({
   getAll: protectedProcedure
@@ -124,6 +128,7 @@ export const accountRouter = createTRPCRouter({
           name: input.name,
           email: input.email,
           password: hashedPassword,
+          emailVerified: new Date().toISOString(),
         },
       });
     }),
@@ -167,19 +172,63 @@ export const accountRouter = createTRPCRouter({
           .cuid2("Input must be a valid user ID")
           .trim()
           .min(1, "User ID can't be empty"),
-        name: z.string().trim().min(1),
+        name: z.string().trim().default(""),
+        image: z.string().trim().default(""),
+        password: z.string().trim().default(""),
+        removeImage: z.boolean().default(false),
       })
     )
     .mutation(async ({ input, ctx }) => {
+      const updateData: Record<string, string> = {};
+
+      logger("account.ts line 181", {
+        input,
+      });
+
+      if (input.name.length) {
+        updateData.name = input.name;
+        logger("account.ts line 195/updateData-name", { input, updateData });
+      }
+
+      if (input.image.length) {
+        const imageUrl: string =
+          (await cloudinary.uploadImage(input.image, input.id)) ?? "";
+
+        logger("account.ts line 196/updateData-imageUrl", { imageUrl });
+
+        if (imageUrl.length) {
+          updateData["image"] = imageUrl;
+          logger("account.ts line 195/updateData-image", {
+            input,
+            updateData,
+            imageUrl,
+          });
+        }
+      } else if (input.removeImage) {
+        updateData["image"] = "";
+      }
+
+      if (input.password.length) {
+        const hashedPassword: string = await argon2.hash(input.password);
+        updateData.password = hashedPassword;
+      }
+
+      logger("account.ts line 195", { input, updateData });
+
       //TODO: Update password
+      if (!Object.keys(updateData).length) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Unable to update with malformed input",
+        });
+      }
+
       return await ctx.prisma.user.upsert({
         where: {
           id: input.id,
         },
         create: {},
-        update: {
-          name: input.name,
-        },
+        update: updateData,
       });
     }),
   //#endregion  //*======== Auth ===========
@@ -378,6 +427,64 @@ export const accountRouter = createTRPCRouter({
             },
           },
         },
+      });
+    }),
+
+  authorizeChanges: protectedProcedure
+    .input(
+      z.object({
+        id: z
+          .string()
+          .cuid2("Input must be a valid user ID")
+          .trim()
+          .min(1, "User ID can't be empty"),
+        name: z.string().trim().default(""),
+        password: z.string().trim().default(""),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const user = await ctx.prisma.user.findFirst({
+        where: {
+          id: input.id,
+        },
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "User does not exist.",
+        });
+      }
+
+      // OAuth account
+      if (!user.password?.length && input.name.length) {
+        const nameMatched: boolean = input.name === user.name;
+
+        if (!nameMatched) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "Invalid authorization confirmation.",
+          });
+        }
+        return true;
+      } else if (user.password?.length && input.password.length) {
+        const passwordsMatched: boolean = await argon2.verify(
+          user.password,
+          input.password
+        );
+        logger("account.ts line 467", { passwordsMatched });
+        if (!passwordsMatched) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "Invalid authorization confirmation.",
+          });
+        }
+        return true;
+      }
+
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Insufficient inputs for authorization confirmation.",
       });
     }),
 });

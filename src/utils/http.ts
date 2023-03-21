@@ -92,9 +92,9 @@ export class HTTP<PathSpecs> {
    */
   post = ({
     url,
+    data,
     content_type = "application/json",
     headers,
-    data,
   }: QueryParams) =>
     fetch(url, {
       method: "POST",
