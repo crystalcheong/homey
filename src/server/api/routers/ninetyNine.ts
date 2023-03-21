@@ -188,14 +188,32 @@ export const ninetyNineRouter = createTRPCRouter({
 
       logger("ninetyNine.ts line 180/getClusterListings", { input, property });
 
+      const listing: Listing | null = await client.getClusterListings(
+        input.listingType,
+        input.listingId,
+        input.clusterId
+      );
+
       if (!property) {
-        return await client.getClusterListings(
-          input.listingType,
-          input.listingId,
-          input.clusterId
-        );
+        return listing;
       }
 
+      // Update Property availablity on demand
+      const isAvailable = !!listing;
+      if (isAvailable !== property.isAvailable) {
+        property.isAvailable = isAvailable;
+        await ctx.prisma.property.update({
+          where: {
+            id_clusterId: {
+              id: property.id,
+              clusterId: property.clusterId,
+            },
+          },
+          data: property,
+        });
+      }
+
+      // Parse stringified to Listing
       const propertyListing: Listing = parseStringifiedListing(
         property.stringifiedListing
       ) as Listing;
