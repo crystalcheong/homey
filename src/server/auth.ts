@@ -1,5 +1,5 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { randomUUID } from "crypto";
+import { User } from "@prisma/client";
 import type { GetServerSidePropsContext } from "next";
 import {
   type DefaultSession,
@@ -10,6 +10,8 @@ import {
 import CredentialsProvider from "next-auth/providers/credentials";
 import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
+
+import { AccountV2 } from "@/data/clients/accountV2";
 
 import { logger } from "@/utils/debug";
 
@@ -104,21 +106,21 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials, req) {
-        const user = await prisma.user.findFirst({
-          where: {
-            email: credentials?.email ?? "",
-          },
-        });
+        const client = new AccountV2();
+        const user: User | null = (await client.getUser(
+          "",
+          credentials?.email ?? ""
+        )) as unknown as User;
 
-        if (user) {
-          const sessionToken = randomUUID();
-          const sessionExpiry = new Date(Date.now() + session.maxAge * 1000);
-          await prismaAdapter.createSession({
-            sessionToken: sessionToken,
-            userId: user.id,
-            expires: sessionExpiry,
-          });
-        }
+        // if (user) {
+        //   const sessionToken = randomUUID();
+        //   const sessionExpiry = new Date(Date.now() + session.maxAge * 1000);
+        //   await prismaAdapter.createSession({
+        //     sessionToken: sessionToken,
+        //     userId: user.id,
+        //     expires: sessionExpiry,
+        //   });
+        // }
 
         logger("auth.ts line 91", {
           credentials,

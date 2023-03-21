@@ -89,9 +89,10 @@ const AccountUpdatePage = () => {
     setConfirmationState(ConfirmationState);
   };
 
-  const useAccountDeleteUser = api.account.deleteUser.useMutation();
-  const useAccountUpdateUser = api.account.updateUser.useMutation();
-  const useAccountAuthorizeChanges = api.account.authorizeChanges.useMutation();
+  const useAccountDeleteUser = api.accountV2.deleteUser.useMutation();
+  const useAccountUpdateUser = api.accountV2.updateUser.useMutation();
+  const useAccountAuthorizeChanges =
+    api.accountV2.authorizeChanges.useMutation();
 
   const validateStates = useCallback(
     (fields: (keyof typeof InitalFormState)[] = Object.keys(formState)) => {

@@ -13,6 +13,7 @@ import {
   Transition,
   useMantineTheme,
 } from "@mantine/core";
+import { User } from "@prisma/client";
 import { DefaultErrorShape } from "@trpc/server";
 import { InferGetServerSidePropsType, NextPage } from "next";
 import { useRouter } from "next/router";
@@ -144,8 +145,8 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
     useState<typeof InitalFormState>(InitalFormState);
   const [authStep, setAuthStep] = useState<number>(0);
 
-  const useAccountSignUp = api.account.signUp.useMutation();
-  const useAccountSignIn = api.account.signIn.useMutation();
+  const useAccountSignUp = api.accountV2.signUp.useMutation();
+  const useAccountSignIn = api.accountV2.signIn.useMutation();
 
   const [authErrorState, setAuthErrorState] = useState<DefaultErrorShape>();
   const [isLoadingProvider, setIsLoadingProvider] = useState<string>("");
@@ -283,10 +284,19 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
             },
             {
               onSuccess(data) {
+                logger("index.tsx line 287", { data });
+                if (!data) {
+                  setAuthErrorState({
+                    code: -32008,
+                    message: "Request timed out",
+                  } as DefaultErrorShape);
+                  revertToInitialState();
+                }
                 if (data) {
+                  const authData: User | null = data as unknown as User;
                   signIn(providerId, {
-                    name: data.name,
-                    email: data.email,
+                    name: authData.name,
+                    email: authData.email,
                     password: formState.password,
                     callbackUrl: "/",
                   });

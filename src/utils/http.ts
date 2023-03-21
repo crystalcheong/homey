@@ -146,4 +146,16 @@ export class HTTP<PathSpecs> {
       },
       body: JSON.stringify(data),
     });
+
+  /**
+   * Executes HTTP PATCH request with fetch
+   */
+  patch = ({ url, headers, data }: QueryParams) =>
+    fetch(url, {
+      method: "PATCH",
+      headers: {
+        ...headers,
+      },
+      body: JSON.stringify(data),
+    });
 }

@@ -152,7 +152,7 @@ export function HeaderMegaMenu() {
     }
   };
 
-  api.account.getUserByEmail.useQuery(
+  api.accountV2.getUser.useQuery(
     {
       email: sessionData?.user?.email ?? "",
     },
@@ -169,6 +169,8 @@ export function HeaderMegaMenu() {
       },
     }
   );
+
+  logger("Base.tsx line 173", { currentUser, sessionData });
 
   return (
     <>
