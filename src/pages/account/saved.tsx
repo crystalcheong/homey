@@ -1,19 +1,16 @@
-import { PropertyType } from "@prisma/client";
 import { useSession } from "next-auth/react";
+import { useMemo } from "react";
 import { TbBookmark } from "react-icons/tb";
 
-import { Listing, ListingTypes } from "@/data/clients/ninetyNine";
+import { Listing } from "@/data/clients/ninetyNine";
 import {
+  parseStringifiedListing,
   SavedListing,
   useAccountStore,
-  useNinetyNineStore,
 } from "@/data/stores";
 
 import { Layout, Property, Provider } from "@/components";
 import UnknownState from "@/components/Layouts/UnknownState";
-
-import { api } from "@/utils/api";
-import { logger } from "@/utils/debug";
 
 import EmptySaved from "~/assets/images/empty-saved.svg";
 
@@ -23,32 +20,41 @@ const AccountSavedPage = () => {
 
   const userSavedListings: SavedListing[] = useAccountStore.use.savedListings();
 
-  const [...allSavedListings]: Listing[] = (
-    api.useQueries((t) =>
-      userSavedListings.map(({ property }) => {
-        const isRent: boolean = property.type === PropertyType.rent;
-        return t.ninetyNine.getClusterListings(
-          {
-            listingId: property.id,
-            listingType: ListingTypes[isRent ? 0 : 1],
-            clusterId: property.clusterId,
-          },
-          {
-            onSuccess(data) {
-              logger("saved.tsx line 29", { data });
-              if (!data) return;
-              useNinetyNineStore.setState((state) => ({
-                savedListings: [...state.savedListings, data],
-              }));
-              return data;
-            },
-          }
-        );
-      })
-    ) ?? []
-  )
-    .filter(({ data }) => !!data)
-    .map(({ data }) => data) as Listing[];
+  const allSavedListings = useMemo(
+    () =>
+      (userSavedListings ?? []).map(
+        ({ property }) =>
+          parseStringifiedListing(property.stringifiedListing) as Listing
+      ),
+    [userSavedListings]
+  );
+
+  // const [...allSavedListings]: Listing[] = (
+  //   api.useQueries((t) =>
+  //     userSavedListings.map(({ property }) => {
+  //       const isRent: boolean = property.type === PropertyType.rent;
+  //       return t.ninetyNine.getClusterListings(
+  //         {
+  //           listingId: property.id,
+  //           listingType: ListingTypes[isRent ? 0 : 1],
+  //           clusterId: property.clusterId,
+  //         },
+  //         {
+  //           onSuccess: (data) => {
+  //             logger("saved.tsx line 29", { data });
+  //             if (!data) return;
+  //             useNinetyNineStore.setState((state) => ({
+  //               savedListings: [...state.savedListings, data],
+  //             }));
+  //             return data;
+  //           },
+  //         }
+  //       );
+  //     })
+  //   ) ?? []
+  // )
+  //   .filter(({ data }) => !!data)
+  //   .map(({ data }) => data) as Listing[];
 
   //#endregion  //*======== Pre-Render Checks ===========
   // useEffect(() => {

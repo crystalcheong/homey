@@ -44,6 +44,7 @@
     "@upstash/redis": "^1.20.1",
     "argon2": "^0.30.3",
     "cloudinary": "^1.35.0",
+    "compress-json": "^2.1.2",
     "embla-carousel-autoplay": "^7.1.0",
     "embla-carousel-react": "^7.1.0",
     "next": "^13.2.4",

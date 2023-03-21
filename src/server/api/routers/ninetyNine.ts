@@ -2,6 +2,7 @@ import { Neighbourhood } from "@prisma/client";
 import { z } from "zod";
 
 import {
+  Listing,
   ListingCategories,
   ListingTypes,
   NinetyNine,
@@ -10,7 +11,10 @@ import {
   defaultLaunchPaginationInfo,
   defaultPaginationInfo,
   getPredefinedNeighbourhoods,
+  parseStringifiedListing,
 } from "@/data/stores/ninetyNine";
+
+import { logger } from "@/utils/debug";
 
 import { createTRPCRouter, publicProcedure } from "../trpc";
 
@@ -173,14 +177,30 @@ export const ninetyNineRouter = createTRPCRouter({
           ),
       })
     )
-    .query(
-      async ({ input }) =>
-        await client.getClusterListings(
+    .query(async ({ input, ctx }) => {
+      // Retrieve Property from db
+      const property = await ctx.prisma.property.findFirst({
+        where: {
+          id: input.listingId,
+          clusterId: input.clusterId,
+        },
+      });
+
+      logger("ninetyNine.ts line 180/getClusterListings", { input, property });
+
+      if (!property) {
+        return await client.getClusterListings(
           input.listingType,
           input.listingId,
           input.clusterId
-        )
-    ),
+        );
+      }
+
+      const propertyListing: Listing = parseStringifiedListing(
+        property.stringifiedListing
+      ) as Listing;
+      return propertyListing;
+    }),
 
   // getMRTs: publicProcedure.query(async () => await client.getMRTs()),
 

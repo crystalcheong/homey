@@ -59,8 +59,9 @@ const ConfirmationState = {
 const AccountUpdatePage = () => {
   const router = useRouter();
   const theme = useMantineTheme();
-  const { data: sessionData } = useSession();
+  const { data: sessionData, status: sessionStatus } = useSession();
   const isAuth = !!sessionData;
+  const isAuthLoading: boolean = sessionStatus === "loading";
 
   const currentUser = useAccountStore.use.currentUser();
   const isOAuthUser: boolean = !currentUser?.password?.length ?? false;
@@ -407,12 +408,12 @@ const AccountUpdatePage = () => {
 
   //#endregion  //*======== Pre-Render Checks ===========
   useEffect(() => {
-    if (!isAuth || !currentUser) {
+    if (!isAuthLoading && !isAuth) {
       router.replace("/account/signIn");
       return;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuth, currentUser]);
+  }, [isAuth, isAuthLoading]);
 
   //#endregion  //*======== Pre-Render Checks ===========
 

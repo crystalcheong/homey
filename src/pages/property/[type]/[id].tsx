@@ -21,7 +21,7 @@ import { useWindowScroll } from "@mantine/hooks";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { IconType } from "react-icons";
 import { FaBirthdayCake } from "react-icons/fa";
 import { MdOutlinePhotoLibrary } from "react-icons/md";
@@ -115,10 +115,11 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
 
   const [isMounted, setIsMounted] = useState<boolean>(false);
   const [cluster, setCluster] = useState<Cluster | null>(null);
-  const listing: Listing | null = useNinetyNineStore.use.getListing()(type, id);
-
   const [baseUrl, setBaseUrl] = useState<string>(getBaseUrl());
   const [modalOpened, setModalOpened] = useState<Listing["photos"][number]>();
+
+  const listing: Listing | null = useNinetyNineStore.use.getListing()(type, id);
+  const updateCurrentListing = useNinetyNineStore.use.updateCurrentListing();
 
   /**
    * @see https://nextjs.org/docs/messages/react-hydration-error
@@ -127,10 +128,11 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
     setIsMounted(true);
     if (typeof window !== "undefined" && window.location.origin)
       setBaseUrl(window.location.origin);
-    logger("[id].tsx line 91", { listing });
+
+    logger("[id].tsx line 132", { listing });
   }, [listing]);
 
-  const [{ data: listingData }] = api.useQueries((t) => [
+  const [{ data: listingData = null }] = api.useQueries((t) => [
     t.ninetyNine.getClusterListings(
       {
         listingType: type,
@@ -139,6 +141,10 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
       },
       {
         enabled: !listing && isValidProperty && isMounted,
+        onSuccess: (data) => {
+          logger("[id].tsx line 140", { data });
+          if (data) updateCurrentListing(data);
+        },
       }
     ),
     t.ninetyNine.getCluster(
@@ -149,17 +155,12 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
         enabled:
           !!listing && !!clusterId.length && isValidProperty && isMounted,
         onSuccess: (data) => {
-          logger("[id].tsx line 140", { data });
+          logger("[id].tsx line 161", { data });
           setCluster(data);
         },
       }
     ),
   ]);
-
-  useMemo(() => {
-    if (!listingData) return;
-    useNinetyNineStore.setState(() => ({ currentListing: listingData }));
-  }, [listingData]);
 
   const PRIMARY_COL_HEIGHT = 300;
   const SECONDARY_COL_HEIGHT = PRIMARY_COL_HEIGHT / 2 - theme.spacing.md / 2;
@@ -171,49 +172,51 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
   }[] = [
     {
       label: `Bedrooms`,
-      attribute: `${listing?.attributes?.bedrooms ?? "--"}`,
+      attribute: `${listingData?.attributes?.bedrooms ?? "--"}`,
       icon: TbBed,
     },
     {
       label: `Bathrooms`,
-      attribute: `${listing?.attributes?.bathrooms ?? "--"}`,
+      attribute: `${listingData?.attributes?.bathrooms ?? "--"}`,
       icon: TbBath,
     },
     {
       label: `Living Space`,
-      attribute: `${listing?.attributes?.area_size_sqm_formatted ?? "--"}`,
+      attribute: `${listingData?.attributes?.area_size_sqm_formatted ?? "--"}`,
       icon: TbDimensions,
     },
     {
       label: `Tenure`,
-      attribute: `${listing?.attributes?.tenure ?? "--"}`,
+      attribute: `${listingData?.attributes?.tenure ?? "--"}`,
       icon: TbClock,
     },
 
     {
       label: `Price/sqft`,
-      attribute: `${listing?.attributes?.area_ppsf_formatted ?? "$-.-- psf"}`,
+      attribute: `${
+        listingData?.attributes?.area_ppsf_formatted ?? "$-.-- psf"
+      }`,
       icon: TiChartAreaOutline,
     },
     {
       label: `Built year`,
-      attribute: `${listing?.attributes?.completed_at ?? "----"}`,
+      attribute: `${listingData?.attributes?.completed_at ?? "----"}`,
       icon: FaBirthdayCake,
     },
     {
       label: `Property type`,
-      attribute: `${listing?.main_category ?? "--"}`.toUpperCase(),
+      attribute: `${listingData?.main_category ?? "--"}`.toUpperCase(),
       icon: TbBuildingCommunity,
     },
     {
       label: `Last updated`,
-      attribute: `${listing?.date_formatted ?? "--"}`,
+      attribute: `${listingData?.date_formatted ?? "--"}`,
       icon: TbEdit,
     },
   ];
 
   const mapsUrl = `https://www.google.com/maps/embed/v1/place?key=AIzaSyBeU0KYm091allUovk19s4Aw4KfI7l43aI&q=${encodeURIComponent(
-    listing?.address_name ?? ""
+    listingData?.address_name ?? ""
   )}`;
 
   return (
@@ -225,7 +228,7 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
       }}
     >
       <Provider.RenderGuard
-        renderIf={isValidProperty && isMounted && !!listing}
+        renderIf={isValidProperty && isMounted && !!listingData}
         fallbackComponent={
           <UnknownState
             svgNode={<EmptyListing />}
@@ -248,7 +251,7 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
             order={1}
             size="h2"
           >
-            {listing?.address_name}
+            {listingData?.address_name}
           </Title>
 
           <Group position="apart">
@@ -258,7 +261,7 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
               color="dimmed"
               fw={400}
             >
-              {listing?.address_line_2}
+              {listingData?.address_line_2}
             </Title>
 
             <Group spacing="xs">
@@ -284,16 +287,16 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
                 component={Link}
                 target="_blank"
                 href={`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${Object.values(
-                  listing?.location.coordinates ?? {}
+                  listingData?.location.coordinates ?? {}
                 ).join(",")}&heading=-45&fov=80`}
                 leftIcon={<TbCurrentLocation size={16} />}
               >
                 Street View
               </Button>
 
-              {listing && (
+              {listingData && (
                 <SaveButton
-                  listing={listing}
+                  listing={listingData}
                   showLabel
                   overwriteButtonProps={{
                     compact: false,
@@ -313,7 +316,7 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
           <Button
             variant="white"
             leftIcon={<MdOutlinePhotoLibrary size={16} />}
-            onClick={() => setModalOpened(listing?.photos?.[0])}
+            onClick={() => setModalOpened(listingData?.photos?.[0])}
             styles={(theme) => ({
               root: {
                 position: "absolute",
@@ -331,7 +334,7 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
             breakpoints={[{ maxWidth: "sm", cols: 1 }]}
           >
             <Skeleton
-              visible={!listing?.photos?.[0]}
+              visible={!listingData?.photos?.[0]}
               height={PRIMARY_COL_HEIGHT}
               radius="md"
               animate={false}
@@ -339,44 +342,45 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
               <Image
                 radius="md"
                 height={PRIMARY_COL_HEIGHT}
-                src={listing?.photos?.[0]?.url ?? null}
-                alt={listing?.photos?.[0]?.category}
-                onClick={() => setModalOpened(listing?.photos?.[0])}
+                src={listingData?.photos?.[0]?.url ?? null}
+                alt={listingData?.photos?.[0]?.category}
+                onClick={() => setModalOpened(listingData?.photos?.[0])}
                 caption={
                   <ImageCaption>
-                    {listing?.photos?.[0]?.category ?? ""}
+                    {listingData?.photos?.[0]?.category ?? ""}
                   </ImageCaption>
                 }
               />
             </Skeleton>
             <Grid gutter="md">
-              {getLimitedArray((listing?.photos ?? []).slice(1) ?? [], 3).map(
-                (photo, idx) => (
-                  <Grid.Col
-                    key={`tourGrid-${photo.id}-${idx}`}
-                    span={idx > 0 ? 6 : 12}
+              {getLimitedArray(
+                (listingData?.photos ?? []).slice(1) ?? [],
+                3
+              ).map((photo, idx) => (
+                <Grid.Col
+                  key={`tourGrid-${photo.id}-${idx}`}
+                  span={idx > 0 ? 6 : 12}
+                >
+                  <Skeleton
+                    visible={!photo?.url}
+                    height={SECONDARY_COL_HEIGHT}
+                    radius="md"
+                    animate={false}
                   >
-                    <Skeleton
-                      visible={!photo?.url}
-                      height={SECONDARY_COL_HEIGHT}
+                    <Image
                       radius="md"
-                      animate={false}
-                    >
-                      <Image
-                        radius="md"
-                        height={SECONDARY_COL_HEIGHT}
-                        src={photo?.url ?? null}
-                        alt={photo?.category ?? ""}
-                        onClick={() => setModalOpened(photo)}
-                        sx={{
-                          position: "relative",
-                        }}
-                        caption={<ImageCaption>{photo?.category}</ImageCaption>}
-                      />
-                    </Skeleton>
-                  </Grid.Col>
-                )
-              )}
+                      height={SECONDARY_COL_HEIGHT}
+                      src={photo?.url ?? null}
+                      alt={photo?.category ?? ""}
+                      onClick={() => setModalOpened(photo)}
+                      sx={{
+                        position: "relative",
+                      }}
+                      caption={<ImageCaption>{photo?.category}</ImageCaption>}
+                    />
+                  </Skeleton>
+                </Grid.Col>
+              ))}
             </Grid>
           </SimpleGrid>
         </Box>
@@ -439,9 +443,9 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
               fz="xl"
               variant="gradient"
             >
-              {listing?.attributes?.price_formatted ?? `$-.--`}&nbsp;
+              {listingData?.attributes?.price_formatted ?? `$-.--`}&nbsp;
             </Text>
-            {PriceListingTypes[listing?.listing_type ?? ListingTypes[0]]}
+            {PriceListingTypes[listingData?.listing_type ?? ListingTypes[0]]}
           </Title>
         </Group>
 
@@ -454,7 +458,7 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
         >
           <Title order={3}>About this home</Title>
           <Group spacing="sm">
-            {(listing?.formatted_tags ?? []).map((tag, idx) => (
+            {(listingData?.formatted_tags ?? []).map((tag, idx) => (
               <Badge
                 key={`${id}-${idx}-${tag?.color}`}
                 radius="sm"
@@ -531,7 +535,7 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
           }}
         />
 
-        {listing?.user && (
+        {listingData?.user && (
           <Box
             sx={{
               display: "flex",
@@ -567,7 +571,7 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
             <Group position="apart">
               <Group>
                 <Avatar
-                  src={listing?.user?.photo_url}
+                  src={listingData?.user?.photo_url}
                   alt="User Avatar"
                   radius="xl"
                   size="md"
@@ -576,13 +580,13 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
                   component="p"
                   fw={600}
                 >
-                  {listing?.user?.name}
+                  {listingData?.user?.name}
                 </Text>
               </Group>
 
               <Group spacing="xs">
                 <EnquiryButtonGroup
-                  listing={listing}
+                  listing={listingData}
                   hideLabels={isTablet}
                 />
               </Group>
@@ -612,7 +616,7 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
             {(transitionStyles) => (
               <Group style={transitionStyles}>
                 <EnquiryButtonGroup
-                  listing={listing ?? ({} as Listing)}
+                  listing={listingData ?? ({} as Listing)}
                   overwriteIconProps={{
                     color: theme.white,
                   }}
@@ -626,7 +630,7 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
         </Affix>
 
         <GalleryModal
-          photos={listing?.photos ?? []}
+          photos={listingData?.photos ?? []}
           opened={!!modalOpened}
           activePhoto={modalOpened}
           onClose={() => setModalOpened(undefined)}

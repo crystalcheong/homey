@@ -123,11 +123,12 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
   const router = useRouter();
   const { auth } = router.query;
   const theme = useMantineTheme();
-  const { data: sessionData } = useSession();
+  const { data: sessionData, status: sessionStatus } = useSession();
+  const isAuth = !!sessionData;
+  const isAuthLoading: boolean = sessionStatus === "loading";
 
   const isDark: boolean = theme.colorScheme === "dark";
 
-  const isAuth = !!sessionData;
   const paramAuth: AuthType =
     AuthTypes.filter((t) => t === (auth ?? "").toString())?.[0] ?? "";
   const isValidAuthType: boolean = (!!paramAuth && !!paramAuth.length) ?? false;
@@ -325,7 +326,11 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
 
   //#endregion  //*======== Pre-Render Checks ===========
   useEffect(() => {
-    if (isAuth && isValidAuthType) {
+    logger("index.tsx line 318", {
+      isAuth,
+      isValidAuthType,
+    });
+    if (!isAuthLoading && isAuth) {
       router.push(
         {
           pathname: `/`,
@@ -336,7 +341,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuth, paramAuth, isValidAuthType]);
+  }, [isAuth, isValidAuthType, isAuthLoading]);
 
   //#endregion  //*======== Pre-Render Checks ===========
 

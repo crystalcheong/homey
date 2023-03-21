@@ -158,7 +158,7 @@ export function HeaderMegaMenu() {
     },
     {
       enabled: isAuth,
-      onSuccess(data) {
+      onSuccess: (data) => {
         logger("Base.tsx line 173", { data });
 
         const userSavedListings: SavedListing[] = data?.propertySaved ?? [];

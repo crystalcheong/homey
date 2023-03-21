@@ -31,6 +31,7 @@ specifiers:
   '@upstash/redis': ^1.20.1
   argon2: ^0.30.3
   cloudinary: ^1.35.0
+  compress-json: ^2.1.2
   dotenv-cli: ^7.1.0
   embla-carousel-autoplay: ^7.1.0
   embla-carousel-react: ^7.1.0
@@ -74,6 +75,7 @@ dependencies:
   '@upstash/redis': 1.20.1
   argon2: 0.30.3
   cloudinary: 1.35.0
+  compress-json: 2.1.2
   embla-carousel-autoplay: 7.1.0_embla-carousel@7.1.0
   embla-carousel-react: 7.1.0_react@18.2.0
   next: 13.2.4_hrdbe576m4w26u2yfpqpvbxyky
@@ -3149,6 +3151,10 @@ packages:
       array-ify: 1.0.0
       dot-prop: 5.3.0
     dev: true
+
+  /compress-json/2.1.2:
+    resolution: {integrity: sha512-91247RD8bKQXzRmXUS4zGT250mhw86+J9X8w2L2SGtRE7g0CvzjOETFaFmsDdaXPWv8T7L9iiM7kdcnnH3BH7w==}
+    dev: false
 
   /concat-map/0.0.1:
     resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
