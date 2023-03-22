@@ -7,6 +7,7 @@ import {
   Text,
   TextInput,
   Title,
+  Transition,
   useMantineTheme,
 } from "@mantine/core";
 import { FileWithPath } from "@mantine/dropzone";
@@ -383,6 +384,7 @@ const AccountUpdatePage = () => {
   const handleRemoveProfileImage = async () => {
     if (!isAuth || !currentUser) return;
 
+    setIsLoading(true);
     await useAccountUpdateUser.mutateAsync(
       {
         id: currentUser.id,
@@ -403,6 +405,20 @@ const AccountUpdatePage = () => {
         },
       }
     );
+    setIsLoading(false);
+  };
+
+  const handleProfileImageAction = async () => {
+    if (!isAuth || !currentUser) return;
+
+    const isDeletion = !profileImage.length;
+
+    if (isDeletion) {
+      await handleRemoveProfileImage();
+    } else {
+      setProfileImage([]);
+      updateFormState("image", "");
+    }
   };
 
   //#endregion  //*======== Pre-Render Checks ===========
@@ -457,20 +473,24 @@ const AccountUpdatePage = () => {
               files={profileImage}
               onDrop={handleImageUpload}
             />
-            <Box
-              component="aside"
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                gap: theme.spacing.md,
-                placeContent: "center",
-              }}
+
+            <Transition
+              mounted={!!currentUser?.image?.length || !!profileImage.length}
+              transition="slide-right"
+              duration={400}
+              timingFunction="ease"
             >
-              <Button onClick={handleRemoveProfileImage}>
-                Remove profile picture
-              </Button>
-              <Button onClick={() => setProfileImage([])}>Reset</Button>
-            </Box>
+              {(styles) => (
+                <Button
+                  onClick={handleProfileImageAction}
+                  disabled={!currentUser?.image?.length && !profileImage.length}
+                  style={styles}
+                >
+                  {profileImage.length ? "Revert" : "Delete"}
+                  &nbsp;profile picture
+                </Button>
+              )}
+            </Transition>
           </Group>
 
           <TextInput
