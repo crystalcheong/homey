@@ -38,6 +38,7 @@ interface Mutators {
     listingId: Listing["id"]
   ) => Listing | null;
   updateCurrentListing: (listing: Listing) => void;
+  removeListing: (listingType: ListingType, listingId: Listing["id"]) => void;
 }
 
 interface Store extends State, Mutators {}
@@ -213,6 +214,17 @@ const store = create<Store>()(
           defaultPaginationInfo as PaginationInfo,
         ])
       ),
+      removeListing: (listingType, listingId) => {
+        const currentListings: State["listings"] = get().listings;
+        const updateListings: Listing[] = (
+          currentListings.get(listingType) ?? []
+        ).filter((listing) => listing.id === listingId);
+        currentListings.set(listingType, updateListings);
+
+        set((state) => ({
+          listings: currentListings ?? state.listings,
+        }));
+      },
       updateCurrentListing: (listing) =>
         set((state) => ({
           currentListing: listing ?? state.currentListing,

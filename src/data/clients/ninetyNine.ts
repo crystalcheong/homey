@@ -192,7 +192,7 @@ export class NinetyNine {
 
         if (launches.length) {
           logger("ninetyNine.ts line 188", { usedCached: !!launches.length });
-          break fetchLaunches;
+          if (launches.length >= pagination.itemLimit) break fetchLaunches;
         }
       }
 
@@ -285,7 +285,7 @@ export class NinetyNine {
 
         if (listings.length) {
           logger("ninetyNine.ts line 279", { usedCached: !!listings.length });
-          break fetchListings;
+          if (listings.length >= pagination.pageSize) break fetchListings;
         }
       }
 
@@ -384,7 +384,6 @@ export class NinetyNine {
     }
 
     logger("ninetyNine.ts line 351", { listing });
-
     return listing;
   };
 

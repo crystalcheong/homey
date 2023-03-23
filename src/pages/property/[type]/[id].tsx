@@ -120,6 +120,7 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
 
   const listing: Listing | null = useNinetyNineStore.use.getListing()(type, id);
   const updateCurrentListing = useNinetyNineStore.use.updateCurrentListing();
+  const removeListing = useNinetyNineStore.use.removeListing();
 
   /**
    * @see https://nextjs.org/docs/messages/react-hydration-error
@@ -143,7 +144,12 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
         enabled: !listing && isValidProperty && isMounted,
         onSuccess: (data) => {
           logger("[id].tsx line 140", { data });
-          if (data) updateCurrentListing(data);
+          if (!data) {
+            removeListing(type, id);
+            return;
+          }
+
+          updateCurrentListing(data);
         },
       }
     ),
