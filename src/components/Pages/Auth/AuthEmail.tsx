@@ -9,7 +9,7 @@ export const getEmailSuggestions = (input: string) =>
       )
     : [];
 
-const AuthEmail = ({ value, data, ...rest }: Props) => {
+const AuthEmail = ({ value, data = [], ...rest }: Props) => {
   return (
     <Autocomplete
       value={value}

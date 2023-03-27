@@ -54,6 +54,7 @@ interface Props extends BoxProps {
   seeMoreLink?: LinkProps["href"];
 
   viewMode?: ViewMode;
+  showViewMode?: boolean;
 }
 
 export const Grid = ({
@@ -68,6 +69,7 @@ export const Grid = ({
   placeholderCount = 3,
   maxViewableCount = 0,
   viewMode = ViewModes[0],
+  showViewMode = false,
   gridProps,
   children,
   emptyFallback,
@@ -128,20 +130,22 @@ export const Grid = ({
                 {`${title || listingType} Listings`.trim()}
               </Title>
 
-              <Group spacing="xs">
-                {ViewModes.map((mode) => {
-                  const isActiveMode: boolean = currentViewMode === mode;
-                  return (
-                    <ThemeIcon
-                      key={`viewMode-${mode}`}
-                      variant={isActiveMode ? "gradient" : "default"}
-                      onClick={() => handleModeChange(mode)}
-                    >
-                      {getViewModeIcon(mode)}
-                    </ThemeIcon>
-                  );
-                })}
-              </Group>
+              {showViewMode && (
+                <Group spacing="xs">
+                  {ViewModes.map((mode) => {
+                    const isActiveMode: boolean = currentViewMode === mode;
+                    return (
+                      <ThemeIcon
+                        key={`viewMode-${mode}`}
+                        variant={isActiveMode ? "gradient" : "default"}
+                        onClick={() => handleModeChange(mode)}
+                      >
+                        {getViewModeIcon(mode)}
+                      </ThemeIcon>
+                    );
+                  })}
+                </Group>
+              )}
             </>
           )}
 
@@ -167,10 +171,12 @@ export const Grid = ({
           <SimpleGrid
             cols={currentViewMode === ViewModes[0] ? 3 : 1}
             spacing="lg"
-            breakpoints={[
-              { maxWidth: "md", cols: 2, spacing: "md" },
-              { maxWidth: "xs", cols: 1, spacing: "sm" },
-            ]}
+            {...(currentViewMode === ViewModes[0] && {
+              breakpoints: [
+                { maxWidth: "md", cols: 2, spacing: "md" },
+                { maxWidth: "xs", cols: 1, spacing: "sm" },
+              ],
+            })}
             sx={{
               placeItems: "center",
               gridAutoRows: "1fr",

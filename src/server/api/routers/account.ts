@@ -4,12 +4,14 @@ import argon2 from "argon2";
 import { z } from "zod";
 
 import { Cloudinary } from "@/data/clients/cloudinary";
+import { Supabase } from "@/data/clients/supabase";
 
 import { logger } from "@/utils/debug";
 
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 const cloudinary = new Cloudinary();
+const supabase = new Supabase();
 
 export const accountRouter = createTRPCRouter({
   getAll: protectedProcedure
@@ -132,6 +134,12 @@ export const accountRouter = createTRPCRouter({
 
       const hashedPassword: string = await argon2.hash(input.password);
 
+      // CREATE ON SUPABASE
+      await supabase.client.auth.signUp({
+        email: input.email,
+        password: hashedPassword,
+      });
+
       return ctx.prisma.user.create({
         data: {
           name: input.name,
@@ -220,11 +228,15 @@ export const accountRouter = createTRPCRouter({
       if (input.password.length) {
         const hashedPassword: string = await argon2.hash(input.password);
         updateData.password = hashedPassword;
+
+        // UPDATE ON SUPABASE
+        await supabase.client.auth.updateUser({
+          password: updateData.password,
+        });
       }
 
       logger("account.ts line 195", { input, updateData });
 
-      //TODO: Update password
       if (!Object.keys(updateData).length) {
         throw new TRPCError({
           code: "BAD_REQUEST",
@@ -240,6 +252,74 @@ export const accountRouter = createTRPCRouter({
         update: updateData,
       });
     }),
+
+  requestPasswordReset: publicProcedure
+    .input(
+      z.object({
+        email: z
+          .string()
+          .email("Input must be a valid email address")
+          .trim()
+          .min(1, "Email address can't be empty"),
+        redirectTo: z.string().trim().min(1, "Redirection path can't be empty"),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const user = await ctx.prisma.user.findFirst({
+        where: {
+          email: input.email,
+        },
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Email is not associated with an account",
+        });
+      }
+
+      logger("account.ts line 272/requestPasswordReset", {
+        user,
+      });
+      return await supabase.client.auth.resetPasswordForEmail(input.email, {
+        redirectTo: `${input.redirectTo}?id=${user.id}`,
+      });
+    }),
+
+  updateWithPasswordReset: publicProcedure
+    .input(
+      z.object({
+        id: z
+          .string()
+          .cuid2("Input must be a valid user ID")
+          .trim()
+          .min(1, "User ID can't be empty"),
+        accessToken: z
+          .string()
+          .trim()
+          .min(500, "A valid access token is required"),
+        password: z.string().trim().min(1, "Password can't be empty"),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const hashedPassword: string = await argon2.hash(input.password);
+
+      const updateData: Record<string, string> = {
+        password: hashedPassword,
+      };
+
+      // SUPABASE
+      await supabase.client.auth.updateUser(updateData);
+
+      return await ctx.prisma.user.upsert({
+        where: {
+          id: input.id,
+        },
+        create: {},
+        update: updateData,
+      });
+    }),
+
   //#endregion  //*======== Auth ===========
 
   //#endregion  //*======== UserSavedProperty ===========

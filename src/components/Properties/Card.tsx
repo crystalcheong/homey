@@ -23,7 +23,7 @@ import {
 } from "@/components/Properties/Grid";
 import SaveButton from "@/components/Properties/SaveButton";
 
-import { getLimitedArray } from "@/utils";
+import { getLimitedArray, useIsMobile } from "@/utils";
 
 export const EnquiryTypes: string[] = ["call", "whatsapp"];
 export type EnquiryType = (typeof EnquiryTypes)[number];
@@ -60,6 +60,7 @@ export const Card = ({
   ...rest
 }: Props) => {
   const theme = useMantineTheme();
+  const isMobile = useIsMobile(theme);
 
   const {
     id,
@@ -102,12 +103,13 @@ export const Card = ({
       sx={(theme) => ({
         height: "100%",
         width: "100%",
-        ...(isHorizontal && {
-          display: "flex",
-          flexDirection: "row",
-          gap: theme.spacing.xl,
-          height: "220px",
-        }),
+        ...(isHorizontal &&
+          !isMobile && {
+            display: "flex",
+            flexDirection: "row",
+            gap: theme.spacing.xl,
+            height: "220px",
+          }),
       })}
       {...rest}
     >
@@ -155,13 +157,14 @@ export const Card = ({
 
         <Image
           src={photo_url}
-          height={isHorizontal ? 220 : 160}
-          width={isHorizontal ? 300 : undefined}
+          height={isHorizontal && !isMobile ? 220 : 160}
+          width={isHorizontal && !isMobile ? 300 : undefined}
           alt={id}
           fit="cover"
           withPlaceholder
           sx={{
             opacity: 1,
+            objectPosition: "center",
           }}
         />
       </MCard.Section>
@@ -169,11 +172,12 @@ export const Card = ({
       <MCard.Section
         component="main"
         sx={{
-          padding: "0 1em",
-          ...(isHorizontal && {
-            flex: 1,
-            padding: "0 2em",
-          }),
+          padding: "0 1em 1em",
+          ...(isHorizontal &&
+            !isMobile && {
+              flex: 1,
+              padding: "0 2em 1em",
+            }),
         }}
       >
         <Skeleton visible={isSkeleton}>
@@ -217,7 +221,7 @@ export const Card = ({
 
         <Box component="aside">
           <Group
-            mt="md"
+            mt={isHorizontal && !isMobile ? "xs" : "md"}
             spacing="xs"
           >
             <Group spacing="xs">

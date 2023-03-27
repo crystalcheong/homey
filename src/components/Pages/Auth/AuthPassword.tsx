@@ -50,8 +50,8 @@ const AuthPassword = ({
             {showForgotPassword && (
               <Text
                 component={Link}
-                href="#forgot-password"
-                color="primary"
+                href="/account/auth/forgot-password"
+                variant="gradient"
               >
                 Forgot password?
               </Text>

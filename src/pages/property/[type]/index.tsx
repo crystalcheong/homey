@@ -167,6 +167,15 @@ const PropertyTypePage = () => {
     }
   );
 
+  const handleOnPageChange = (pageNum: number) => {
+    setPageNum(pageNum);
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: "smooth",
+    });
+  };
+
   return (
     <Layout.Base showAffix={!!listings.length}>
       <Provider.RenderGuard
@@ -185,6 +194,7 @@ const PropertyTypePage = () => {
             pagination.pageSize * pageNum
           )}
           isLoading={isLoading}
+          showViewMode
           allowSaveListing={isAuth}
           title={listingType}
           subtitle={
@@ -322,7 +332,7 @@ const PropertyTypePage = () => {
               withEdges
               total={5 + 5 * (pageNum * +pagination.hasNext)}
               page={pageNum}
-              onChange={setPageNum}
+              onChange={handleOnPageChange}
               mt="xl"
               position="center"
               styles={(theme) => ({

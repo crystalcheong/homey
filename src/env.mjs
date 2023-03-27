@@ -29,6 +29,8 @@ const server = z.object({
   CLOUDINARY_NAME: z.string().min(1),
   CLOUDINARY_KEY: z.string().min(1),
   CLOUDINARY_SECRET: z.string().min(1),
+  SUPABASE_PROJECT_URL: z.string().min(1),
+  SUPABASE_PROJECT_KEY: z.string().min(1),
 });
 
 /**
@@ -61,6 +63,8 @@ const processEnv = {
   CLOUDINARY_NAME: process.env.CLOUDINARY_NAME,
   CLOUDINARY_KEY: process.env.CLOUDINARY_KEY,
   CLOUDINARY_SECRET: process.env.CLOUDINARY_SECRET,
+  SUPABASE_PROJECT_URL: process.env.SUPABASE_PROJECT_URL,
+  SUPABASE_PROJECT_KEY: process.env.SUPABASE_PROJECT_KEY,
   // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   NEXT_PUBLIC_SHOW_LOGGER: process.env.NEXT_PUBLIC_SHOW_LOGGER,
 };
