@@ -76,7 +76,7 @@ export class AccountV2 {
     if (!id.length) return null;
 
     const params = {
-      id,
+      user_id: id,
     };
     const url = this.http.path("deleteUser", params);
 
@@ -95,7 +95,7 @@ export class AccountV2 {
     if (!id.length) return null;
 
     const routeParams: Record<string, string> = {
-      id,
+      user_id: id,
     };
     const data: Record<string, string> = getPartialClonedObject(
       user,
