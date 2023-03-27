@@ -1,5 +1,4 @@
 import {
-  Accordion,
   Affix,
   Avatar,
   Badge,
@@ -58,7 +57,11 @@ import { prisma } from "@/server/db";
 import { api, getBaseUrl } from "@/utils/api";
 import { logger } from "@/utils/debug";
 import { useIsTablet } from "@/utils/dom";
-import { getLimitedArray } from "@/utils/helpers";
+import {
+  getLimitedArray,
+  getStringWithoutAffix,
+  toTitleCase,
+} from "@/utils/helpers";
 
 import EmptyListing from "~/assets/images/empty-listing.svg";
 
@@ -224,6 +227,16 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
   const mapsUrl = `https://www.google.com/maps/embed/v1/place?key=AIzaSyBeU0KYm091allUovk19s4Aw4KfI7l43aI&q=${encodeURIComponent(
     listingData?.address_name ?? ""
   )}`;
+
+  const neighbourhood: string = getStringWithoutAffix(
+    listing?.cluster_mappings?.zone[0] ?? "",
+    "zo"
+  );
+  const neighbourhoodListingsUrl = neighbourhood.length
+    ? `/property/${type}?${new URLSearchParams({
+        location: JSON.stringify([neighbourhood]),
+      })}`
+    : "";
 
   return (
     <Layout.Base
@@ -486,60 +499,47 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
           </Text>
         </Box>
 
-        <Accordion defaultValue="information">
-          <Accordion.Item value="information">
-            <Accordion.Control>
-              <Title order={4}>Information</Title>
-            </Accordion.Control>
-            <Accordion.Panel>
-              <SimpleGrid
-                cols={2}
-                spacing="xl"
-                breakpoints={[
-                  { maxWidth: "md", cols: 2, spacing: "lg" },
-                  { maxWidth: "xs", cols: 1, spacing: "sm" },
-                ]}
-              >
-                {details.map(({ label, attribute }) => (
-                  <Group
-                    position="left"
-                    key={`detail-${label}`}
-                  >
-                    <Text
-                      component="p"
-                      size="sm"
-                      weight={400}
-                      py={0}
-                      lh={0}
-                    >
-                      {label}
-                    </Text>
-                    <Text
-                      component="p"
-                      size="sm"
-                      color="dimmed"
-                    >
-                      {attribute}
-                    </Text>
-                  </Group>
-                ))}
-              </SimpleGrid>
-            </Accordion.Panel>
-          </Accordion.Item>
-        </Accordion>
-
         <Box
-          component="iframe"
-          width="100%"
-          height="500"
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-          src={mapsUrl.toString()}
           sx={{
-            border: 0,
-            borderRadius: theme.radius.md,
+            display: "flex",
+            flexDirection: "column",
+            gap: theme.spacing.sm,
           }}
-        />
+        >
+          <Title order={3}>Information</Title>
+          <SimpleGrid
+            cols={2}
+            spacing="xl"
+            breakpoints={[
+              { maxWidth: "md", cols: 2, spacing: "lg" },
+              { maxWidth: "xs", cols: 1, spacing: "sm" },
+            ]}
+          >
+            {details.map(({ label, attribute }) => (
+              <Group
+                position="left"
+                key={`detail-${label}`}
+              >
+                <Text
+                  component="p"
+                  size="sm"
+                  weight={400}
+                  py={0}
+                  lh={0}
+                >
+                  {label}
+                </Text>
+                <Text
+                  component="p"
+                  size="sm"
+                  color="dimmed"
+                >
+                  {attribute}
+                </Text>
+              </Group>
+            ))}
+          </SimpleGrid>
+        </Box>
 
         {listingData?.user && (
           <Box
@@ -599,6 +599,48 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
             </Group>
           </Box>
         )}
+
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: theme.spacing.sm,
+          }}
+        >
+          <Title order={3}>Map</Title>
+          <Box
+            component="iframe"
+            width="100%"
+            height="500"
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            src={mapsUrl.toString()}
+            sx={{
+              border: 0,
+              borderRadius: theme.radius.md,
+            }}
+          />
+
+          {!!neighbourhood.length && (
+            <Text
+              component={Link}
+              href={neighbourhoodListingsUrl}
+              size="sm"
+              fw={500}
+              variant="gradient"
+            >
+              See more listings in {toTitleCase(neighbourhood)}
+            </Text>
+          )}
+        </Box>
+
+        {/* <Property.Grid
+          listings={allListings.get(type) ?? []}
+          isLoading={isTypeLoading}
+          maxViewableCount={isTablet ? 4 : 3}
+          allowSaveListing={isAuth}
+          showMoreCTA
+        /> */}
 
         <Text
           component="p"

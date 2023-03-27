@@ -3,6 +3,8 @@
  * @description Returns a unique list of objects by key
  **/
 
+import { getCurrentTimestamp } from "@/utils/date";
+
 export const getUniqueObjectList = <T>(array: T[], key: keyof T): T[] =>
   Array.from(new Map(array.map((item) => [item[key], item])).values());
 
@@ -38,6 +40,50 @@ export const getPartialClonedObject = <T extends object, K extends keyof T>(
 export const getLimitedArray = <T>(array: T[], limit: number): T[] =>
   Array.from(array.slice(0, Math.min(array.length, limit)));
 
+export const getObjectValueCount = <T extends Record<string, unknown>>(
+  obj: T
+): number =>
+  Object.values(obj).filter((value: unknown) =>
+    Array.isArray(value)
+      ? value.length > 0
+      : value !== null && value !== undefined && value !== ""
+  ).length;
+
+//#endregion  //*======== Cache ===========
+
+export type CachedData<T> = {
+  cachedAt: number;
+  data: T;
+};
+
+export const createCachedObject = <T>(data: T): CachedData<T> => ({
+  cachedAt: getCurrentTimestamp(),
+  data,
+});
+
+//#endregion  //*======== Cache ===========
+
+//#endregion  //*======== Strings ===========
+
+export const getStringWithoutAffix = (
+  str: string,
+  affix: string,
+  isPrefix = true
+): string => {
+  if (
+    !str ||
+    !affix ||
+    str.length < affix.length ||
+    (isPrefix && !str.startsWith(affix)) ||
+    (!isPrefix && !str.endsWith(affix))
+  ) {
+    return str;
+  }
+  return isPrefix
+    ? str.substring(affix.length)
+    : str.substring(0, str.length - affix.length);
+};
+
 /**
  * @title Name Initials
  * @description Generate initals from name string
@@ -53,37 +99,14 @@ export const getNameInitials = (name: string) => {
   return strInitials;
 };
 
+/**
+ * @title Title-case text transformation
+ * @description This should only be used when CSS styling is not applicable
+ */
 export const toTitleCase = (str: string) =>
   str.replace(
     /(^\w|\s\w)(\S*)/g,
     (_, m1, m2) => m1.toUpperCase() + m2.toLowerCase()
   );
 
-export const getObjectValueCount = <T extends Record<string, unknown>>(
-  obj: T
-): number =>
-  Object.values(obj).filter((value: unknown) =>
-    Array.isArray(value)
-      ? value.length > 0
-      : value !== null && value !== undefined && value !== ""
-  ).length;
-
-export const getCurrentTimestamp = () => Math.floor(Date.now() / 1000);
-
-export const getTimestampAgeInDays = (unixTimestamp: number): number => {
-  const oneDayInMilliseconds = 24 * 60 * 60 * 1000; // 1 day in milliseconds
-  const now = Date.now();
-  const differenceInMilliseconds = now - unixTimestamp * 1000;
-  const ageInDays = Math.floor(differenceInMilliseconds / oneDayInMilliseconds);
-  return Math.max(ageInDays, 0);
-};
-
-export type CachedData<T> = {
-  cachedAt: number;
-  data: T;
-};
-
-export const createCachedObject = <T>(data: T): CachedData<T> => ({
-  cachedAt: getCurrentTimestamp(),
-  data,
-});
+//#endregion  //*======== Strings ===========
