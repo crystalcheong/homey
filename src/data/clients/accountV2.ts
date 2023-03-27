@@ -48,7 +48,7 @@ export class AccountV2 {
     const data = {
       name,
       email,
-      rawPassword,
+      password: rawPassword,
     };
     const url = this.http.path("createUser");
 
@@ -96,7 +96,7 @@ export class AccountV2 {
     };
     const data: Record<string, string> = getPartialClonedObject(
       user,
-      ["name", "password"],
+      ["name", "password", "image"],
       true
     ) as Record<string, string>;
     if (!Object.keys(data).length) return null;

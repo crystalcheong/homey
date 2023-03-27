@@ -262,7 +262,9 @@ const AccountUpdatePage = () => {
             {
               onSuccess: (data) => {
                 isAuthorized = data ?? false;
-                logger("update.tsx line 263", { data });
+                logger("update.tsx line 263/useAccountAuthorizeChanges", {
+                  data,
+                });
               },
               onError: () => {
                 showNotification({
