@@ -26,9 +26,7 @@ import {
 } from "@/data/clients/ninetyNine";
 import { neighbourhoodNames } from "@/data/stores";
 
-import { logger } from "@/utils/debug";
-import { useIsMobile } from "@/utils/dom";
-import { toTitleCase } from "@/utils/helpers";
+import { logger, toTitleCase, useIsMobile } from "@/utils";
 
 const SearchTypes: string[] = ["rent", "buy"];
 export type SearchType = (typeof SearchTypes)[number];

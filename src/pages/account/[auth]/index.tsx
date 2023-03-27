@@ -16,6 +16,7 @@ import {
 import { User } from "@prisma/client";
 import { DefaultErrorShape } from "@trpc/server";
 import { InferGetServerSidePropsType, NextPage } from "next";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { ProviderType } from "next-auth/providers";
 import {
@@ -44,10 +45,7 @@ import AuthPassword, {
   PasswordFormState,
 } from "@/components/Pages/Auth/AuthPassword";
 
-import { api } from "@/utils/api";
-import { logger } from "@/utils/debug";
-import { getPartialClonedObject } from "@/utils/helpers";
-import { isEmail, isName } from "@/utils/validations";
+import { api, getPartialClonedObject, isEmail, isName, logger } from "@/utils";
 
 import ErrorClient from "~/assets/images/error-client.svg";
 
@@ -255,7 +253,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
               password: formState.password,
             },
             {
-              onSuccess(data) {
+              onSuccess: (data) => {
                 if (data) {
                   signIn(providerId, {
                     name: data.name,
@@ -267,7 +265,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
                   return;
                 }
               },
-              onError({ shape }) {
+              onError: ({ shape }) => {
                 logger("index.tsx line 299", { shape });
                 setAuthErrorState(shape as DefaultErrorShape);
                 revertToInitialState();
@@ -284,7 +282,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
               password: formState.password,
             },
             {
-              onSuccess(data) {
+              onSuccess: (data) => {
                 logger("index.tsx line 287", { data });
                 if (!data) {
                   setAuthErrorState({
@@ -304,7 +302,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
                   return;
                 }
               },
-              onError({ shape }) {
+              onError: ({ shape }) => {
                 logger("index.tsx line 299", { shape });
                 setAuthErrorState(shape as DefaultErrorShape);
                 revertToInitialState();
@@ -330,6 +328,10 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
       isAuth,
       isValidAuthType,
     });
+
+    if (isAuthLoading) {
+      revertToInitialState();
+    }
     if (!isAuthLoading && isAuth) {
       router.push(
         {
@@ -410,6 +412,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
 
             {!hideActionButton && (
               <Button
+                variant="gradient"
                 onClick={() => handleAuthAction(id, type)}
                 loading={isLoadingProvider === id}
                 disabled={!isSubmitEnabled}
@@ -523,6 +526,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
                 )}
               </Transition>
               <Button
+                variant="gradient"
                 onClick={nextStep}
                 disabled={!canProceedStep}
                 loading={!!isLoadingProvider}
@@ -546,6 +550,26 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
           )}
 
           <Box component="aside">
+            {authStep === 0 && (
+              <Text
+                component="p"
+                color="dimmed"
+                size="sm"
+                m={0}
+              >
+                {isNewUser ? `Already` : `Don't`} have an account?&nbsp;
+                <Text
+                  component={Link}
+                  href={`/account/${AuthTypes[isNewUser ? 0 : 1]}`}
+                  variant="gradient"
+                  size="sm"
+                  fw={700}
+                >
+                  Sign&nbsp;{isNewUser ? "In" : "Up"}
+                </Text>
+              </Text>
+            )}
+
             <Divider
               my="xs"
               labelPosition="center"
@@ -567,6 +591,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
                   return (
                     <Button
                       key={name}
+                      variant="gradient"
                       onClick={() => handleAuthAction(id, type)}
                       leftIcon={<ProviderIcon />}
                       loading={isLoadingProvider === id}

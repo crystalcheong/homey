@@ -9,7 +9,7 @@ import {
 import { ComponentPropsWithoutRef, forwardRef, ReactNode } from "react";
 import { TbChevronRight } from "react-icons/tb";
 
-import { getNameInitials } from "@/utils/helpers";
+import { getNameInitials } from "@/utils";
 
 interface Props
   extends ComponentPropsWithoutRef<"button">,

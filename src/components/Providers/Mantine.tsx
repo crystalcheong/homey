@@ -4,7 +4,7 @@ import {
   MantineProvider,
   MantineThemeOverride,
 } from "@mantine/core";
-import { useColorScheme, useLocalStorage } from "@mantine/hooks";
+import { useColorScheme, useHotkeys, useLocalStorage } from "@mantine/hooks";
 import { NotificationsProvider } from "@mantine/notifications";
 import { NavigationProgress } from "@mantine/nprogress";
 import { PropsWithChildren } from "react";
@@ -25,13 +25,15 @@ const theme = (colorScheme: ColorScheme): MantineThemeOverride => {
 export const Mantine = ({ children }: PropsWithChildren) => {
   const preferredColorScheme = useColorScheme();
   const [colorScheme, setColorScheme] = useLocalStorage<ColorScheme>({
-    key: "color-scheme",
+    key: "homey-theme",
     defaultValue: preferredColorScheme ?? "dark",
     getInitialValueInEffect: true,
   });
 
   const toggleColorScheme = (value?: ColorScheme) =>
     setColorScheme(value || (colorScheme === "dark" ? "light" : "dark"));
+
+  useHotkeys([["mod+J", () => toggleColorScheme()]]);
 
   return (
     <ColorSchemeProvider

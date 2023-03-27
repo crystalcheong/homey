@@ -9,6 +9,7 @@ import {
   Grid,
   Group,
   Image,
+  Indicator,
   Paper,
   SimpleGrid,
   Skeleton,
@@ -21,7 +22,8 @@ import { useWindowScroll } from "@mantine/hooks";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import { ReactNode, useEffect, useState } from "react";
 import { IconType } from "react-icons";
 import { FaBirthdayCake } from "react-icons/fa";
 import { MdOutlinePhotoLibrary } from "react-icons/md";
@@ -42,7 +44,7 @@ import superjson from "superjson";
 import { Cluster, Listing, ListingTypes } from "@/data/clients/ninetyNine";
 import { useNinetyNineStore } from "@/data/stores";
 
-import { Layout, Provider } from "@/components";
+import { Layout, Property, Provider } from "@/components";
 import UnknownState from "@/components/Layouts/UnknownState";
 import {
   EnquiryButtonGroup,
@@ -55,10 +57,16 @@ import GalleryModal, {
 
 import { appRouter } from "@/server/api/root";
 import { prisma } from "@/server/db";
-import { api, getBaseUrl } from "@/utils/api";
-import { logger } from "@/utils/debug";
-import { useIsTablet } from "@/utils/dom";
-import { getLimitedArray } from "@/utils/helpers";
+import {
+  api,
+  getBaseUrl,
+  getLimitedArray,
+  getReplacedStringDelimiter,
+  getStringWithoutAffix,
+  logger,
+  toTitleCase,
+  useIsTablet,
+} from "@/utils";
 
 import EmptyListing from "~/assets/images/empty-listing.svg";
 
@@ -107,6 +115,8 @@ type Props = InferGetServerSidePropsType<typeof getServerSideProps>;
 
 const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
   const theme = useMantineTheme();
+  const { data: sessionData } = useSession();
+  const isAuth = !!sessionData;
 
   const isTablet: boolean = useIsTablet(theme);
   const isDark: boolean = theme.colorScheme === "dark" ?? false;
@@ -120,6 +130,8 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
 
   const listing: Listing | null = useNinetyNineStore.use.getListing()(type, id);
   const updateCurrentListing = useNinetyNineStore.use.updateCurrentListing();
+  const removeListing = useNinetyNineStore.use.removeListing();
+  const updateListings = useNinetyNineStore.use.updateListings();
 
   /**
    * @see https://nextjs.org/docs/messages/react-hydration-error
@@ -132,7 +144,11 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
     logger("[id].tsx line 132", { listing });
   }, [listing]);
 
-  const [{ data: listingData = null }] = api.useQueries((t) => [
+  const [
+    { data: listingData = null },
+    ,
+    { data: listingsData = [], isFetching: isLoadingListings },
+  ] = api.useQueries((t) => [
     t.ninetyNine.getClusterListings(
       {
         listingType: type,
@@ -143,7 +159,12 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
         enabled: !listing && isValidProperty && isMounted,
         onSuccess: (data) => {
           logger("[id].tsx line 140", { data });
-          if (data) updateCurrentListing(data);
+          if (!data) {
+            removeListing(type, id);
+            return;
+          }
+
+          updateCurrentListing(data);
         },
       }
     ),
@@ -157,6 +178,23 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
         onSuccess: (data) => {
           logger("[id].tsx line 161", { data });
           setCluster(data);
+        },
+      }
+    ),
+    t.ninetyNine.getZoneListings(
+      {
+        listingType: type,
+        zoneId: listing?.cluster_mappings?.zone[0] ?? "",
+        listingCategory: listing?.main_category ?? "",
+      },
+      {
+        enabled: !!listing && isValidProperty && isMounted,
+        onSuccess: (data) => {
+          if (!data.length) return;
+
+          const isZonal = true;
+          logger("[id].tsx line 179", { data });
+          updateListings(type, data as Listing[], isZonal);
         },
       }
     ),
@@ -215,9 +253,97 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
     },
   ];
 
+  const faqs: {
+    question: string;
+    answer: ReactNode;
+  }[] = [
+    {
+      question: "How do I view this listing?",
+      answer: (
+        <>
+          You can view this listing at{" "}
+          <Text
+            component="span"
+            variant="gradient"
+          >
+            {listingData?.address_name}
+          </Text>{" "}
+          by clicking on the 'Call' or 'WhatsApp' button.
+          <br />
+          The agent will get in touch with you.
+        </>
+      ),
+    },
+    {
+      question: `What is the price of this ${type} listing?`,
+      answer: (
+        <>
+          The {type} price of this listing is{" "}
+          <Text
+            component="span"
+            variant="gradient"
+          >
+            {listingData?.attributes?.price_formatted ?? `$-.--`}
+            {PriceListingTypes[listingData?.listing_type ?? ListingTypes[0]]}
+          </Text>
+          .
+        </>
+      ),
+    },
+    {
+      question: `What is the size of this listing?`,
+      answer: (
+        <>
+          The size of this listing is&nbsp;
+          <Text
+            component="span"
+            variant="gradient"
+          >
+            {listingData?.attributes?.area_size_sqm_formatted ?? "--"}
+          </Text>
+          &nbsp;or&nbsp;
+          <Text
+            component="span"
+            variant="gradient"
+          >
+            {listingData?.attributes?.area_size_formatted ?? "--"}
+          </Text>
+          .
+        </>
+      ),
+    },
+    {
+      question: `When was this listing built?`,
+      answer: (
+        <>
+          This listing was built in&nbsp;
+          <Text
+            component="span"
+            variant="gradient"
+          >
+            {listingData?.attributes?.completed_at ?? "--"}
+          </Text>
+        </>
+      ),
+    },
+  ];
+
   const mapsUrl = `https://www.google.com/maps/embed/v1/place?key=AIzaSyBeU0KYm091allUovk19s4Aw4KfI7l43aI&q=${encodeURIComponent(
     listingData?.address_name ?? ""
   )}`;
+
+  const neighbourhood: string = getStringWithoutAffix(
+    listing?.cluster_mappings?.zone[0] ?? "",
+    "zo"
+  );
+  const neighbourhoodName: string = toTitleCase(
+    getReplacedStringDelimiter(neighbourhood, "_", " ")
+  );
+  const neighbourhoodListingsUrl = neighbourhood.length
+    ? `/property/${type}?${new URLSearchParams({
+        location: JSON.stringify([neighbourhood]),
+      })}`
+    : "";
 
   return (
     <Layout.Base
@@ -480,60 +606,47 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
           </Text>
         </Box>
 
-        <Accordion defaultValue="information">
-          <Accordion.Item value="information">
-            <Accordion.Control>
-              <Title order={4}>Information</Title>
-            </Accordion.Control>
-            <Accordion.Panel>
-              <SimpleGrid
-                cols={2}
-                spacing="xl"
-                breakpoints={[
-                  { maxWidth: "md", cols: 2, spacing: "lg" },
-                  { maxWidth: "xs", cols: 1, spacing: "sm" },
-                ]}
-              >
-                {details.map(({ label, attribute }) => (
-                  <Group
-                    position="left"
-                    key={`detail-${label}`}
-                  >
-                    <Text
-                      component="p"
-                      size="sm"
-                      weight={400}
-                      py={0}
-                      lh={0}
-                    >
-                      {label}
-                    </Text>
-                    <Text
-                      component="p"
-                      size="sm"
-                      color="dimmed"
-                    >
-                      {attribute}
-                    </Text>
-                  </Group>
-                ))}
-              </SimpleGrid>
-            </Accordion.Panel>
-          </Accordion.Item>
-        </Accordion>
-
         <Box
-          component="iframe"
-          width="100%"
-          height="500"
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-          src={mapsUrl.toString()}
           sx={{
-            border: 0,
-            borderRadius: theme.radius.md,
+            display: "flex",
+            flexDirection: "column",
+            gap: theme.spacing.sm,
           }}
-        />
+        >
+          <Title order={3}>Information</Title>
+          <SimpleGrid
+            cols={2}
+            spacing="xl"
+            breakpoints={[
+              { maxWidth: "md", cols: 2, spacing: "lg" },
+              { maxWidth: "xs", cols: 1, spacing: "sm" },
+            ]}
+          >
+            {details.map(({ label, attribute }) => (
+              <Group
+                position="left"
+                key={`detail-${label}`}
+              >
+                <Text
+                  component="p"
+                  size="sm"
+                  weight={400}
+                  py={0}
+                  lh={0}
+                >
+                  {label}
+                </Text>
+                <Text
+                  component="p"
+                  size="sm"
+                  color="dimmed"
+                >
+                  {attribute}
+                </Text>
+              </Group>
+            ))}
+          </SimpleGrid>
+        </Box>
 
         {listingData?.user && (
           <Box
@@ -542,7 +655,7 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
               flexDirection: "column",
               gap: theme.spacing.sm,
               background: theme.fn.gradient(),
-              padding: theme.spacing.sm,
+              padding: theme.spacing.lg,
               borderRadius: theme.radius.sm,
               position: "relative",
 
@@ -563,22 +676,33 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
           >
             <Text
               component="p"
-              fw={600}
               m={0}
+              color="dimmed"
             >
               Listed by
             </Text>
             <Group position="apart">
               <Group>
-                <Avatar
-                  src={listingData?.user?.photo_url}
-                  alt="User Avatar"
-                  radius="xl"
-                  size="md"
-                />
+                <Indicator
+                  inline
+                  size={16}
+                  offset={3}
+                  position="bottom-end"
+                  withBorder
+                  processing
+                >
+                  <Avatar
+                    src={listingData?.user?.photo_url}
+                    alt="User Avatar"
+                    radius="xl"
+                    size="md"
+                  />
+                </Indicator>
+
                 <Text
                   component="p"
                   fw={600}
+                  tt="capitalize"
                 >
                   {listingData?.user?.name}
                 </Text>
@@ -593,6 +717,68 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
             </Group>
           </Box>
         )}
+
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: theme.spacing.sm,
+          }}
+        >
+          <Title order={3}>Location</Title>
+          <Box
+            component="iframe"
+            width="100%"
+            height="500"
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            src={mapsUrl.toString()}
+            sx={{
+              border: 0,
+              borderRadius: theme.radius.md,
+            }}
+          />
+
+          {!!neighbourhood.length && (
+            <Text
+              component={Link}
+              href={neighbourhoodListingsUrl}
+              size="sm"
+              fw={500}
+              variant="gradient"
+            >
+              See more listings in {neighbourhoodName}
+            </Text>
+          )}
+        </Box>
+
+        <Property.Grid
+          title="Similar"
+          listings={listingsData ?? []}
+          isLoading={isLoadingListings}
+          maxViewableCount={isTablet ? 4 : 3}
+          placeholderCount={isTablet ? 4 : 3}
+          allowSaveListing={isAuth}
+          seeMoreLink={neighbourhoodListingsUrl}
+          showMoreCTA
+        />
+
+        <Accordion
+          defaultValue={`faq-${0}`}
+          display={listing ? "block" : "none"}
+        >
+          {faqs.map((faq, idx) => (
+            <Accordion.Item
+              key={`faq-${idx}`}
+              value={`faq-${idx}`}
+            >
+              <Accordion.Control>
+                <Title order={4}>{faq.question}</Title>
+              </Accordion.Control>
+              <Accordion.Panel>{faq.answer}</Accordion.Panel>
+            </Accordion.Item>
+          ))}
+        </Accordion>
 
         <Text
           component="p"

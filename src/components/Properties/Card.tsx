@@ -17,9 +17,13 @@ import { TbBed, TbResize } from "react-icons/tb";
 
 import { Listing, ListingType, ListingTypes } from "@/data/clients/ninetyNine";
 
+import {
+  ListingCardOrientation,
+  ListingCardOrientations,
+} from "@/components/Properties/Grid";
 import SaveButton from "@/components/Properties/SaveButton";
 
-import { getLimitedArray } from "@/utils/helpers";
+import { getLimitedArray, useIsMobile } from "@/utils";
 
 export const EnquiryTypes: string[] = ["call", "whatsapp"];
 export type EnquiryType = (typeof EnquiryTypes)[number];
@@ -32,6 +36,7 @@ interface Props extends Partial<CardProps> {
   listing: Listing;
   isLoading?: boolean;
   allowSaveListing?: boolean;
+  orientation?: ListingCardOrientation;
 }
 
 export const PriceTypes: string[] = ["/month", ""];
@@ -51,9 +56,11 @@ export const Card = ({
   children,
   isLoading = false,
   allowSaveListing = false,
+  orientation = ListingCardOrientations[0],
   ...rest
 }: Props) => {
   const theme = useMantineTheme();
+  const isMobile = useIsMobile(theme);
 
   const {
     id,
@@ -76,6 +83,14 @@ export const Card = ({
 
   const formattedTag = getLimitedArray(formatted_tags ?? [], 1)?.[0] ?? null;
 
+  const isHorizontal: boolean = orientation === ListingCardOrientations[1];
+
+  // logger('Card.tsx line 84', {
+  //   orientation,
+  //   isHorizontal,
+  //   ViewOrientation,
+  // })
+
   return (
     <MCard
       shadow="sm"
@@ -85,6 +100,17 @@ export const Card = ({
       withBorder
       component={Link}
       href={listingRelativeLink}
+      sx={(theme) => ({
+        height: "100%",
+        width: "100%",
+        ...(isHorizontal &&
+          !isMobile && {
+            display: "flex",
+            flexDirection: "row",
+            gap: theme.spacing.xl,
+            height: "220px",
+          }),
+      })}
       {...rest}
     >
       <MCard.Section
@@ -131,116 +157,75 @@ export const Card = ({
 
         <Image
           src={photo_url}
-          height={160}
+          height={isHorizontal && !isMobile ? 220 : 160}
+          width={isHorizontal && !isMobile ? 300 : undefined}
           alt={id}
           fit="cover"
           withPlaceholder
           sx={{
             opacity: 1,
+            objectPosition: "center",
           }}
         />
       </MCard.Section>
 
-      <Skeleton visible={isSkeleton}>
-        <Group
-          position="apart"
-          mt="xl"
-          mb="xs"
-          spacing="xs"
-        >
-          <Title
-            order={3}
-            size="p"
-            color="dimmed"
-            weight={400}
-            fz="sm"
-          >
-            <Text
-              component="span"
-              weight={800}
-              fz="xl"
-              variant="gradient"
-            >
-              {strPrice}
-            </Text>
-            &nbsp;{PriceListingTypes[listing_type]}
-          </Title>
-
-          <Badge>{main_category}</Badge>
-        </Group>
-
-        <Title
-          order={2}
-          size="h4"
-          truncate
-        >
-          {address_name}
-        </Title>
-      </Skeleton>
-
-      <Skeleton visible={isSkeleton}></Skeleton>
-
-      {children}
-
-      {/* <Group
-        position="apart"
-        mt="lg"
+      <MCard.Section
+        component="main"
         sx={{
-          position: "relative",
-          zIndex: 100,
+          padding: "0 1em 1em",
+          ...(isHorizontal &&
+            !isMobile && {
+              flex: 1,
+              padding: "0 2em 1em",
+            }),
         }}
       >
-        <EnquiryButtonGroup
-          listing={listing}
-          overwriteButtonProps={{
-            compact: true,
-          }}
-        />
-        {allowSaveListing && (
-          <SaveButton
-            listing={listing}
-            overwriteIconProps={{
-              size: 30,
-            }}
-          />
-        )}
-      </Group> */}
+        <Skeleton visible={isSkeleton}>
+          <Group
+            position="apart"
+            mt="xl"
+            mb="xs"
+            spacing="xs"
+          >
+            <Title
+              order={3}
+              size="p"
+              color="dimmed"
+              weight={400}
+              fz="sm"
+            >
+              <Text
+                component="span"
+                weight={800}
+                fz="xl"
+                variant="gradient"
+              >
+                {strPrice}
+              </Text>
+              &nbsp;{PriceListingTypes[listing_type]}
+            </Title>
 
-      <Box>
-        <Group
-          mt="md"
-          spacing="xs"
-        >
-          <Group spacing="xs">
-            <TbBed
-              size={16}
-              color={theme.fn.primaryColor()}
-            />
-            <Text
-              component="p"
-              fz="xs"
-              truncate
-            >
-              {attributes?.bedrooms ?? 0} Beds
-            </Text>
-          </Group>
-          <Group spacing="xs">
-            <TbBed
-              size={16}
-              color={theme.fn.primaryColor()}
-            />
-            <Text
-              component="p"
-              fz="xs"
-              truncate
-            >
-              {attributes?.bathrooms ?? 0} Baths
-            </Text>
+            <Badge>{main_category}</Badge>
           </Group>
 
-          {!!attributes?.area_size_formatted && (
+          <Title
+            order={2}
+            size="h4"
+            truncate
+          >
+            {address_name}
+          </Title>
+        </Skeleton>
+
+        {children}
+
+        <Box component="aside">
+          <Group
+            mt={isHorizontal && !isMobile ? "xs" : "md"}
+            spacing="xs"
+          >
             <Group spacing="xs">
-              <TbResize
+              <TbBed
                 size={16}
                 color={theme.fn.primaryColor()}
               />
@@ -249,12 +234,41 @@ export const Card = ({
                 fz="xs"
                 truncate
               >
-                {attributes?.area_size_formatted}
+                {attributes?.bedrooms ?? 0} Beds
               </Text>
             </Group>
-          )}
-        </Group>
-      </Box>
+            <Group spacing="xs">
+              <TbBed
+                size={16}
+                color={theme.fn.primaryColor()}
+              />
+              <Text
+                component="p"
+                fz="xs"
+                truncate
+              >
+                {attributes?.bathrooms ?? 0} Baths
+              </Text>
+            </Group>
+
+            {!!attributes?.area_size_formatted && (
+              <Group spacing="xs">
+                <TbResize
+                  size={16}
+                  color={theme.fn.primaryColor()}
+                />
+                <Text
+                  component="p"
+                  fz="xs"
+                  truncate
+                >
+                  {attributes?.area_size_formatted}
+                </Text>
+              </Group>
+            )}
+          </Group>
+        </Box>
+      </MCard.Section>
     </MCard>
   );
 };

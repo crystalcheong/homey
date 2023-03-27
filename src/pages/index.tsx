@@ -72,6 +72,7 @@ const IndexPage: NextPage = () => {
               listings={allListings.get(type) ?? []}
               isLoading={isTypeLoading}
               maxViewableCount={isTablet ? 4 : 3}
+              placeholderCount={isTablet ? 4 : 3}
               allowSaveListing={isAuth}
               showMoreCTA
             />

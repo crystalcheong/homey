@@ -5,16 +5,37 @@ import {
   SimpleGrid,
   SimpleGridProps,
   Text,
+  ThemeIcon,
   Title,
 } from "@mantine/core";
-import Link from "next/link";
-import { ReactNode } from "react";
+import Link, { LinkProps } from "next/link";
+import { ReactNode, useState } from "react";
+import { TbLayoutGrid, TbLayoutList } from "react-icons/tb";
 
 import { Listing, ListingType } from "@/data/clients/ninetyNine";
 
 import { Card } from "@/components/Properties";
 
-import { getLimitedArray } from "@/utils/helpers";
+import { getLimitedArray, logger } from "@/utils";
+
+export const ViewModes = ["grid", "list"];
+export type ViewMode = (typeof ViewModes)[number];
+
+export const ListingCardOrientations: string[] = ["vertical", "horizontal"];
+export type ListingCardOrientation = (typeof ListingCardOrientations)[number];
+
+export const ViewOrientation: Record<ViewMode, ListingCardOrientation> =
+  ViewModes.reduce(
+    (
+      viewOrientationMap: Record<ViewMode, ListingCardOrientation> = {},
+      viewMode,
+      idx
+    ) => {
+      viewOrientationMap[viewMode] = ListingCardOrientations[idx];
+      return viewOrientationMap;
+    },
+    {}
+  );
 
 interface Props extends BoxProps {
   listings: Listing[];
@@ -30,18 +51,25 @@ interface Props extends BoxProps {
 
   gridProps?: SimpleGridProps;
   emptyFallback?: ReactNode;
+  seeMoreLink?: LinkProps["href"];
+
+  viewMode?: ViewMode;
+  showViewMode?: boolean;
 }
 
 export const Grid = ({
   listings = [],
   title = "",
   subtitle,
+  seeMoreLink,
   isLoading = false,
   showTitle = true,
   showMoreCTA = false,
   allowSaveListing = false,
   placeholderCount = 3,
   maxViewableCount = 0,
+  viewMode = ViewModes[0],
+  showViewMode = false,
   gridProps,
   children,
   emptyFallback,
@@ -60,6 +88,29 @@ export const Grid = ({
 
   const showEmptyFallback: boolean = !!emptyFallback && hasNoListings;
 
+  const [currentViewMode, setCurrentViewMode] = useState<ViewMode>(viewMode);
+
+  const getViewModeIcon = (viewMode: ViewMode): ReactNode => {
+    switch (viewMode) {
+      case ViewModes[0]: {
+        return <TbLayoutGrid />;
+      }
+      case ViewModes[1]: {
+        return <TbLayoutList />;
+      }
+    }
+  };
+
+  const handleModeChange = (viewMode: ViewMode) => {
+    const isActiveMode: boolean = currentViewMode === viewMode;
+    logger("Grid.tsx line 104", {
+      card: ViewOrientation[viewMode],
+      ViewOrientation,
+    });
+    if (isActiveMode) return;
+    setCurrentViewMode(viewMode);
+  };
+
   return (
     <Box
       component="section"
@@ -68,21 +119,40 @@ export const Grid = ({
       {(showTitle || showMoreCTA) && (
         <Group position="apart">
           {showTitle && (
-            <Title
-              order={2}
-              size="h3"
-              py="md"
-              tt="capitalize"
-              data-pw={`grid-text-title-${title || listingType}`}
-            >
-              {`${title || listingType} Listings`.trim()}
-            </Title>
+            <>
+              <Title
+                order={2}
+                size="h3"
+                py="md"
+                tt="capitalize"
+                data-pw={`grid-text-title-${title || listingType}`}
+              >
+                {`${title || listingType} Listings`.trim()}
+              </Title>
+
+              {showViewMode && (
+                <Group spacing="xs">
+                  {ViewModes.map((mode) => {
+                    const isActiveMode: boolean = currentViewMode === mode;
+                    return (
+                      <ThemeIcon
+                        key={`viewMode-${mode}`}
+                        variant={isActiveMode ? "gradient" : "default"}
+                        onClick={() => handleModeChange(mode)}
+                      >
+                        {getViewModeIcon(mode)}
+                      </ThemeIcon>
+                    );
+                  })}
+                </Group>
+              )}
+            </>
           )}
 
           {showMoreCTA && (
             <Text
               component={Link}
-              href={`/property/${listingType}`}
+              href={seeMoreLink ?? `/property/${listingType}`}
               size="sm"
               fw={500}
               variant="gradient"
@@ -99,20 +169,18 @@ export const Grid = ({
       ) : (
         <>
           <SimpleGrid
-            cols={3}
+            cols={currentViewMode === ViewModes[0] ? 3 : 1}
             spacing="lg"
-            breakpoints={[
-              { maxWidth: "md", cols: 2, spacing: "md" },
-              { maxWidth: "xs", cols: 1, spacing: "sm" },
-            ]}
+            {...(currentViewMode === ViewModes[0] && {
+              breakpoints: [
+                { maxWidth: "md", cols: 2, spacing: "md" },
+                { maxWidth: "xs", cols: 1, spacing: "sm" },
+              ],
+            })}
             sx={{
               placeItems: "center",
               gridAutoRows: "1fr",
               position: "relative",
-              "&>*": {
-                height: "100%",
-                width: "100%",
-              },
             }}
             {...gridProps}
           >
@@ -126,6 +194,7 @@ export const Grid = ({
                 isLoading={isLoading}
                 allowSaveListing={allowSaveListing}
                 data-pw={`listing-card-${idx}`}
+                orientation={ViewOrientation[currentViewMode]}
               />
             ))}
           </SimpleGrid>

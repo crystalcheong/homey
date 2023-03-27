@@ -34,9 +34,9 @@ import {
   InitalFormState,
   validateAuthInput,
 } from "@/pages/account/[auth]";
+import { getPartialClonedObject } from "@/utils";
 import { api } from "@/utils/api";
 import { logger } from "@/utils/debug";
-import { getPartialClonedObject } from "@/utils/helpers";
 
 const UpdateFormState: Omit<typeof InitalFormState, "email"> & {
   currentPassword: string;

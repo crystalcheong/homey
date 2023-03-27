@@ -35,9 +35,7 @@ import {
   LocationSelection,
 } from "@/components/Pages/Index/Hero";
 
-import { api } from "@/utils/api";
-import { logger } from "@/utils/debug";
-import { getObjectValueCount } from "@/utils/helpers";
+import { api, getObjectValueCount, logger } from "@/utils";
 
 import EmptySearch from "~/assets/images/empty-search.svg";
 import ErrorClient from "~/assets/images/error-client.svg";
@@ -159,6 +157,7 @@ const PropertyTypePage = () => {
           locations: formState.location,
           paramLocations,
           defaultListingMap,
+          zoneIds,
         });
 
         if (!data.length) return;
@@ -167,6 +166,15 @@ const PropertyTypePage = () => {
       },
     }
   );
+
+  const handleOnPageChange = (pageNum: number) => {
+    setPageNum(pageNum);
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: "smooth",
+    });
+  };
 
   return (
     <Layout.Base showAffix={!!listings.length}>
@@ -186,6 +194,7 @@ const PropertyTypePage = () => {
             pagination.pageSize * pageNum
           )}
           isLoading={isLoading}
+          showViewMode
           allowSaveListing={isAuth}
           title={listingType}
           subtitle={
@@ -323,7 +332,7 @@ const PropertyTypePage = () => {
               withEdges
               total={5 + 5 * (pageNum * +pagination.hasNext)}
               page={pageNum}
-              onChange={setPageNum}
+              onChange={handleOnPageChange}
               mt="xl"
               position="center"
               styles={(theme) => ({

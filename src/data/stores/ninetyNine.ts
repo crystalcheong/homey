@@ -5,9 +5,9 @@ import { createJSONStorage, persist } from "zustand/middleware";
 
 import { Listing, ListingType, ListingTypes } from "@/data/clients/ninetyNine";
 
+import { getUniqueObjectListwithKeys } from "@/utils";
 import { innerApi } from "@/utils/api";
 import { logger } from "@/utils/debug";
-import { getUniqueObjectListwithKeys } from "@/utils/helpers";
 import { createSelectors } from "@/utils/store";
 
 export type PaginationInfo = {
@@ -38,6 +38,7 @@ interface Mutators {
     listingId: Listing["id"]
   ) => Listing | null;
   updateCurrentListing: (listing: Listing) => void;
+  removeListing: (listingType: ListingType, listingId: Listing["id"]) => void;
 }
 
 interface Store extends State, Mutators {}
@@ -213,6 +214,17 @@ const store = create<Store>()(
           defaultPaginationInfo as PaginationInfo,
         ])
       ),
+      removeListing: (listingType, listingId) => {
+        const currentListings: State["listings"] = get().listings;
+        const updateListings: Listing[] = (
+          currentListings.get(listingType) ?? []
+        ).filter((listing) => listing.id === listingId);
+        currentListings.set(listingType, updateListings);
+
+        set((state) => ({
+          listings: currentListings ?? state.listings,
+        }));
+      },
       updateCurrentListing: (listing) =>
         set((state) => ({
           currentListing: listing ?? state.currentListing,
@@ -240,17 +252,11 @@ const store = create<Store>()(
         const currentTypeListings: Listing[] =
           currentListings.get(listingType) ?? [];
 
-        logger("ninetyNine.ts line 240", {
-          listingType,
-          listingId,
-          currentTypeListings: currentTypeListings.length,
-        });
         if (!listingId.length) return null;
 
         // CHECK: If it matches currentListing
         if (currentListing) {
           const isCurrentListing: boolean = currentListing.id === listingId;
-          logger("ninetyNine.ts line 252", { isCurrentListing });
           if (isCurrentListing) return currentListing;
         }
         // CHECK: If it's included in savedListings
