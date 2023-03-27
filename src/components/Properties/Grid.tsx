@@ -7,14 +7,14 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-import Link from "next/link";
+import Link, { LinkProps } from "next/link";
 import { ReactNode } from "react";
 
 import { Listing, ListingType } from "@/data/clients/ninetyNine";
 
 import { Card } from "@/components/Properties";
 
-import { getLimitedArray } from "@/utils/helpers";
+import { getLimitedArray } from "@/utils";
 
 interface Props extends BoxProps {
   listings: Listing[];
@@ -30,12 +30,14 @@ interface Props extends BoxProps {
 
   gridProps?: SimpleGridProps;
   emptyFallback?: ReactNode;
+  seeMoreLink?: LinkProps["href"];
 }
 
 export const Grid = ({
   listings = [],
   title = "",
   subtitle,
+  seeMoreLink,
   isLoading = false,
   showTitle = true,
   showMoreCTA = false,
@@ -82,7 +84,7 @@ export const Grid = ({
           {showMoreCTA && (
             <Text
               component={Link}
-              href={`/property/${listingType}`}
+              href={seeMoreLink ?? `/property/${listingType}`}
               size="sm"
               fw={500}
               variant="gradient"

@@ -8,6 +8,7 @@ import {
   Grid,
   Group,
   Image,
+  Indicator,
   Paper,
   SimpleGrid,
   Skeleton,
@@ -20,6 +21,7 @@ import { useWindowScroll } from "@mantine/hooks";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { IconType } from "react-icons";
 import { FaBirthdayCake } from "react-icons/fa";
@@ -41,7 +43,7 @@ import superjson from "superjson";
 import { Cluster, Listing, ListingTypes } from "@/data/clients/ninetyNine";
 import { useNinetyNineStore } from "@/data/stores";
 
-import { Layout, Provider } from "@/components";
+import { Layout, Property, Provider } from "@/components";
 import UnknownState from "@/components/Layouts/UnknownState";
 import {
   EnquiryButtonGroup,
@@ -54,14 +56,16 @@ import GalleryModal, {
 
 import { appRouter } from "@/server/api/root";
 import { prisma } from "@/server/db";
-import { api, getBaseUrl } from "@/utils/api";
-import { logger } from "@/utils/debug";
-import { useIsTablet } from "@/utils/dom";
 import {
+  api,
+  getBaseUrl,
   getLimitedArray,
+  getReplacedStringDelimiter,
   getStringWithoutAffix,
+  logger,
   toTitleCase,
-} from "@/utils/helpers";
+  useIsTablet,
+} from "@/utils";
 
 import EmptyListing from "~/assets/images/empty-listing.svg";
 
@@ -110,6 +114,8 @@ type Props = InferGetServerSidePropsType<typeof getServerSideProps>;
 
 const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
   const theme = useMantineTheme();
+  const { data: sessionData } = useSession();
+  const isAuth = !!sessionData;
 
   const isTablet: boolean = useIsTablet(theme);
   const isDark: boolean = theme.colorScheme === "dark" ?? false;
@@ -124,6 +130,7 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
   const listing: Listing | null = useNinetyNineStore.use.getListing()(type, id);
   const updateCurrentListing = useNinetyNineStore.use.updateCurrentListing();
   const removeListing = useNinetyNineStore.use.removeListing();
+  const updateListings = useNinetyNineStore.use.updateListings();
 
   /**
    * @see https://nextjs.org/docs/messages/react-hydration-error
@@ -136,7 +143,11 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
     logger("[id].tsx line 132", { listing });
   }, [listing]);
 
-  const [{ data: listingData = null }] = api.useQueries((t) => [
+  const [
+    { data: listingData = null },
+    ,
+    { data: listingsData = [], isFetching: isLoadingListings },
+  ] = api.useQueries((t) => [
     t.ninetyNine.getClusterListings(
       {
         listingType: type,
@@ -169,7 +180,43 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
         },
       }
     ),
+    t.ninetyNine.getZoneListings(
+      {
+        listingType: type,
+        zoneId: listing?.cluster_mappings?.zone[0] ?? "",
+        listingCategory: listing?.main_category ?? "",
+      },
+      {
+        enabled: !!listing && isValidProperty && isMounted,
+        onSuccess: (data) => {
+          if (!data.length) return;
+
+          const isZonal = true;
+          logger("[id].tsx line 179", { data });
+          updateListings(type, data as Listing[], isZonal);
+        },
+      }
+    ),
   ]);
+
+  // t.ninetyNine.getZoneListings(
+  //   {
+  //     listingType: type,
+  //     pageNum: defaultPaginationInfo.pageNum,
+  //     pageSize: defaultPaginationInfo.pageSize,
+  //     zoneId: listing?.cluster_mappings?.zone[0] ?? "",
+  //     listingCategory: listingData?.main_category,
+  //   },
+  //   {
+  //     enabled: !!listing && isValidProperty && isMounted,
+  //     onSuccess: (data) => {
+  //       if (!data.length) return;
+
+  //       const isZonal = true;
+  //       updateListings(type, data as Listing[], isZonal);
+  //     },
+  //   }
+  // ),
 
   const PRIMARY_COL_HEIGHT = 300;
   const SECONDARY_COL_HEIGHT = PRIMARY_COL_HEIGHT / 2 - theme.spacing.md / 2;
@@ -231,6 +278,9 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
   const neighbourhood: string = getStringWithoutAffix(
     listing?.cluster_mappings?.zone[0] ?? "",
     "zo"
+  );
+  const neighbourhoodName: string = toTitleCase(
+    getReplacedStringDelimiter(neighbourhood, "_", " ")
   );
   const neighbourhoodListingsUrl = neighbourhood.length
     ? `/property/${type}?${new URLSearchParams({
@@ -548,7 +598,7 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
               flexDirection: "column",
               gap: theme.spacing.sm,
               background: theme.fn.gradient(),
-              padding: theme.spacing.sm,
+              padding: theme.spacing.lg,
               borderRadius: theme.radius.sm,
               position: "relative",
 
@@ -569,19 +619,29 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
           >
             <Text
               component="p"
-              fw={600}
               m={0}
+              color="dimmed"
             >
               Listed by
             </Text>
             <Group position="apart">
               <Group>
-                <Avatar
-                  src={listingData?.user?.photo_url}
-                  alt="User Avatar"
-                  radius="xl"
-                  size="md"
-                />
+                <Indicator
+                  inline
+                  size={16}
+                  offset={3}
+                  position="bottom-end"
+                  withBorder
+                  processing
+                >
+                  <Avatar
+                    src={listingData?.user?.photo_url}
+                    alt="User Avatar"
+                    radius="xl"
+                    size="md"
+                  />
+                </Indicator>
+
                 <Text
                   component="p"
                   fw={600}
@@ -629,18 +689,21 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
               fw={500}
               variant="gradient"
             >
-              See more listings in {toTitleCase(neighbourhood)}
+              See more listings in {neighbourhoodName}
             </Text>
           )}
         </Box>
 
-        {/* <Property.Grid
-          listings={allListings.get(type) ?? []}
-          isLoading={isTypeLoading}
+        <Property.Grid
+          title="Similar"
+          listings={listingsData ?? []}
+          isLoading={isLoadingListings}
           maxViewableCount={isTablet ? 4 : 3}
+          placeholderCount={isTablet ? 4 : 3}
           allowSaveListing={isAuth}
+          seeMoreLink={neighbourhoodListingsUrl}
           showMoreCTA
-        /> */}
+        />
 
         <Text
           component="p"

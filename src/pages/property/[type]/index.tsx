@@ -35,9 +35,7 @@ import {
   LocationSelection,
 } from "@/components/Pages/Index/Hero";
 
-import { api } from "@/utils/api";
-import { logger } from "@/utils/debug";
-import { getObjectValueCount } from "@/utils/helpers";
+import { api, getObjectValueCount, logger } from "@/utils";
 
 import EmptySearch from "~/assets/images/empty-search.svg";
 import ErrorClient from "~/assets/images/error-client.svg";
@@ -159,6 +157,7 @@ const PropertyTypePage = () => {
           locations: formState.location,
           paramLocations,
           defaultListingMap,
+          zoneIds,
         });
 
         if (!data.length) return;

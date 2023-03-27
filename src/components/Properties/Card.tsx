@@ -19,7 +19,7 @@ import { Listing, ListingType, ListingTypes } from "@/data/clients/ninetyNine";
 
 import SaveButton from "@/components/Properties/SaveButton";
 
-import { getLimitedArray } from "@/utils/helpers";
+import { getLimitedArray } from "@/utils";
 
 export const EnquiryTypes: string[] = ["call", "whatsapp"];
 export type EnquiryType = (typeof EnquiryTypes)[number];

@@ -5,9 +5,9 @@ import { createJSONStorage, persist } from "zustand/middleware";
 
 import { Listing, ListingType, ListingTypes } from "@/data/clients/ninetyNine";
 
+import { getUniqueObjectListwithKeys } from "@/utils";
 import { innerApi } from "@/utils/api";
 import { logger } from "@/utils/debug";
-import { getUniqueObjectListwithKeys } from "@/utils/helpers";
 import { createSelectors } from "@/utils/store";
 
 export type PaginationInfo = {
@@ -252,17 +252,11 @@ const store = create<Store>()(
         const currentTypeListings: Listing[] =
           currentListings.get(listingType) ?? [];
 
-        logger("ninetyNine.ts line 240", {
-          listingType,
-          listingId,
-          currentTypeListings: currentTypeListings.length,
-        });
         if (!listingId.length) return null;
 
         // CHECK: If it matches currentListing
         if (currentListing) {
           const isCurrentListing: boolean = currentListing.id === listingId;
-          logger("ninetyNine.ts line 252", { isCurrentListing });
           if (isCurrentListing) return currentListing;
         }
         // CHECK: If it's included in savedListings

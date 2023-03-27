@@ -43,10 +43,7 @@ import AuthPassword, {
   PasswordFormState,
 } from "@/components/Pages/Auth/AuthPassword";
 
-import { api } from "@/utils/api";
-import { logger } from "@/utils/debug";
-import { getPartialClonedObject } from "@/utils/helpers";
-import { isEmail, isName } from "@/utils/validations";
+import { api, getPartialClonedObject, isEmail, isName, logger } from "@/utils";
 
 import ErrorClient from "~/assets/images/error-client.svg";
 

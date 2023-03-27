@@ -84,6 +84,17 @@ export const getStringWithoutAffix = (
     : str.substring(0, str.length - affix.length);
 };
 
+export const getReplacedStringDelimiter = <T extends string>(
+  str: T,
+  oldDelimiter: string,
+  newDelimiter: string
+): T => {
+  if (str && str.includes(oldDelimiter)) {
+    return str.split(oldDelimiter).join(newDelimiter) as T;
+  }
+  return str;
+};
+
 /**
  * @title Name Initials
  * @description Generate initals from name string
