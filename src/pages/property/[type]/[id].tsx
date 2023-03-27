@@ -1,4 +1,5 @@
 import {
+  Accordion,
   Affix,
   Avatar,
   Badge,
@@ -22,7 +23,7 @@ import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { IconType } from "react-icons";
 import { FaBirthdayCake } from "react-icons/fa";
 import { MdOutlinePhotoLibrary } from "react-icons/md";
@@ -199,25 +200,6 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
     ),
   ]);
 
-  // t.ninetyNine.getZoneListings(
-  //   {
-  //     listingType: type,
-  //     pageNum: defaultPaginationInfo.pageNum,
-  //     pageSize: defaultPaginationInfo.pageSize,
-  //     zoneId: listing?.cluster_mappings?.zone[0] ?? "",
-  //     listingCategory: listingData?.main_category,
-  //   },
-  //   {
-  //     enabled: !!listing && isValidProperty && isMounted,
-  //     onSuccess: (data) => {
-  //       if (!data.length) return;
-
-  //       const isZonal = true;
-  //       updateListings(type, data as Listing[], isZonal);
-  //     },
-  //   }
-  // ),
-
   const PRIMARY_COL_HEIGHT = 300;
   const SECONDARY_COL_HEIGHT = PRIMARY_COL_HEIGHT / 2 - theme.spacing.md / 2;
 
@@ -268,6 +250,81 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
       label: `Last updated`,
       attribute: `${listingData?.date_formatted ?? "--"}`,
       icon: TbEdit,
+    },
+  ];
+
+  const faqs: {
+    question: string;
+    answer: ReactNode;
+  }[] = [
+    {
+      question: "How do I view this listing?",
+      answer: (
+        <>
+          You can view this listing at{" "}
+          <Text
+            component="span"
+            variant="gradient"
+          >
+            {listingData?.address_name}
+          </Text>{" "}
+          by clicking on the 'Call' or 'WhatsApp' button.
+          <br />
+          The agent will get in touch with you.
+        </>
+      ),
+    },
+    {
+      question: `What is the price of this ${type} listing?`,
+      answer: (
+        <>
+          The {type} price of this listing is{" "}
+          <Text
+            component="span"
+            variant="gradient"
+          >
+            {listingData?.attributes?.price_formatted ?? `$-.--`}
+            {PriceListingTypes[listingData?.listing_type ?? ListingTypes[0]]}
+          </Text>
+          .
+        </>
+      ),
+    },
+    {
+      question: `What is the size of this listing?`,
+      answer: (
+        <>
+          The size of this listing is&nbsp;
+          <Text
+            component="span"
+            variant="gradient"
+          >
+            {listingData?.attributes?.area_size_sqm_formatted ?? "--"}
+          </Text>
+          &nbsp;or&nbsp;
+          <Text
+            component="span"
+            variant="gradient"
+          >
+            {listingData?.attributes?.area_size_formatted ?? "--"}
+          </Text>
+          .
+        </>
+      ),
+    },
+    {
+      question: `When was this listing built?`,
+      answer: (
+        <>
+          This listing was built in&nbsp;
+          <Text
+            component="span"
+            variant="gradient"
+          >
+            {listingData?.attributes?.completed_at ?? "--"}
+          </Text>
+        </>
+      ),
     },
   ];
 
@@ -645,6 +702,7 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
                 <Text
                   component="p"
                   fw={600}
+                  tt="capitalize"
                 >
                   {listingData?.user?.name}
                 </Text>
@@ -667,7 +725,7 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
             gap: theme.spacing.sm,
           }}
         >
-          <Title order={3}>Map</Title>
+          <Title order={3}>Location</Title>
           <Box
             component="iframe"
             width="100%"
@@ -704,6 +762,23 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
           seeMoreLink={neighbourhoodListingsUrl}
           showMoreCTA
         />
+
+        <Accordion
+          defaultValue={`faq-${0}`}
+          display={listing ? "block" : "none"}
+        >
+          {faqs.map((faq, idx) => (
+            <Accordion.Item
+              key={`faq-${idx}`}
+              value={`faq-${idx}`}
+            >
+              <Accordion.Control>
+                <Title order={4}>{faq.question}</Title>
+              </Accordion.Control>
+              <Accordion.Panel>{faq.answer}</Accordion.Panel>
+            </Accordion.Item>
+          ))}
+        </Accordion>
 
         <Text
           component="p"
