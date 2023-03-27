@@ -1,4 +1,4 @@
-import { User } from "@prisma/client";
+import { PropertyType, User } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import argon2 from "argon2";
 import { z } from "zod";
@@ -242,5 +242,46 @@ export const accountV2Router = createTRPCRouter({
         code: "FORBIDDEN",
         message: "Insufficient inputs for authorization confirmation.",
       });
+    }),
+
+  saveProperty: protectedProcedure
+    .input(
+      z.object({
+        userId: z
+          .string()
+          .cuid2("Input must be a valid user ID")
+          .trim()
+          .min(1, "User ID can't be empty"),
+        listingId: z.string().trim().min(1, "Listing ID can't be empty"),
+        listingType: z.nativeEnum(PropertyType),
+        clusterId: z.string().trim().min(1, "Cluster ID can't be empty"),
+        // stringifiedListing: z
+        //   .string()
+        //   .trim()
+        //   .min(1, "Stringified Listing can't be empty"),
+      })
+    )
+    .mutation(async ({ input }) => {
+      return await client.saveProperty(
+        input.userId,
+        input.listingId,
+        input.listingType,
+        input.clusterId
+      );
+    }),
+
+  unsaveProperty: protectedProcedure
+    .input(
+      z.object({
+        userId: z
+          .string()
+          .cuid2("Input must be a valid user ID")
+          .trim()
+          .min(1, "User ID can't be empty"),
+        listingId: z.string().trim().min(1, "Listing ID can't be empty"),
+      })
+    )
+    .mutation(async ({ input }) => {
+      return await client.unsaveProperty(input.userId, input.listingId);
     }),
 });

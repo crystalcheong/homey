@@ -22,9 +22,10 @@ const AccountSavedPage = () => {
 
   const allSavedListings = useMemo(
     () =>
-      (userSavedListings ?? []).map(
-        ({ property }) =>
-          parseStringifiedListing(property.stringifiedListing) as Listing
+      (userSavedListings ?? []).map(({ property }) =>
+        property?.stringifiedListing?.length
+          ? (parseStringifiedListing(property?.stringifiedListing) as Listing)
+          : ({} as Listing)
       ),
     [userSavedListings]
   );
@@ -70,7 +71,7 @@ const AccountSavedPage = () => {
     <Layout.Base showAffix={!!allSavedListings.length}>
       <Provider.RenderGuard renderIf={isAuth}>
         <Property.Grid
-          listings={allSavedListings}
+          listings={allSavedListings ?? []}
           allowSaveListing={isAuth}
           title="Saved"
           emptyFallback={

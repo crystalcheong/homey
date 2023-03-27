@@ -11,6 +11,9 @@ const Routes: Record<string, string> = {
   getUser: `/getUser`,
   deleteUser: `/deleteUser/:userId`,
   updateUser: `/updateUser/:userId`,
+
+  saveProperty: `/createUSP`,
+  unsaveProperty: `/deleteUSP/:userId/:listingId`,
 };
 
 export class AccountV2 {
@@ -111,6 +114,59 @@ export class AccountV2 {
       return result;
     } catch (error) {
       console.error("AccountV2/deleteUser", url, error);
+    }
+  };
+
+  saveProperty = async (
+    userId: string,
+    listingId: string,
+    listingType: string,
+    clusterId: string
+  ) => {
+    const data = {
+      userID: userId,
+      propertyId: listingId,
+      property: {
+        id: listingId,
+        clusterId,
+        type: listingType,
+      },
+    };
+
+    const url = this.http.path("saveProperty");
+
+    try {
+      const response = await this.http.post({ url, data });
+      logger("accountV2.ts line 57/createUSP", {
+        url,
+        data,
+        response,
+        body: response.body,
+      });
+      if (!response.ok) return null;
+      const result = await response.json();
+      logger("accountv2.ts line 31", { result });
+      return result;
+    } catch (error) {
+      console.error("AccountV2/createUSP", url, error);
+    }
+  };
+
+  unsaveProperty = async (userId: string, listingId: string) => {
+    const params = {
+      user_id: userId,
+      prop_id: listingId,
+    };
+    const url = this.http.path("unsaveProperty", params);
+
+    try {
+      const response = await this.http.del({ url });
+      if (!response.ok) return null;
+      const result = await response.json();
+      logger("accountv2.ts line 75", { result });
+      return result;
+    } catch (error) {
+      console.error("AccountV2/deleteUSP", url, error);
     }
   };
 }

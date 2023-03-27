@@ -14,11 +14,7 @@ import { IconBaseProps } from "react-icons";
 import { TbBookmark } from "react-icons/tb";
 
 import { Listing, ListingTypes } from "@/data/clients/ninetyNine";
-import {
-  getStringifiedListing,
-  SavedListing,
-  useAccountStore,
-} from "@/data/stores";
+import { SavedListing, useAccountStore } from "@/data/stores";
 
 import { Provider } from "@/components";
 
@@ -51,8 +47,8 @@ export const SaveButton = ({
   const currentUser: User | null = useAccountStore.use.currentUser();
   const savedListings: SavedListing[] = useAccountStore.use.savedListings();
 
-  const useAccountSaveProperty = api.account.saveProperty.useMutation();
-  const useAccountUnsaveProperty = api.account.unsaveProperty.useMutation();
+  const useAccountSaveProperty = api.accountV2.saveProperty.useMutation();
+  const useAccountUnsaveProperty = api.accountV2.unsaveProperty.useMutation();
 
   const useAccountGetSaved = useAccountStore.use.getSavedListing()(listingId);
   const [isSaved, setIsSaved] = useState<boolean>(!!useAccountGetSaved);
@@ -86,7 +82,7 @@ export const SaveButton = ({
       ...baseParams,
       listingType: isRent ? PropertyType.rent : PropertyType.sale,
       clusterId,
-      stringifiedListing: getStringifiedListing(listing),
+      // stringifiedListing: getStringifiedListing(listing),
     };
 
     const onSave = (data: SavedListing[]) => {

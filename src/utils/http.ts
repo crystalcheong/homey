@@ -11,7 +11,7 @@ export type GetQueryParams = {
 };
 export type QueryParams = GetQueryParams & {
   content_type?: string;
-  data?: Record<string, string>;
+  data?: Record<string, unknown>;
 };
 
 /**
