@@ -320,15 +320,21 @@ export function HeaderMegaMenu() {
                               size="xs"
                               color="dimmed"
                             >
-                              Join us and discover the perfect property for you.
+                              {!isAuth
+                                ? "Join us and discover the perfect property for you."
+                                : "Discover and save your favourite properties"}
                             </Text>
                           </Box>
                           <Button
                             variant="default"
                             component={Link}
-                            href="/account/signUp"
+                            href={
+                              !isAuth
+                                ? "/account/auth/signUp"
+                                : "/account/saved"
+                            }
                           >
-                            Get started
+                            {!isAuth ? "Get started" : "View Favourites"}
                           </Button>
                         </Group>
                       </Box>
