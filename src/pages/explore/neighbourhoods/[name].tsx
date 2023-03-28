@@ -25,7 +25,7 @@ import {
   TbTrees,
 } from "react-icons/tb";
 
-import { AreaCategory } from "@/data/clients/ninetyNine";
+import { AreaCategory, AreaCategoryData } from "@/data/clients/ninetyNine";
 import { getPredefinedNeighbourhoods, useNinetyNineStore } from "@/data/stores";
 
 import { Layout, Provider } from "@/components";
@@ -36,7 +36,7 @@ import { logger } from "@/utils/debug";
 
 import EmptySearch from "~/assets/images/empty-search.svg";
 
-const getCategoryIcon: Record<string, IconType> = {
+export const getCategoryIcon: Record<string, IconType> = {
   subway_station: TbTrain,
   bus_station: TbBus,
   school_v2: TbSchool,
@@ -49,71 +49,77 @@ const getCategoryIcon: Record<string, IconType> = {
   post_box: TbMailbox,
   park: TbTrees,
 };
-const getCategoryPanel = (categoryData: AreaCategory) => {
-  return (
-    <Accordion.Panel key={categoryData.key}>
-      {(categoryData.data ?? []).map((data) => {
-        switch (categoryData.key) {
-          case "subway_station":
-            return (data.station_options ?? []).map((service, idx) => (
+
+export const getCategoryContent = (
+  categoryKey: AreaCategory["key"],
+  categoryData: AreaCategoryData
+) => {
+  switch (categoryKey) {
+    case "subway_station":
+      return (categoryData.station_options ?? []).map((service, idx) => (
+        <Badge
+          key={`${categoryData.id}-${idx}-${service?.label}`}
+          styles={{
+            root: {
+              background: service?.background_color,
+              color: service?.text_color,
+              marginLeft: "10px",
+            },
+          }}
+        >
+          {categoryData.name ?? ""}
+        </Badge>
+      ));
+    case "bus_station": {
+      return (
+        <Box
+          key={categoryData.id}
+          pb="md"
+        >
+          <Text>{categoryData.name}</Text>
+          <Group mt="sm">
+            {(categoryData.station_options ?? []).map((service, idx) => (
               <Badge
-                key={`${data.id}-${idx}-${service?.label}`}
+                key={`${categoryData.id}-${idx}-${service?.label}`}
                 styles={{
                   root: {
                     background: service?.background_color,
                     color: service?.text_color,
-                    marginLeft: "10px",
                   },
                 }}
               >
-                {data.name ?? ""}
+                {service?.label ?? ""}
               </Badge>
-            ));
-          case "bus_station": {
-            return (
-              <Box
-                key={data.id}
-                pb="md"
-              >
-                <Text>{data.name}</Text>
-                <Group mt="sm">
-                  {(data.station_options ?? []).map((service, idx) => (
-                    <Badge
-                      key={`${data.id}-${idx}-${service?.label}`}
-                      styles={{
-                        root: {
-                          background: service?.background_color,
-                          color: service?.text_color,
-                        },
-                      }}
-                    >
-                      {service?.label ?? ""}
-                    </Badge>
-                  ))}
-                </Group>
-              </Box>
-            );
-          }
-          //   return null
-          case "shopping_mall":
-          case "park": {
-            return (
-              <Box key={data.id}>
-                <Text>{data.name}</Text>
-              </Box>
-            );
-          }
-          default:
-            return (
-              <Box key={data.id}>
-                <Text>{data.name}</Text>
-              </Box>
-            );
-        }
-      })}
-    </Accordion.Panel>
-  );
+            ))}
+          </Group>
+        </Box>
+      );
+    }
+    //   return null
+    case "shopping_mall":
+    case "park": {
+      return (
+        <Box key={categoryData.id}>
+          <Text>{categoryData.name}</Text>
+        </Box>
+      );
+    }
+    default:
+      return (
+        <Box key={categoryData.id}>
+          <Text>{categoryData.name}</Text>
+        </Box>
+      );
+  }
 };
+
+export const getCategoryPanel = (categoryData: AreaCategory) => (
+  <Accordion.Panel key={categoryData.key}>
+    {(categoryData.data ?? []).map((data) =>
+      getCategoryContent(categoryData.key, data)
+    )}
+  </Accordion.Panel>
+);
 
 const Neighbourhood = () => {
   const router = useRouter();
@@ -130,15 +136,6 @@ const Neighbourhood = () => {
   const neighbourhoodInfo = isValidName
     ? getPredefinedNeighbourhoods()[paramName]
     : null;
-
-  // const { data: neighbourhoodData } = api.ninetyNine.getNeighbourhood.useQuery(
-  //   {
-  //     name: paramName,
-  //   },
-  //   {
-  //     enabled: isValidName,
-  //   }
-  // );
 
   const [{ isFetching: isFetchingNeighbourhood, data: neighbourhoodData }] =
     api.useQueries((t) => [

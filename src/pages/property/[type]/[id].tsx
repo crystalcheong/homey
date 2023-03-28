@@ -11,8 +11,10 @@ import {
   Image,
   Indicator,
   Paper,
+  ScrollArea,
   SimpleGrid,
   Skeleton,
+  Tabs,
   Text,
   Title,
   Transition,
@@ -55,6 +57,10 @@ import GalleryModal, {
   ImageCaption,
 } from "@/components/Properties/GalleryModal";
 
+import {
+  getCategoryContent,
+  getCategoryIcon,
+} from "@/pages/explore/neighbourhoods/[name]";
 import { appRouter } from "@/server/api/root";
 import { prisma } from "@/server/db";
 import {
@@ -65,6 +71,7 @@ import {
   getStringWithoutAffix,
   logger,
   toTitleCase,
+  useIsMobile,
   useIsTablet,
 } from "@/utils";
 
@@ -118,6 +125,7 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
   const { data: sessionData } = useSession();
   const isAuth = !!sessionData;
 
+  const isMobile: boolean = useIsMobile(theme);
   const isTablet: boolean = useIsTablet(theme);
   const isDark: boolean = theme.colorScheme === "dark" ?? false;
 
@@ -132,6 +140,18 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
   const updateCurrentListing = useNinetyNineStore.use.updateCurrentListing();
   const removeListing = useNinetyNineStore.use.removeListing();
   const updateListings = useNinetyNineStore.use.updateListings();
+
+  const neighbourhood: string = getStringWithoutAffix(
+    listing?.cluster_mappings?.zone[0] ?? "",
+    "zo"
+  );
+
+  const neighbourhoods = useNinetyNineStore.use.neighbourhoods();
+
+  const isValidNeighbourhood: boolean =
+    (Object.keys(neighbourhoods).includes(neighbourhood) ||
+      !!neighbourhood.length) ??
+    false;
 
   /**
    * @see https://nextjs.org/docs/messages/react-hydration-error
@@ -148,6 +168,7 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
     { data: listingData = null },
     ,
     { data: listingsData = [], isFetching: isLoadingListings },
+    { data: neighbourhoodData },
   ] = api.useQueries((t) => [
     t.ninetyNine.getClusterListings(
       {
@@ -196,6 +217,14 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
           logger("[id].tsx line 179", { data });
           updateListings(type, data as Listing[], isZonal);
         },
+      }
+    ),
+    t.ninetyNine.getNeighbourhood(
+      {
+        name: neighbourhood,
+      },
+      {
+        enabled: isValidNeighbourhood,
       }
     ),
   ]);
@@ -332,10 +361,6 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
     listingData?.address_name ?? ""
   )}`;
 
-  const neighbourhood: string = getStringWithoutAffix(
-    listing?.cluster_mappings?.zone[0] ?? "",
-    "zo"
-  );
   const neighbourhoodName: string = toTitleCase(
     getReplacedStringDelimiter(neighbourhood, "_", " ")
   );
@@ -344,6 +369,8 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
         location: JSON.stringify([neighbourhood]),
       })}`
     : "";
+
+  // const neighbourhoodUrl = `/explore/neighbourhoods/${neighbourhood}`;
 
   return (
     <Layout.Base
@@ -750,6 +777,89 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
               See more listings in {neighbourhoodName}
             </Text>
           )}
+
+          <Tabs
+            hidden={true}
+            defaultValue="subway_station"
+            orientation={isMobile ? "horizontal" : "vertical"}
+            variant="pills"
+            styles={{
+              root: {
+                border: `1px solid ${theme.fn.primaryColor()}`,
+                borderRadius: theme.radius.md,
+              },
+              tab: {
+                display: "flex",
+                flexDirection: "row",
+                placeContent: "space-between",
+                placeItems: "center",
+              },
+              tabsList: {
+                ...(isMobile && {
+                  flexWrap: "nowrap",
+                  overflowX: "scroll",
+                  scrollSnapType: "x mandatory",
+                  "&>*": {
+                    scrollSnapAlign: "start",
+                  },
+                }),
+              },
+            }}
+          >
+            <Tabs.List grow>
+              {(neighbourhoodData?.categories ?? []).map((category) => {
+                const categoryData = category.data ?? [];
+                if (!categoryData.length) return null;
+                const CategoryIcon = getCategoryIcon[category.key];
+
+                return (
+                  <Tabs.Tab
+                    key={`tabTitle-${category.key}`}
+                    value={category.key}
+                    icon={<CategoryIcon size={16} />}
+                    aria-label={category.name}
+                    rightSection={
+                      <Badge
+                        w={16}
+                        h={16}
+                        sx={{ pointerEvents: "none" }}
+                        variant="gradient"
+                        size="xs"
+                        p={0}
+                      >
+                        {(category.data ?? []).length}
+                      </Badge>
+                    }
+                  >
+                    {category.name}
+                  </Tabs.Tab>
+                );
+              })}
+            </Tabs.List>
+
+            {(neighbourhoodData?.categories ?? []).map((category) => {
+              const categoryData = category.data ?? [];
+              if (!categoryData.length) return null;
+              return (
+                <Tabs.Panel
+                  key={`tabPanel-${category.key}`}
+                  value={category.key}
+                >
+                  <ScrollArea
+                    h={400}
+                    type="never"
+                    offsetScrollbars
+                    scrollbarSize={2}
+                    p="md"
+                  >
+                    {categoryData.map((data) =>
+                      getCategoryContent(category.key, data)
+                    )}
+                  </ScrollArea>
+                </Tabs.Panel>
+              );
+            })}
+          </Tabs>
         </Box>
 
         <Property.Grid
