@@ -89,6 +89,8 @@ export const SaveButton = ({
       stringifiedListing: getStringifiedListing(listing),
     };
 
+    logger("SaveButton.tsx line 92", { saveParams });
+
     const onSave = (data: SavedListing[]) => {
       logger("SaveButton.tsx line 35", { data, savedListings });
       useAccountStore.setState(() => ({ savedListings: data }));
@@ -105,13 +107,13 @@ export const SaveButton = ({
 
     if (!isSaved) {
       useAccountSaveProperty.mutate(saveParams, {
-        onSuccess(data) {
+        onSuccess: (data: SavedListing[]) => {
           onSave(data);
         },
       });
     } else {
       useAccountUnsaveProperty.mutate(baseParams, {
-        onSuccess(data) {
+        onSuccess: (data: SavedListing[]) => {
           onSave(data);
         },
       });

@@ -330,14 +330,14 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
           >
             {listingData?.attributes?.area_size_sqm_formatted ?? "--"}
           </Text>
-          &nbsp;or&nbsp;
+          &nbsp;(
           <Text
             component="span"
             variant="gradient"
           >
             {listingData?.attributes?.area_size_formatted ?? "--"}
           </Text>
-          .
+          ).
         </>
       ),
     },
