@@ -2,15 +2,18 @@ import {
   Box,
   BoxProps,
   Button,
+  Collapse,
   Divider,
   Group,
   Menu,
   MultiSelect,
+  RangeSlider,
   Tabs,
   Text,
   Title,
   useMantineTheme,
 } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { IconType } from "react-icons";
@@ -77,10 +80,26 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
 
   //#endregion  //*======== Search Type ===========
 
+  const [showPriceRange, { toggle: togglePriceRange, close: closePriceRange }] =
+    useDisclosure(false);
+
   const [searchType, setSearchType] = useState<SearchType>(SearchTypes[0]);
   const handleSearchTypeChange = (searchType: string) => {
+    closePriceRange();
     setSearchType(searchType);
   };
+
+  const isRent: boolean = searchType === "rent";
+  const searchTypeRange: [number, number] = [
+    isRent ? 1000 : 100000,
+    isRent ? 50000 : 20000000,
+  ];
+
+  const searchTypeRangeMarks = [
+    { value: 0.2 * searchTypeRange[1], label: `$${0.2 * searchTypeRange[1]}` },
+    { value: 0.5 * searchTypeRange[1], label: `$${0.5 * searchTypeRange[1]}` },
+    { value: 0.8 * searchTypeRange[1], label: `$${0.8 * searchTypeRange[1]}` },
+  ];
 
   //#endregion  //*======== Search Type ===========
 
@@ -88,6 +107,11 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
 
   const [formState, setFormState] =
     useState<typeof FilterFormState>(FilterFormState);
+
+  const [rangeValue, setRangeValue] = useState<[number, number]>([
+    searchTypeRange[0],
+    searchTypeRange[1] * 0.5,
+  ]);
 
   // const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
   //   const inputValue = (event.currentTarget.value ?? "").trim();
@@ -378,7 +402,36 @@ const Hero = ({ children, headline, subHeading, ...rest }: Props) => {
                         })}
                       </Menu.Dropdown>
                     </Menu>
+
+                    <Button
+                      hidden
+                      variant="subtle"
+                      p={0}
+                      px={2}
+                      w={130}
+                      ta="start"
+                      rightIcon={<TbChevronDown size={16} />}
+                      onClick={togglePriceRange}
+                    >
+                      Price Range
+                    </Button>
                   </Box>
+
+                  <Collapse
+                    in={showPriceRange}
+                    transitionDuration={100}
+                    transitionTimingFunction="linear"
+                  >
+                    <RangeSlider
+                      labelAlwaysOn
+                      marks={searchTypeRangeMarks}
+                      min={searchTypeRange[0]}
+                      max={searchTypeRange[1]}
+                      step={searchTypeRange[0]}
+                      value={rangeValue}
+                      onChange={setRangeValue}
+                    />
+                  </Collapse>
                 </Box>
 
                 <Button
