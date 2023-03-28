@@ -14,7 +14,11 @@ import { IconBaseProps } from "react-icons";
 import { TbBookmark } from "react-icons/tb";
 
 import { Listing, ListingTypes } from "@/data/clients/ninetyNine";
-import { SavedListing, useAccountStore } from "@/data/stores";
+import {
+  getStringifiedListing,
+  SavedListing,
+  useAccountStore,
+} from "@/data/stores";
 
 import { Provider } from "@/components";
 
@@ -82,7 +86,7 @@ export const SaveButton = ({
       ...baseParams,
       listingType: isRent ? PropertyType.rent : PropertyType.sale,
       clusterId,
-      // stringifiedListing: getStringifiedListing(listing),
+      stringifiedListing: getStringifiedListing(listing),
     };
 
     const onSave = (data: SavedListing[]) => {

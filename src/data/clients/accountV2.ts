@@ -142,6 +142,7 @@ export class AccountV2 {
         data,
         response,
         body: response.body,
+        ok: response.ok,
       });
       if (!response.ok) return null;
       const result = await response.json();

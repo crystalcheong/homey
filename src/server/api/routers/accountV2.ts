@@ -255,10 +255,10 @@ export const accountV2Router = createTRPCRouter({
         listingId: z.string().trim().min(1, "Listing ID can't be empty"),
         listingType: z.nativeEnum(PropertyType),
         clusterId: z.string().trim().min(1, "Cluster ID can't be empty"),
-        // stringifiedListing: z
-        //   .string()
-        //   .trim()
-        //   .min(1, "Stringified Listing can't be empty"),
+        stringifiedListing: z
+          .string()
+          .trim()
+          .min(1, "Stringified Listing can't be empty"),
       })
     )
     .mutation(async ({ input }) => {

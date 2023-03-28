@@ -28,7 +28,7 @@ const getSavedListing = (
   savedListings: SavedListing[] = [],
   listingId: SavedListing["propertyId"] = ""
 ) => {
-  if (!savedListings.length || !listingId.length) return null;
+  if (!savedListings?.length || !listingId.length) return null;
 
   const savedListingIdx: number = savedListings.findIndex(
     ({ propertyId }) => propertyId === listingId
