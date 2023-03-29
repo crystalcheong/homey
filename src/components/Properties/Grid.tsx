@@ -7,6 +7,7 @@ import {
   Text,
   ThemeIcon,
   Title,
+  useMantineTheme,
 } from "@mantine/core";
 import Link, { LinkProps } from "next/link";
 import { ReactNode, useState } from "react";
@@ -16,7 +17,7 @@ import { Listing, ListingType } from "@/data/clients/ninetyNine";
 
 import { Card } from "@/components/Properties";
 
-import { getLimitedArray, logger } from "@/utils";
+import { getLimitedArray, logger, useIsMobile } from "@/utils";
 
 export const ViewModes = ["grid", "list"];
 export type ViewMode = (typeof ViewModes)[number];
@@ -75,6 +76,9 @@ export const Grid = ({
   emptyFallback,
   ...rest
 }: Props) => {
+  const theme = useMantineTheme();
+  const isMobile = useIsMobile(theme);
+
   const hasNoListings = !listings.length;
   const hasMaxViewable: boolean =
     maxViewableCount > 0 && maxViewableCount <= listings.length;
@@ -131,7 +135,10 @@ export const Grid = ({
               </Title>
 
               {showViewMode && (
-                <Group spacing="xs">
+                <Group
+                  spacing="xs"
+                  hidden={isMobile}
+                >
                   {ViewModes.map((mode) => {
                     const isActiveMode: boolean = currentViewMode === mode;
                     return (
