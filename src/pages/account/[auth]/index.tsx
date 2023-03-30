@@ -1,5 +1,6 @@
 import {
   Alert,
+  Badge,
   Box,
   Button,
   Checkbox,
@@ -429,7 +430,11 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
           <Checkbox
             // hidden={!isAgent || !isNewUser}
             hidden={!isNewUser}
-            label="Register as Agent"
+            label={
+              <>
+                Register as Agent&nbsp;<Badge size="xs">Preview</Badge>
+              </>
+            }
             description={
               <>
                 Get verified as a &nbsp;

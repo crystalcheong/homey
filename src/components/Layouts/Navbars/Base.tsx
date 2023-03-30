@@ -18,22 +18,17 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { Fragment, useRef, useState } from "react";
-import { IconType } from "react-icons";
 import {
-  TbBookmarks,
-  TbBuildingSkyscraper,
-  TbBuildingWarehouse,
+  TbBuildingCommunity,
   TbChevronDown,
   TbChevronLeft,
   TbChevronRight,
   TbChevronUp,
-  TbLogout,
-  TbSettings,
 } from "react-icons/tb";
 
-import { ListingTypes } from "@/data/clients/ninetyNine";
+import { AccountMenulist, NavRoutes } from "@/data/static";
 import { SavedListing, useAccountStore } from "@/data/stores";
 
 import AuthActions from "@/components/Layouts/AuthActions";
@@ -42,72 +37,10 @@ import UserButton from "@/components/Layouts/UserButton";
 import Logo from "@/components/Logo";
 import ThemeToggle from "@/components/ThemeToggle";
 
+import { getInsertedArray } from "@/utils";
 import { api } from "@/utils/api";
 import { logger } from "@/utils/debug";
 import { useIsMobile, useIsTablet } from "@/utils/dom";
-
-export interface Route {
-  label: string;
-  href: string;
-  icon?: IconType;
-  description?: string;
-}
-
-const NavRoutes: (Route & {
-  nodes?: Route[];
-})[] = [
-  {
-    label: "Home",
-    href: "/",
-  },
-  {
-    label: "Rent",
-    href: `/property/${ListingTypes[0]}`,
-  },
-  {
-    label: "Buy",
-    href: `/property/${ListingTypes[1]}`,
-  },
-  {
-    label: "Explore",
-    href: `#`,
-    nodes: [
-      {
-        icon: TbBuildingWarehouse,
-        label: "Neighbourhoods",
-        href: "/explore/neighbourhoods",
-        description: "Find a neighbourhood you'll love to live in",
-      },
-      {
-        icon: TbBuildingSkyscraper,
-        label: "New Launches",
-        href: "/explore/new-launches",
-        description: "Check out the latest projects launches to hit the market",
-      },
-    ],
-  },
-];
-
-export const AccountMenulist: (Omit<Route, "href"> & {
-  href?: string;
-  onClick?: () => void;
-})[] = [
-  {
-    label: "Saved listings",
-    icon: TbBookmarks,
-    href: `/account/saved`,
-  },
-  {
-    label: "Account settings",
-    icon: TbSettings,
-    href: `/account/update`,
-  },
-  {
-    label: "Logout",
-    icon: TbLogout,
-    onClick: () => signOut(),
-  },
-];
 
 export function HeaderMegaMenu() {
   const router = useRouter();
@@ -127,6 +60,21 @@ export function HeaderMegaMenu() {
   const [linksOpened, setLinkOpened] = useState<string>("");
 
   const currentUser = useAccountStore.use.currentUser();
+  const isAgentUser: boolean =
+    !!(currentUser?.propertyAgent ?? []).length ?? false;
+  const isVerifiedAgentUser: boolean =
+    isAgentUser && (currentUser?.propertyAgent?.[0]?.isVerified ?? false);
+
+  const agentMenuList: typeof AccountMenulist = isVerifiedAgentUser
+    ? [
+        {
+          label: "Posted Listings",
+          icon: TbBuildingCommunity,
+          href: `/account/posted`,
+        },
+      ]
+    : [];
+  const accountMenuList = getInsertedArray(AccountMenulist, 1, agentMenuList);
 
   const drawerScrollTo = (position: "top" | "center" | "bottom" = "top") => {
     if (!drawerViewport) return;
@@ -378,7 +326,7 @@ export function HeaderMegaMenu() {
                     </Menu.Target>
 
                     <Menu.Dropdown>
-                      {AccountMenulist.map((item) => (
+                      {accountMenuList.map((item) => (
                         <Menu.Item
                           key={`accMenu-${item.label}`}
                           component={Link}
@@ -521,7 +469,7 @@ export function HeaderMegaMenu() {
               })}
 
             {accDrawerOpened &&
-              AccountMenulist.map((item) => {
+              accountMenuList.map((item) => {
                 const isActiveRoute: boolean = router.asPath === item.href;
                 return (
                   <Button

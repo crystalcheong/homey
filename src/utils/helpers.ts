@@ -49,6 +49,16 @@ export const getObjectValueCount = <T extends Record<string, unknown>>(
       : value !== null && value !== undefined && value !== ""
   ).length;
 
+export const getInsertedArray = <T>(
+  originalArray: T[],
+  index: number,
+  arrayToInsert: T[]
+): T[] => [
+  ...originalArray.slice(0, index),
+  ...arrayToInsert,
+  ...originalArray.slice(index),
+];
+
 //#endregion  //*======== Cache ===========
 
 export type CachedData<T> = {

@@ -456,7 +456,7 @@ const AccountUpdatePage = () => {
     >
       <Provider.RenderGuard renderIf={isAuth && !!currentUser}>
         <Title
-          order={3}
+          order={1}
           size="h3"
           sx={{
             wordBreak: "break-word",

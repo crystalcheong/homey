@@ -7,14 +7,20 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import { useRouter } from "next/router";
-import React, { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { TbArrowNarrowLeft } from "react-icons/tb";
 
-export function useRedirectAfterSomeSeconds(redirectTo = "", seconds = 5) {
+export const useRedirectAfterSomeSeconds = (
+  redirectTo = "",
+  seconds = 5,
+  allowRedirect = true
+) => {
   const [secondsRemaining, setSecondsRemaining] = useState(seconds);
   const router = useRouter();
 
   useEffect(() => {
+    if (!allowRedirect) return;
+
     if (secondsRemaining === 0) router.push("/");
 
     const timer = setTimeout(() => {
@@ -25,16 +31,17 @@ export function useRedirectAfterSomeSeconds(redirectTo = "", seconds = 5) {
     return () => {
       clearInterval(timer);
     };
-  }, [router, secondsRemaining, redirectTo]);
+  }, [router, secondsRemaining, redirectTo, allowRedirect]);
 
   return { secondsRemaining };
-}
+};
 
 interface Props extends BoxProps {
   svgNode: ReactNode;
   title: string | ReactNode;
   subtitle: string | ReactNode;
   hideBackButton?: boolean;
+  allowRedirect?: boolean;
 }
 
 const UnknownState = ({
@@ -43,11 +50,16 @@ const UnknownState = ({
   subtitle,
   children,
   hideBackButton = false,
+  allowRedirect = true,
   ...rest
 }: Props) => {
   const router = useRouter();
   const theme = useMantineTheme();
-  const { secondsRemaining } = useRedirectAfterSomeSeconds("/", 5);
+  const { secondsRemaining } = useRedirectAfterSomeSeconds(
+    "/",
+    5,
+    allowRedirect
+  );
 
   return (
     <Box
@@ -95,15 +107,20 @@ const UnknownState = ({
         fw={500}
       >
         {subtitle}
-        <br />
-        Redirecting to homepage in
-        <Text
-          component="span"
-          variant="gradient"
-          fw={800}
-        >
-          &nbsp;{secondsRemaining} {secondsRemaining > 1 ? "seconds" : "second"}
-        </Text>
+        {allowRedirect && (
+          <>
+            <br />
+            Redirecting to homepage in
+            <Text
+              component="span"
+              variant="gradient"
+              fw={800}
+            >
+              &nbsp;{secondsRemaining}{" "}
+              {secondsRemaining > 1 ? "seconds" : "second"}
+            </Text>
+          </>
+        )}
         .
       </Text>
 

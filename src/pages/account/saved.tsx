@@ -1,5 +1,6 @@
+import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { TbBookmark } from "react-icons/tb";
 
 import { Listing } from "@/data/clients/ninetyNine";
@@ -15,8 +16,10 @@ import UnknownState from "@/components/Layouts/UnknownState";
 import EmptySaved from "~/assets/images/empty-saved.svg";
 
 const AccountSavedPage = () => {
-  const { data: sessionData } = useSession();
+  const router = useRouter();
+  const { data: sessionData, status: sessionStatus } = useSession();
   const isAuth = !!sessionData;
+  const isAuthLoading: boolean = sessionStatus === "loading";
 
   const userSavedListings: SavedListing[] = useAccountStore.use.savedListings();
 
@@ -29,40 +32,15 @@ const AccountSavedPage = () => {
     [userSavedListings]
   );
 
-  // const [...allSavedListings]: Listing[] = (
-  //   api.useQueries((t) =>
-  //     userSavedListings.map(({ property }) => {
-  //       const isRent: boolean = property.type === PropertyType.rent;
-  //       return t.ninetyNine.getClusterListings(
-  //         {
-  //           listingId: property.id,
-  //           listingType: ListingTypes[isRent ? 0 : 1],
-  //           clusterId: property.clusterId,
-  //         },
-  //         {
-  //           onSuccess: (data) => {
-  //             logger("saved.tsx line 29", { data });
-  //             if (!data) return;
-  //             useNinetyNineStore.setState((state) => ({
-  //               savedListings: [...state.savedListings, data],
-  //             }));
-  //             return data;
-  //           },
-  //         }
-  //       );
-  //     })
-  //   ) ?? []
-  // )
-  //   .filter(({ data }) => !!data)
-  //   .map(({ data }) => data) as Listing[];
-
   //#endregion  //*======== Pre-Render Checks ===========
-  // useEffect(() => {
-  //   if (!isAuth) {
-  //     router.replace("/");
-  //     return;
-  //   }
-  // }, [isAuth, router]);
+
+  useEffect(() => {
+    if (!isAuthLoading && !isAuth) {
+      router.replace("/account/signIn");
+      return;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuth, isAuthLoading]);
 
   //#endregion  //*======== Pre-Render Checks ===========
 
@@ -70,11 +48,13 @@ const AccountSavedPage = () => {
     <Layout.Base showAffix={!!allSavedListings.length}>
       <Provider.RenderGuard renderIf={isAuth}>
         <Property.Grid
+          showViewMode={!!allSavedListings.length}
           listings={allSavedListings}
-          allowSaveListing={isAuth}
+          allowSaveListing={isAuth && !!allSavedListings.length}
           title="Saved"
           emptyFallback={
             <UnknownState
+              allowRedirect={false}
               svgNode={<EmptySaved />}
               title="No saved listings"
               subtitle={
