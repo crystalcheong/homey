@@ -19,7 +19,7 @@
     "prisma:prepare": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:live": "pnpm prisma:update && pnpm prisma:migrate && prisma migrate deploy",
-    "prepare": "husky install && pnpm prisma:prepare && pnpm run test:prepare",
+    "prepare": "husky install && pnpm prisma:prepare",
     "test": "playwright test",
     "test:prepare": "npx playwright install",
     "test:report": "playwright show-report tests/report"
