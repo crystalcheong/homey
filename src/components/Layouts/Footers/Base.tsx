@@ -124,44 +124,51 @@ const useStyles = createStyles((theme) => ({
 }));
 
 interface FooterLinksProps {
-  data: (Route & {
+  linkRows: (Route & {
     nodes?: Route[];
-  })[];
+  })[][];
 }
 
-export function FooterLinks({ data }: FooterLinksProps) {
+export function FooterLinks({ linkRows }: FooterLinksProps) {
   const { classes } = useStyles();
 
   const currentYear: number = new Date().getFullYear();
-  const groups = data.map((group) => {
-    const links = (group.nodes ?? []).map((link, index) => (
-      <Text
-        key={index}
-        className={classes.link}
-        component={Link}
-        href={link.href}
-        // onClick={(event) => event.preventDefault()}
-      >
-        {link.label}
-      </Text>
-    ));
+  const groups = linkRows.map((row, idx) => (
+    <Box
+      key={`footerLinkRow-${idx}`}
+      className={classes.groups}
+    >
+      {row.map((group) => {
+        const links = (group.nodes ?? []).map((link, index) => (
+          <Text
+            key={index}
+            className={classes.link}
+            component={Link}
+            href={link.href}
+            // onClick={(event) => event.preventDefault()}
+          >
+            {link.label}
+          </Text>
+        ));
 
-    return (
-      <Box
-        className={classes.wrapper}
-        key={group.label}
-      >
-        <Text
-          className={classes.title}
-          component={Link}
-          href={group.href}
-        >
-          {group.label}
-        </Text>
-        {links}
-      </Box>
-    );
-  });
+        return (
+          <Box
+            className={classes.wrapper}
+            key={group.label}
+          >
+            <Text
+              className={classes.title}
+              component={Link}
+              href={group.href}
+            >
+              {group.label}
+            </Text>
+            {links}
+          </Box>
+        );
+      })}
+    </Box>
+  ));
 
   return (
     <Box
@@ -180,7 +187,15 @@ export function FooterLinks({ data }: FooterLinksProps) {
             Find your dream home in Singapore
           </Text>
         </Box>
-        <Box className={classes.groups}>{groups}</Box>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "2em",
+          }}
+        >
+          {groups}
+        </Box>
       </Container>
       <Container className={classes.afterFooter}>
         <Text
@@ -212,7 +227,7 @@ export function FooterLinks({ data }: FooterLinksProps) {
 }
 
 const BaseFooter = () => {
-  const data: (Route & {
+  const topRow: (Route & {
     nodes?: Route[];
   })[] = [
     {
@@ -246,18 +261,38 @@ const BaseFooter = () => {
       ],
     },
   ];
+
+  const bottomRow: typeof topRow = [
+    {
+      label: "Company",
+      href: "#",
+      nodes: [
+        {
+          label: "Privacy Policy",
+          href: "/info/privacy",
+        },
+        {
+          label: "Terms & Conditions",
+          href: "/info/terms",
+        },
+      ],
+    },
+  ];
+
+  const linkRows: FooterLinksProps["linkRows"] = [topRow, bottomRow];
+
   return (
     <>
-      <Space h={280} />
+      <Space h={380} />
       <Footer
-        height={400}
+        height={500}
         sx={{
           position: "fixed",
           inset: "auto 0 0",
           zIndex: 0,
         }}
       >
-        <FooterLinks data={data} />
+        <FooterLinks linkRows={linkRows} />
       </Footer>
     </>
   );

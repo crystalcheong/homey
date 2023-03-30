@@ -3,6 +3,7 @@ import { NextPage } from "next/types";
 import { useSession } from "next-auth/react";
 
 import { Listing, ListingType, ListingTypes } from "@/data/clients/ninetyNine";
+import { meta } from "@/data/static";
 import { useNinetyNineStore } from "@/data/stores/ninetyNine";
 
 import { Layout, Property } from "@/components";
@@ -50,8 +51,8 @@ const IndexPage: NextPage = () => {
       }}
     >
       <Hero
-        headline="Find your dream home in Singapore"
-        subHeading="Search for properties, connect with agents, and get expert advice"
+        headline={meta.tagline}
+        subHeading={meta.description}
       />
 
       <Box

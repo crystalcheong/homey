@@ -200,7 +200,7 @@ export const accountRouter = createTRPCRouter({
           ceaLicense: input.ceaLicense,
           phoneNumber: "",
           userId: input.id,
-          isVerified: govClient.isValidated,
+          isVerified: govClient.isNotValidated,
         },
         include: {
           User: true,

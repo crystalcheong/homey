@@ -9,16 +9,16 @@ const Routes: Record<string, string> = {
 
 export class Gov {
   private http: HTTP<typeof Routes>;
-  public isValidated: boolean;
+  public isNotValidated: boolean;
 
   constructor() {
     this.http = new HTTP(Endpoint, Routes);
-    this.isValidated = env.NEXT_PUBLIC_GOV_VALIDATIONS === "true" ?? false;
+    this.isNotValidated = env.NEXT_PUBLIC_BETA_PREVIEW === "true" ?? false;
   }
 
   checkIsCEALicensed = async (agentName: string, ceaLicense: string) => {
     let isValidAgent: boolean = isCEALicense(ceaLicense) && isName(agentName);
-    if (!this.isValidated) return isValidAgent;
+    if (!this.isNotValidated) return isValidAgent;
 
     const data: Record<string, string> = {
       page: "1",

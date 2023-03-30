@@ -42,6 +42,7 @@ import { FaGithub, FaGoogle } from "react-icons/fa";
 import { TbAlertCircle } from "react-icons/tb";
 
 import { Gov } from "@/data/clients/gov";
+import { meta } from "@/data/static";
 
 import { Layout, Provider } from "@/components";
 import BetaWarning from "@/components/Layouts/BetaWarning";
@@ -50,6 +51,7 @@ import AuthEmail from "@/components/Pages/Auth/AuthEmail";
 import AuthPassword, {
   PasswordFormState,
 } from "@/components/Pages/Auth/AuthPassword";
+import TermsAndPrivacyLinks from "@/components/Pages/Info/TermsAndPrivacyLinks";
 
 import {
   api,
@@ -602,7 +604,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
   const prevStep = () =>
     setAuthStep((current) => (current > 0 ? current - 1 : current));
 
-  const isValidated: boolean = new Gov().isValidated ?? false;
+  const isNotValidated: boolean = new Gov().isNotValidated ?? false;
 
   return (
     <Layout.Base showAffix={false}>
@@ -625,7 +627,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
             gap: theme.spacing.xl,
           }}
         >
-          {!isValidated && (
+          {isNotValidated && (
             <BetaWarning
               title="Beta Preview"
               content={
@@ -778,6 +780,17 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
                   );
                 })}
             </Group>
+
+            {/* Terms & Conditions */}
+            <Text
+              component="p"
+              size="xs"
+              ta="center"
+              mt="xl"
+            >
+              By continuing, you agree to {meta.name}'s <TermsAndPrivacyLinks />
+              .
+            </Text>
           </Box>
         </Container>
       </Provider.RenderGuard>
