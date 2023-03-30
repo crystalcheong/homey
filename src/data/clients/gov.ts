@@ -18,7 +18,7 @@ export class Gov {
 
   checkIsCEALicensed = async (agentName: string, ceaLicense: string) => {
     let isValidAgent: boolean = isCEALicense(ceaLicense) && isName(agentName);
-    if (!this.isNotValidated) return isValidAgent;
+    if (this.isNotValidated) return isValidAgent;
 
     const data: Record<string, string> = {
       page: "1",
