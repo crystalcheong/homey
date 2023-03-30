@@ -9,3 +9,9 @@ export const isEmail = (strInput: string) => {
   const pattern = /^[\w-.]+@([\w-]+.)+[\w-]{2,4}$/g;
   return !!strInput.match(pattern);
 };
+
+export const isCEALicense = (strInput: string) => {
+  if (!strInput.length) return false;
+  const pattern = /^[A-Z]\d{6}[A-Z]$/;
+  return !!strInput.match(pattern);
+};

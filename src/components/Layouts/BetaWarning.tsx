@@ -1,8 +1,13 @@
-import { Alert, Transition, useMantineTheme } from "@mantine/core";
+import { Alert, AlertProps, Transition, useMantineTheme } from "@mantine/core";
 import { useState } from "react";
 import { TbAlertCircle } from "react-icons/tb";
 
-const BetaWarning = () => {
+interface Props {
+  title?: AlertProps["title"];
+  content?: AlertProps["children"];
+}
+
+const BetaWarning = ({ title, content }: Props) => {
   const theme = useMantineTheme();
   const isDark = theme.colorScheme === "dark" ?? false;
 
@@ -20,15 +25,15 @@ const BetaWarning = () => {
       {(styles) => (
         <Alert
           icon={<TbAlertCircle size={16} />}
-          title="Work In Progress"
+          title={title ?? "Work In Progress"}
           color={isDark ? "yellow" : "yellow.7"}
           withCloseButton
           onClose={handleOnClose}
           mb={30}
           style={styles}
         >
-          This app is a preview and should not be considered as the final
-          product
+          {content ??
+            "This app is a preview and should not be considered as the final product"}
         </Alert>
       )}
     </Transition>

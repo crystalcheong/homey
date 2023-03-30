@@ -1,6 +1,7 @@
 import { accountRouter } from "@/server/api/routers/account";
+import { govRouter } from "@/server/api/routers/gov";
+import { ninetyNineRouter } from "@/server/api/routers/ninetyNine";
 
-import { ninetyNineRouter } from "./routers/ninetyNine";
 import { createTRPCRouter } from "./trpc";
 
 /**
@@ -11,6 +12,7 @@ import { createTRPCRouter } from "./trpc";
 export const appRouter = createTRPCRouter({
   ninetyNine: ninetyNineRouter,
   account: accountRouter,
+  gov: govRouter,
 });
 
 // export type definition of API
