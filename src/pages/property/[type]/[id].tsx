@@ -877,6 +877,13 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
         <Accordion
           defaultValue={`faq-${0}`}
           display={listing ? "block" : "none"}
+          styles={{
+            chevron: {
+              "&[data-rotate]": {
+                transform: "rotate(45deg)",
+              },
+            },
+          }}
         >
           {faqs.map((faq, idx) => (
             <Accordion.Item

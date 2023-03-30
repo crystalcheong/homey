@@ -220,6 +220,13 @@ const Neighbourhood = () => {
             <Accordion
               variant="separated"
               defaultValue="subway_station"
+              styles={{
+                chevron: {
+                  "&[data-rotate]": {
+                    transform: "rotate(45deg)",
+                  },
+                },
+              }}
             >
               {(neighbourhoodData?.categories ?? []).map((category) => {
                 const categoryData = category.data ?? [];

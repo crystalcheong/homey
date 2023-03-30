@@ -1,4 +1,5 @@
 import {
+  Accordion,
   ActionIcon,
   Box,
   Container,
@@ -7,6 +8,7 @@ import {
   Group,
   Space,
   Text,
+  useMantineTheme,
 } from "@mantine/core";
 import Link from "next/link";
 import React from "react";
@@ -17,9 +19,12 @@ import {
 } from "react-icons/tb";
 
 import { ListingCategories } from "@/data/clients/ninetyNine";
+import { meta } from "@/data/static";
 
 import { Route } from "@/components/Layouts/Navbars/Base";
 import Logo from "@/components/Logo";
+
+import { useIsMobile } from "@/utils";
 
 const useStyles = createStyles((theme) => ({
   footer: {
@@ -98,6 +103,10 @@ const useStyles = createStyles((theme) => ({
     fontFamily: `Greycliff CF, ${theme.fontFamily}`,
     marginBottom: theme.spacing.xs / 2,
     color: theme.colorScheme === "dark" ? theme.white : theme.black,
+
+    [theme.fn.smallerThan("sm")]: {
+      fontSize: theme.fontSizes.md,
+    },
   },
 
   afterFooter: {
@@ -131,44 +140,91 @@ interface FooterLinksProps {
 
 export function FooterLinks({ linkRows }: FooterLinksProps) {
   const { classes } = useStyles();
+  const theme = useMantineTheme();
+  const isMobile = useIsMobile(theme, "sm");
 
   const currentYear: number = new Date().getFullYear();
-  const groups = linkRows.map((row, idx) => (
-    <Box
-      key={`footerLinkRow-${idx}`}
-      className={classes.groups}
-    >
-      {row.map((group) => {
-        const links = (group.nodes ?? []).map((link, index) => (
-          <Text
-            key={index}
-            className={classes.link}
-            component={Link}
-            href={link.href}
-            // onClick={(event) => event.preventDefault()}
-          >
-            {link.label}
-          </Text>
-        ));
 
-        return (
-          <Box
-            className={classes.wrapper}
-            key={group.label}
-          >
-            <Text
-              className={classes.title}
-              component={Link}
-              href={group.href}
+  const getLinkGroups = (rows: typeof linkRows, isAccordion = false) => {
+    const getGroupedLinks = (
+      group: Route & {
+        nodes?: Route[];
+      }
+    ) =>
+      (group.nodes ?? []).map((link, index) => (
+        <Text
+          key={index}
+          className={classes.link}
+          component={Link}
+          href={link.href}
+        >
+          {link.label}
+        </Text>
+      ));
+
+    return rows.map((row, idx) =>
+      isAccordion ? (
+        <Accordion
+          key={`footerLinkRow-${idx}`}
+          variant="filled"
+          // defaultValue="subway_station"
+          styles={{
+            control: {
+              padding: theme.spacing.xs,
+              fontSize: theme.fontSizes.sm,
+            },
+            chevron: {
+              "&[data-rotate]": {
+                transform: "rotate(180deg)",
+              },
+            },
+          }}
+          sx={{
+            width: "100%",
+          }}
+        >
+          {row.map((group) => (
+            <Accordion.Item
+              key={group.label}
+              value={group.label}
             >
-              {group.label}
-            </Text>
-            {links}
-          </Box>
-        );
-      })}
-    </Box>
-  ));
+              <Accordion.Control>
+                <Text
+                  className={classes.title}
+                  component={Link}
+                  href={group.href}
+                >
+                  {group.label}
+                </Text>
+              </Accordion.Control>
+              <Accordion.Panel>{getGroupedLinks(group)}</Accordion.Panel>
+            </Accordion.Item>
+          ))}
+        </Accordion>
+      ) : (
+        <Box
+          key={`footerLinkRow-${idx}`}
+          className={classes.groups}
+        >
+          {row.map((group) => (
+            <Box
+              className={classes.wrapper}
+              key={group.label}
+            >
+              <Text
+                className={classes.title}
+                component={Link}
+                href={group.href}
+              >
+                {group.label}
+              </Text>
+              {getGroupedLinks(group)}
+            </Box>
+          ))}
+        </Box>
+      )
+    );
+  };
 
   return (
     <Box
@@ -184,17 +240,21 @@ export function FooterLinks({ linkRows }: FooterLinksProps) {
             color="dimmed"
             className={classes.description}
           >
-            Find your dream home in Singapore
+            {meta.tagline}
           </Text>
         </Box>
+
         <Box
+          component="aside"
           sx={{
             display: "flex",
             flexDirection: "column",
             gap: "2em",
+
+            width: isMobile ? "100%" : "auto",
           }}
         >
-          {groups}
+          {getLinkGroups(linkRows, isMobile)}
         </Box>
       </Container>
       <Container className={classes.afterFooter}>
@@ -202,7 +262,7 @@ export function FooterLinks({ linkRows }: FooterLinksProps) {
           color="dimmed"
           size="xs"
         >
-          &copy; {currentYear} Homey. All rights reserved.
+          &copy; {currentYear} {meta.name}. All rights reserved.
         </Text>
 
         <Group
@@ -227,6 +287,9 @@ export function FooterLinks({ linkRows }: FooterLinksProps) {
 }
 
 const BaseFooter = () => {
+  const theme = useMantineTheme();
+  const isMobile = useIsMobile(theme, "sm");
+
   const topRow: (Route & {
     nodes?: Route[];
   })[] = [
@@ -283,9 +346,9 @@ const BaseFooter = () => {
 
   return (
     <>
-      <Space h={380} />
+      <Space h={isMobile ? 580 : 380} />
       <Footer
-        height={500}
+        height={isMobile ? 630 : 500}
         sx={{
           position: "fixed",
           inset: "auto 0 0",
