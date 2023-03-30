@@ -509,46 +509,52 @@ const AccountUpdatePage = () => {
             onChange={handleInputChange}
           />
 
-          <TextInput
-            hidden={!isAgentUser}
-            disabled
-            label={
-              <Text>
-                CEA License &nbsp;
-                <Badge
-                  pr={3}
-                  variant="outline"
-                  color={isVerifiedAgentUser ? theme.fn.primaryColor() : "gray"}
-                  rightSection={
-                    <ActionIcon
-                      size="xs"
-                      radius="xl"
-                      variant="transparent"
-                      color={
-                        isVerifiedAgentUser ? theme.fn.primaryColor() : "gray"
-                      }
-                    >
-                      <TbCircleCheckFilled
-                        size={16}
+          {isAgentUser && (
+            <TextInput
+              hidden={!isAgentUser}
+              disabled
+              label={
+                <Text>
+                  CEA License &nbsp;
+                  <Badge
+                    pr={3}
+                    variant="outline"
+                    color={
+                      isVerifiedAgentUser ? theme.fn.primaryColor() : "gray"
+                    }
+                    rightSection={
+                      <ActionIcon
+                        size="xs"
+                        radius="xl"
+                        variant="transparent"
                         color={
                           isVerifiedAgentUser ? theme.fn.primaryColor() : "gray"
                         }
-                      />
-                    </ActionIcon>
-                  }
-                >
-                  {isVerifiedAgentUser ? "Verified" : "Unverified"}
-                </Badge>
-              </Text>
-            }
-            id="ceaLicense"
-            value={currentUser?.propertyAgent?.[0]?.ceaLicense}
-            sx={{
-              label: {
-                width: "100%",
-              },
-            }}
-          />
+                      >
+                        <TbCircleCheckFilled
+                          size={16}
+                          color={
+                            isVerifiedAgentUser
+                              ? theme.fn.primaryColor()
+                              : "gray"
+                          }
+                        />
+                      </ActionIcon>
+                    }
+                  >
+                    {isVerifiedAgentUser ? "Verified" : "Unverified"}
+                  </Badge>
+                </Text>
+              }
+              id="ceaLicense"
+              value={currentUser?.propertyAgent?.[0]?.ceaLicense}
+              sx={{
+                label: {
+                  width: "100%",
+                },
+              }}
+            />
+          )}
 
           <TextInput
             placeholder={currentUser?.email ?? "Account Email"}

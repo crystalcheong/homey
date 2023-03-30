@@ -61,27 +61,30 @@ export const UserButton = forwardRef<HTMLButtonElement, Props>(
               {user.name}
             </Text>
 
-            <Badge
-              pr={3}
-              size="xs"
-              variant="outline"
-              color={isVerifiedAgentUser ? "primary" : "gray"}
-              rightSection={
-                <ActionIcon
-                  size="xs"
-                  radius="xl"
-                  variant="transparent"
-                  color={isVerifiedAgentUser ? "primary" : "gray"}
-                >
-                  <TbCircleCheckFilled
-                    size={12}
+            {isAgentUser && (
+              <Badge
+                pr={3}
+                size="xs"
+                variant="outline"
+                color={isVerifiedAgentUser ? "primary" : "gray"}
+                rightSection={
+                  <ActionIcon
+                    component="span"
+                    size="xs"
+                    radius="xl"
+                    variant="transparent"
                     color={isVerifiedAgentUser ? "primary" : "gray"}
-                  />
-                </ActionIcon>
-              }
-            >
-              {isVerifiedAgentUser ? "Verified" : "Unverified"}
-            </Badge>
+                  >
+                    <TbCircleCheckFilled
+                      size={12}
+                      color={isVerifiedAgentUser ? "primary" : "gray"}
+                    />
+                  </ActionIcon>
+                }
+              >
+                {isVerifiedAgentUser ? "Verified" : "Unverified"}
+              </Badge>
+            )}
           </Box>
           {!hideIcon && (icon || <TbChevronRight size={16} />)}
         </Group>

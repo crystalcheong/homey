@@ -339,6 +339,9 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
               password: formState.password,
             },
             {
+              onSuccess: (data) => {
+                if (!isAgent) onSuccess(data);
+              },
               onError,
             }
           );
@@ -348,7 +351,6 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
               user,
               isAgent,
             });
-            //TODO: Agent registration
             await useAccountSignUpAgent.mutateAsync(
               {
                 id: user.id,

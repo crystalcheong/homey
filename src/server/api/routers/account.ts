@@ -195,7 +195,7 @@ export const accountRouter = createTRPCRouter({
         isCEALicensed,
       });
 
-      return await ctx.prisma.propertyAgent.create({
+      const agentUser = await ctx.prisma.propertyAgent.create({
         data: {
           ceaLicense: input.ceaLicense,
           phoneNumber: "",
@@ -206,6 +206,20 @@ export const accountRouter = createTRPCRouter({
           User: true,
         },
       });
+
+      if (!agentUser) {
+        await ctx.prisma.user.delete({
+          where: {
+            id: input.id,
+          },
+        });
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "Invalid agent registration.",
+        });
+      }
+
+      return agentUser;
     }),
 
   deleteUser: protectedProcedure
