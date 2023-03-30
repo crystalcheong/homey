@@ -627,7 +627,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
             gap: theme.spacing.xl,
           }}
         >
-          {isNotValidated && (
+          {isNotValidated && isNewUser && (
             <BetaWarning
               title="Beta Preview"
               content={
@@ -739,7 +739,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
                 {isNewUser ? `Already` : `Don't`} have an account?&nbsp;
                 <Text
                   component={Link}
-                  href={`/account/${AuthTypes[isNewUser ? 0 : 1]}`}
+                  href={`/account/${AuthTypes[+!isNewUser]}`}
                   variant="gradient"
                   size="sm"
                   fw={700}
