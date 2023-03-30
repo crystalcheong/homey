@@ -104,6 +104,17 @@ const config = {
     },
   ],
 
+  redirects: async () => {
+    return [
+      {
+        source: "/docs/presentation",
+        destination:
+          "https://www.canva.com/design/DAFeTrBXh6Q/On91DWmK4KlDv-rdMO9Oyg/view?utm_content=DAFeTrBXh6Q&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink",
+        permanent: true,
+      },
+    ];
+  },
+
   // SVGR
   webpack: (config) => {
     config.module.rules.push({

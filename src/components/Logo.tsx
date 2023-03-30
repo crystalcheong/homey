@@ -1,5 +1,8 @@
-import { Box, Text, useMantineTheme } from "@mantine/core";
+import { Badge, Box, Text, useMantineTheme } from "@mantine/core";
 import Link from "next/link";
+
+import { meta } from "@/data/static";
+import { useAppStore } from "@/data/stores";
 
 import HomeyLogo from "~/assets/brand/homey.svg";
 
@@ -9,6 +12,8 @@ interface Props {
 
 const Logo = ({ hideBrand = false }: Props) => {
   const theme = useMantineTheme();
+
+  const isBetaPreview: boolean = useAppStore().isBetaPreview;
 
   return (
     <Box
@@ -33,10 +38,11 @@ const Logo = ({ hideBrand = false }: Props) => {
           fz="xl"
           m={0}
         >
-          Homey
+          {meta.name}
         </Text>
       )}
-      {/* <Badge>Beta</Badge> */}
+
+      <Badge hidden={!isBetaPreview}>Beta</Badge>
     </Box>
   );
 };

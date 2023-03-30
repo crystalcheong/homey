@@ -64,6 +64,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   propertySaved UserSavedProperty[]
+  propertyAgent PropertyAgent[]
 }
 
 model UserSavedProperty {
@@ -84,4 +85,12 @@ model Neighbourhood {
 enum PropertyType {
   rent
   sale
+}
+
+model PropertyAgent {
+  ceaLicense  String  @id
+  phoneNumber String
+  userId      String  @unique
+  isVerified  Boolean @default(false)
+  User        User    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }

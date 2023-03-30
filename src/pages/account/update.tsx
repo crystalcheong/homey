@@ -1,4 +1,6 @@
 import {
+  ActionIcon,
+  Badge,
   Box,
   Button,
   Group,
@@ -66,6 +68,10 @@ const AccountUpdatePage = () => {
 
   const currentUser = useAccountStore.use.currentUser();
   const isOAuthUser: boolean = !currentUser?.password?.length ?? false;
+  const isAgentUser: boolean =
+    !!(currentUser?.propertyAgent ?? []).length ?? false;
+  const isVerifiedAgentUser: boolean =
+    isAgentUser && (currentUser?.propertyAgent?.[0]?.isVerified ?? false);
 
   const [formState, setFormState] =
     useState<typeof UpdateFormState>(UpdateFormState);
@@ -505,6 +511,53 @@ const AccountUpdatePage = () => {
             value={formState.name}
             onChange={handleInputChange}
           />
+
+          {isAgentUser && (
+            <TextInput
+              hidden={!isAgentUser}
+              disabled
+              label={
+                <Text>
+                  CEA License &nbsp;
+                  <Badge
+                    pr={3}
+                    variant="outline"
+                    color={
+                      isVerifiedAgentUser ? theme.fn.primaryColor() : "gray"
+                    }
+                    rightSection={
+                      <ActionIcon
+                        size="xs"
+                        radius="xl"
+                        variant="transparent"
+                        color={
+                          isVerifiedAgentUser ? theme.fn.primaryColor() : "gray"
+                        }
+                      >
+                        <TbCircleCheckFilled
+                          size={16}
+                          color={
+                            isVerifiedAgentUser
+                              ? theme.fn.primaryColor()
+                              : "gray"
+                          }
+                        />
+                      </ActionIcon>
+                    }
+                  >
+                    {isVerifiedAgentUser ? "Verified" : "Unverified"}
+                  </Badge>
+                </Text>
+              }
+              id="ceaLicense"
+              value={currentUser?.propertyAgent?.[0]?.ceaLicense}
+              sx={{
+                label: {
+                  width: "100%",
+                },
+              }}
+            />
+          )}
 
           <TextInput
             placeholder={currentUser?.email ?? "Account Email"}

@@ -1,4 +1,9 @@
-import { Property, User, UserSavedProperty } from "@prisma/client";
+import {
+  Property,
+  PropertyAgent,
+  User,
+  UserSavedProperty,
+} from "@prisma/client";
 import { create } from "zustand";
 
 import { innerApi } from "@/utils/api";
@@ -8,8 +13,12 @@ export type SavedListing = UserSavedProperty & {
   property: Property;
 };
 
+export type UserAccount = User & {
+  propertyAgent?: PropertyAgent[];
+};
+
 interface State {
-  currentUser: User | null;
+  currentUser: UserAccount | null;
   savedListings: SavedListing[];
 }
 
@@ -52,7 +61,7 @@ const store = create<Store>()(
     getSavedListings: async () => {
       const savedListings: SavedListing[] = [];
 
-      const currentUser: User | null = get().currentUser;
+      const currentUser: UserAccount | null = get().currentUser;
       if (currentUser) {
         const userSavedListings: SavedListing[] =
           (await innerApi.account.getUserSaved.query({

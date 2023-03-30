@@ -4,6 +4,7 @@ import argon2 from "argon2";
 import { z } from "zod";
 
 import { Cloudinary } from "@/data/clients/cloudinary";
+import { Gov } from "@/data/clients/gov";
 import { Supabase } from "@/data/clients/supabase";
 
 import { logger } from "@/utils/debug";
@@ -148,6 +149,77 @@ export const accountRouter = createTRPCRouter({
           emailVerified: new Date().toISOString(),
         },
       });
+    }),
+
+  signUpAgent: publicProcedure
+    .input(
+      z.object({
+        id: z
+          .string()
+          .cuid2("Input must be a valid user ID")
+          .trim()
+          .min(1, "User ID can't be empty"),
+        name: z.string().trim().min(1, "Name can't be empty"),
+        ceaLicense: z.string().trim().min(1, "CEA License can't be empty"),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const user = await ctx.prisma.user.findFirst({
+        where: {
+          id: input.id,
+        },
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "User doesn't exists.",
+        });
+      }
+
+      // GOV
+      const govClient: Gov = new Gov();
+      const isCEALicensed = await govClient.checkIsCEALicensed(
+        input.name,
+        input.ceaLicense
+      );
+      if (!isCEALicensed) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Invalid CEA License.",
+        });
+      }
+
+      logger("account.ts line 189", {
+        user,
+        isCEALicensed,
+      });
+
+      const agentUser = await ctx.prisma.propertyAgent.create({
+        data: {
+          ceaLicense: input.ceaLicense,
+          phoneNumber: "",
+          userId: input.id,
+          isVerified: govClient.isNotValidated,
+        },
+        include: {
+          User: true,
+        },
+      });
+
+      if (!agentUser) {
+        await ctx.prisma.user.delete({
+          where: {
+            id: input.id,
+          },
+        });
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "Invalid agent registration.",
+        });
+      }
+
+      return agentUser;
     }),
 
   deleteUser: protectedProcedure
@@ -520,6 +592,7 @@ export const accountRouter = createTRPCRouter({
               property: true,
             },
           },
+          propertyAgent: true,
         },
       });
     }),

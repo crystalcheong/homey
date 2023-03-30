@@ -48,6 +48,7 @@ import { useNinetyNineStore } from "@/data/stores";
 
 import { Layout, Property, Provider } from "@/components";
 import UnknownState from "@/components/Layouts/UnknownState";
+import TermsDisclaimer from "@/components/Pages/Info/TermsDisclaimer";
 import {
   EnquiryButtonGroup,
   PriceListingTypes,
@@ -876,6 +877,13 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
         <Accordion
           defaultValue={`faq-${0}`}
           display={listing ? "block" : "none"}
+          styles={{
+            chevron: {
+              "&[data-rotate]": {
+                transform: "rotate(45deg)",
+              },
+            },
+          }}
         >
           {faqs.map((faq, idx) => (
             <Accordion.Item
@@ -890,19 +898,7 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
           ))}
         </Accordion>
 
-        <Text
-          component="p"
-          color="dimmed"
-          size="xs"
-        >
-          You agree to Homey's Terms of Use & Privacy Policy. By choosing to
-          contact a property, you also agree that Homey Group, landlords, and
-          property managers may call or text you about any inquiries you submit
-          through our services, which may involve use of automated means and
-          prerecorded/artificial voices. You don't need to consent as a
-          condition of renting any property, or buying any other goods or
-          services. Message/data rates may apply.
-        </Text>
+        <TermsDisclaimer />
 
         <Affix position={{ bottom: 20, left: 20 }}>
           <Transition

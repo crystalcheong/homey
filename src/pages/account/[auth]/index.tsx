@@ -2,9 +2,12 @@ import {
   Alert,
   Box,
   Button,
+  Checkbox,
+  Collapse,
   Container,
   Divider,
   Group,
+  List,
   Stepper,
   StepProps,
   Text,
@@ -38,14 +41,26 @@ import { IconType } from "react-icons";
 import { FaGithub, FaGoogle } from "react-icons/fa";
 import { TbAlertCircle } from "react-icons/tb";
 
+import { Gov } from "@/data/clients/gov";
+import { meta } from "@/data/static";
+
 import { Layout, Provider } from "@/components";
+import BetaWarning from "@/components/Layouts/BetaWarning";
 import UnknownState from "@/components/Layouts/UnknownState";
 import AuthEmail from "@/components/Pages/Auth/AuthEmail";
 import AuthPassword, {
   PasswordFormState,
 } from "@/components/Pages/Auth/AuthPassword";
+import TermsAndPrivacyLinks from "@/components/Pages/Info/TermsAndPrivacyLinks";
 
-import { api, getPartialClonedObject, isEmail, isName, logger } from "@/utils";
+import {
+  api,
+  getPartialClonedObject,
+  isCEALicense,
+  isEmail,
+  isName,
+  logger,
+} from "@/utils";
 
 import ErrorClient from "~/assets/images/error-client.svg";
 
@@ -66,6 +81,7 @@ export const InitalFormState: Record<string, string> = {
   password: "",
   confirmPassword: "",
   name: "",
+  ceaLicense: "",
 };
 
 export const FormErrorMessages: {
@@ -75,6 +91,7 @@ export const FormErrorMessages: {
   email: "Invalid Email",
   password: "Invalid Password",
   confirmPassword: "Passwords do not match",
+  ceaLicense: "Invalid CEA License",
 };
 
 export const getEmailSuggestions = (input: string) =>
@@ -102,6 +119,7 @@ export const validateAuthInput = (id: string, value: string, refVal = "") => {
     },
     name: (val: string) => isName(val),
     image: (val: string) => !!val.length,
+    ceaLicense: (val: string) => isCEALicense(val),
   };
   return validations[id](value);
 };
@@ -137,15 +155,25 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
   ).filter(({ type }) => type === "credentials");
   const hasCredentials = !!credentialProviders.length;
 
+  const [isAgent, setIsAgent] = useState<boolean>(false);
+
+  const handleToggleAgentSwitch = () => {
+    if (!isNewUser) return;
+    setIsAgent(!isAgent);
+  };
+
   //#endregion  //*======== Form State ===========
   const [formState, setFormState] =
     useState<typeof InitalFormState>(InitalFormState);
   const [errorState, setErrorState] =
     useState<typeof InitalFormState>(InitalFormState);
   const [authStep, setAuthStep] = useState<number>(0);
+  const [, setIsCEALicensed] = useState<boolean>(false);
 
   const useAccountSignUp = api.accountV2.signUp.useMutation();
+  const useAccountSignUpAgent = api.account.signUpAgent.useMutation();
   const useAccountSignIn = api.accountV2.signIn.useMutation();
+  const useGovCheckIsCEALicensed = api.gov.checkIsCEALicensed.useMutation();
 
   const [authErrorState, setAuthErrorState] = useState<DefaultErrorShape>();
   const [isLoadingProvider, setIsLoadingProvider] = useState<string>("");
@@ -155,6 +183,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
     setErrorState(InitalFormState);
     setAuthStep(0);
     setIsLoadingProvider("");
+    setIsCEALicensed(false);
   };
 
   const updateFormState = (id: string, value: string) => {
@@ -220,6 +249,9 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
       ? ["name", "email", "password", "confirmPassword"]
       : ["email", "password"];
 
+    // AGENT
+    if (isAgent) requiredFields.push("ceaLicense");
+
     const { hasValues, hasNoErrors } = validateStates(requiredFields);
 
     // Check for pwd and cfmPwd
@@ -227,7 +259,15 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
       return false;
     if (!hasValues || !hasNoErrors) return false;
     return true;
-  }, [isAuth, isLoadingProvider, validateStates, isNewUser, formState]);
+  }, [
+    isLoadingProvider,
+    isAuth,
+    isNewUser,
+    isAgent,
+    validateStates,
+    formState.password,
+    formState.confirmPassword,
+  ]);
 
   const handleAuthAction = async (
     providerId: ClientSafeProvider["id"],
@@ -247,7 +287,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
 
       switch (paramAuth) {
         case AuthTypes[0]: {
-          useAccountSignIn.mutate(
+          await useAccountSignIn.mutateAsync(
             {
               email: formState.email,
               password: formState.password,
@@ -275,7 +315,35 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
           break;
         }
         case AuthTypes[1]: {
-          useAccountSignUp.mutate(
+          const onSuccess = (data: User) => {
+            logger("index.tsx line 287", { data });
+            if (!data) {
+              setAuthErrorState({
+                code: -32008,
+                message: "Request timed out",
+              } as DefaultErrorShape);
+              revertToInitialState();
+            }
+            if (data) {
+              const authData: User | null = data as unknown as User;
+              signIn(providerId, {
+                name: authData.name,
+                email: authData.email,
+                password: formState.password,
+                callbackUrl: "/",
+              });
+              return;
+            }
+          };
+
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const onError = ({ shape }: any) => {
+            logger("index.tsx line 299", { shape });
+            setAuthErrorState(shape as DefaultErrorShape);
+            revertToInitialState();
+          };
+
+          const user: User = await useAccountSignUp.mutateAsync(
             {
               name: formState.name,
               email: formState.email,
@@ -283,32 +351,29 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
             },
             {
               onSuccess: (data) => {
-                logger("index.tsx line 287", { data });
-                if (!data) {
-                  setAuthErrorState({
-                    code: -32008,
-                    message: "Request timed out",
-                  } as DefaultErrorShape);
-                  revertToInitialState();
-                }
-                if (data) {
-                  const authData: User | null = data as unknown as User;
-                  signIn(providerId, {
-                    name: authData.name,
-                    email: authData.email,
-                    password: formState.password,
-                    callbackUrl: "/",
-                  });
-                  return;
-                }
+                if (!isAgent) onSuccess(data);
               },
-              onError: ({ shape }) => {
-                logger("index.tsx line 299", { shape });
-                setAuthErrorState(shape as DefaultErrorShape);
-                revertToInitialState();
-              },
+              onError,
             }
           );
+
+          if (isAgent && !!user) {
+            logger("index.tsx line 325", {
+              user,
+              isAgent,
+            });
+            await useAccountSignUpAgent.mutateAsync(
+              {
+                id: user.id,
+                name: formState.name,
+                ceaLicense: formState.ceaLicense,
+              },
+              {
+                onSuccess: (data) => onSuccess(data.User),
+                onError,
+              }
+            );
+          }
           break;
         }
       }
@@ -327,6 +392,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
     logger("index.tsx line 318", {
       isAuth,
       isValidAuthType,
+      query: router.query,
     });
 
     if (isAuthLoading) {
@@ -356,17 +422,74 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
     {
       label: "First step",
       description: "Register your name",
-      fields: ["name"],
+      fields: isAgent ? ["name", "ceaLicense"] : ["name"],
       content: () => (
-        <TextInput
-          placeholder="Full name"
-          label="Tell us your name"
-          error={errorState.name}
-          withAsterisk
-          id="name"
-          value={formState.name}
-          onChange={handleInputChange}
-        />
+        <>
+          <TextInput
+            placeholder="Full name"
+            label="Tell us your name"
+            error={errorState.name}
+            withAsterisk
+            id="name"
+            value={formState.name}
+            onChange={handleInputChange}
+          />
+
+          <Checkbox
+            // hidden={!isAgent || !isNewUser}
+            hidden={!isNewUser}
+            label="Register as Agent"
+            description={
+              <>
+                Get verified as a &nbsp;
+                <Text
+                  component={Link}
+                  href="https://www.cea.gov.sg/professionals/estate-agents-licensing-matters/apply-for-estate-agent-licence#lnkB"
+                  target="_blank"
+                  variant="gradient"
+                >
+                  CEA licensed agent
+                </Text>
+                &nbsp; to post property listings
+              </>
+            }
+            radius="md"
+            checked={isAgent && isNewUser}
+            onChange={handleToggleAgentSwitch}
+          />
+
+          <Collapse
+            in={isAgent && isNewUser}
+            transitionDuration={100}
+            transitionTimingFunction="linear"
+          >
+            <TextInput
+              placeholder="CEA License"
+              label={
+                <Group position="apart">
+                  <Text>CEA License</Text>
+                  <Text
+                    component={Link}
+                    href="https://www.cea.gov.sg/professionals/estate-agents-licensing-matters/apply-for-estate-agent-licence#lnkB"
+                    target="_blank"
+                    variant="gradient"
+                  >
+                    Licensing Criteria
+                  </Text>
+                </Group>
+              }
+              error={errorState.ceaLicense}
+              id="ceaLicense"
+              value={formState.ceaLicense}
+              onChange={handleInputChange}
+              sx={{
+                label: {
+                  width: "100%",
+                },
+              }}
+            />
+          </Collapse>
+        </>
       ),
     },
     {
@@ -426,19 +549,57 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
   ];
 
   const canProceedStep = useMemo(() => {
-    const { hasValues, hasNoErrors } = validateStates(
-      stepList[authStep].fields
-    );
+    const fields = stepList[authStep].fields;
+    if (isAgent) fields.push("ceaLicense");
+
+    const { hasValues, hasNoErrors } = validateStates(fields);
 
     if (!hasValues || !hasNoErrors) return false;
     return true;
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authStep, validateStates]);
+  }, [authStep, validateStates, isAgent]);
 
-  const nextStep = () => {
+  const nextStep = async () => {
     if (!canProceedStep) return;
     if (!isSubmitEnabled) {
+      if (authStep === 0 && isAgent) {
+        let isValidLicense = false;
+        try {
+          await useGovCheckIsCEALicensed.mutateAsync(
+            {
+              name: formState.name,
+              ceaLicense: formState.ceaLicense,
+            },
+            {
+              onSuccess: (data) => {
+                const isLicensed: boolean = data ?? false;
+                setIsCEALicensed(isLicensed);
+                isValidLicense = isLicensed;
+
+                if (!data) {
+                  setAuthErrorState({
+                    code: -32004,
+                    message: FormErrorMessages["ceaLicense"],
+                  } as DefaultErrorShape);
+                }
+              },
+              onError: ({ shape }) => {
+                logger("index.tsx line 299", { shape });
+                setAuthErrorState(shape as DefaultErrorShape);
+                revertToInitialState();
+                return;
+              },
+            }
+          );
+        } catch (error) {
+          console.error(error);
+          return;
+        }
+
+        if (!isValidLicense) return;
+      }
+
       setAuthStep((current) =>
         current < stepList.length ? current + 1 : current
       );
@@ -451,6 +612,8 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
   };
   const prevStep = () =>
     setAuthStep((current) => (current > 0 ? current - 1 : current));
+
+  const isNotValidated: boolean = new Gov().isNotValidated ?? false;
 
   return (
     <Layout.Base showAffix={false}>
@@ -473,6 +636,31 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
             gap: theme.spacing.xl,
           }}
         >
+          {isNotValidated && isNewUser && (
+            <BetaWarning
+              title="Beta Preview"
+              content={
+                <>
+                  For testing purposes, this following fields will not be
+                  validated:
+                  <List size="sm">
+                    <List.Item>
+                      CEA License (
+                      <Text
+                        variant="gradient"
+                        component={Link}
+                        href="https://www.cea.gov.sg/aceas/public-register/ea/1"
+                        target="_blank"
+                      >
+                        Registry
+                      </Text>
+                      )
+                    </List.Item>
+                  </List>
+                </>
+              }
+            />
+          )}
           <Provider.RenderGuard renderIf={hasCredentials && !isNewUser}>
             {stepList[1].content()}
           </Provider.RenderGuard>
@@ -560,7 +748,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
                 {isNewUser ? `Already` : `Don't`} have an account?&nbsp;
                 <Text
                   component={Link}
-                  href={`/account/${AuthTypes[isNewUser ? 0 : 1]}`}
+                  href={`/account/${AuthTypes[+!isNewUser]}`}
                   variant="gradient"
                   size="sm"
                   fw={700}
@@ -601,6 +789,17 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
                   );
                 })}
             </Group>
+
+            {/* Terms & Conditions */}
+            <Text
+              component="p"
+              size="xs"
+              ta="center"
+              mt="xl"
+            >
+              By continuing, you agree to {meta.name}'s <TermsAndPrivacyLinks />
+              .
+            </Text>
           </Box>
         </Container>
       </Provider.RenderGuard>
