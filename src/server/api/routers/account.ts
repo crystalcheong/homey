@@ -286,7 +286,11 @@ export const accountRouter = createTRPCRouter({
 
       if (input.image.length) {
         const imageUrl: string =
-          (await cloudinary.uploadImage(input.image, input.id)) ?? "";
+          (await cloudinary.uploadImage(
+            input.image,
+            input.id,
+            "user-avatar"
+          )) ?? "";
 
         logger("account.ts line 196/updateData-imageUrl", { imageUrl });
 

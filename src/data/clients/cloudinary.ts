@@ -15,7 +15,7 @@ export class Cloudinary {
     });
   }
 
-  uploadImage = async (rawImage: string, publicId: string) => {
+  uploadImage = async (rawImage: string, publicId: string, folder: string) => {
     if (!rawImage.length || !publicId.length) return null;
 
     const imageOptions = {
@@ -25,7 +25,7 @@ export class Cloudinary {
     };
     const uploadOptions: UploadApiOptions = {
       public_id: publicId,
-      folder: "user-avatar",
+      folder,
       ...imageOptions,
     };
 

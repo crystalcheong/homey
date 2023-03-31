@@ -97,7 +97,7 @@ model PropertyListing {
 model Neighbourhood {
   name     String @unique
   assetUrl String
-  zoneId   String
+  zoneId   String @id
 }
 
 //#endregion  //*======== PROPERTY ===========

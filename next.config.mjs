@@ -89,6 +89,7 @@ const config = {
     domains: [
       // 99.co assets
       "pic2.99.co",
+      "99.co",
     ],
   },
 
