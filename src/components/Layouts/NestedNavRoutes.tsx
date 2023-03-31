@@ -9,7 +9,7 @@ import {
 } from "@mantine/core";
 import Link from "next/link";
 
-import { Route } from "@/components/Layouts/Navbars/Base";
+import { Route } from "@/data/static";
 
 interface Props extends UnstyledButtonProps {
   routes: Route[];
