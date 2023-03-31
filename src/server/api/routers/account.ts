@@ -1,4 +1,9 @@
-import { PropertyType } from "@prisma/client";
+import {
+  ListingSource,
+  PropertyListing,
+  PropertyType,
+  SavedPropertyListing,
+} from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import argon2 from "argon2";
 import { z } from "zod";
@@ -203,7 +208,7 @@ export const accountRouter = createTRPCRouter({
           isVerified: govClient.isNotValidated,
         },
         include: {
-          User: true,
+          user: true,
         },
       });
 
@@ -295,6 +300,7 @@ export const accountRouter = createTRPCRouter({
         }
       } else if (input.removeImage) {
         updateData["image"] = "";
+        await cloudinary.deleteImage(input.id);
       }
 
       if (input.password.length) {
@@ -395,6 +401,206 @@ export const accountRouter = createTRPCRouter({
   //#endregion  //*======== Auth ===========
 
   //#endregion  //*======== UserSavedProperty ===========
+  // unsavePropertyV1: protectedProcedure
+  //   .input(
+  //     z.object({
+  //       userId: z
+  //         .string()
+  //         .cuid2("Input must be a valid user ID")
+  //         .trim()
+  //         .min(1, "User ID can't be empty"),
+  //       listingId: z.string().trim().min(1, "Listing ID can't be empty"),
+  //     })
+  //   )
+  //   .mutation(async ({ ctx, input }) => {
+  //     const [, savedProperties] = await ctx.prisma.$transaction([
+  //       ctx.prisma.userSavedProperty.delete({
+  //         where: {
+  //           propertyId_userId: {
+  //             propertyId: input.listingId,
+  //             userId: input.userId,
+  //           },
+  //         },
+  //       }),
+  //       ctx.prisma.userSavedProperty.findMany({
+  //         where: {
+  //           userId: input.userId,
+  //         },
+  //         include: {
+  //           property: true,
+  //         },
+  //       }),
+  //     ]);
+
+  //     return savedProperties;
+  //   }),
+
+  // savePropertyV1: protectedProcedure
+  //   .input(
+  //     z.object({
+  //       userId: z
+  //         .string()
+  //         .cuid2("Input must be a valid user ID")
+  //         .trim()
+  //         .min(1, "User ID can't be empty"),
+  //       listingId: z.string().trim().min(1, "Listing ID can't be empty"),
+  //       listingType: z.nativeEnum(PropertyType),
+  //       clusterId: z.string().trim().min(1, "Cluster ID can't be empty"),
+  //       stringifiedListing: z
+  //         .string()
+  //         .trim()
+  //         .min(1, "Stringified Listing can't be empty"),
+  //     })
+  //   )
+  //   .mutation(async ({ ctx, input }) => {
+  //     const [user, property] = await ctx.prisma.$transaction([
+  //       ctx.prisma.user.findFirst({
+  //         where: {
+  //           id: input.userId,
+  //         },
+  //       }),
+  //       ctx.prisma.property.findFirst({
+  //         where: {
+  //           id: input.listingId,
+  //         },
+  //       }),
+  //     ]);
+
+  //     logger("account.ts line 133", { user, property });
+
+  //     if (!property) {
+  //       logger("account.ts line 136", "CREATE Property");
+  //       await ctx.prisma.property.create({
+  //         data: {
+  //           id: input.listingId,
+  //           type: input.listingType,
+  //           clusterId: input.clusterId,
+  //           stringifiedListing: input.stringifiedListing,
+  //           userSaved: {
+  //             create: {
+  //               userId: input.userId,
+  //             },
+  //           },
+  //         },
+  //       });
+  //     } else {
+  //       logger("account.ts line 150", "UPSERT UserSavedProperty");
+
+  //       await ctx.prisma.userSavedProperty.upsert({
+  //         where: {
+  //           propertyId_userId: {
+  //             propertyId: input.listingId,
+  //             userId: input.userId,
+  //           },
+  //         },
+  //         create: {
+  //           propertyId: input.listingId,
+  //           userId: input.userId,
+  //         },
+  //         update: {
+  //           propertyId: input.listingId,
+  //           userId: input.userId,
+  //         },
+  //       });
+  //     }
+
+  //     return await ctx.prisma.userSavedProperty.findMany({
+  //       where: {
+  //         userId: input.userId,
+  //       },
+  //       include: {
+  //         property: true,
+  //       },
+  //     });
+  //   }),
+
+  saveProperty: protectedProcedure
+    .input(
+      z.object({
+        userId: z
+          .string()
+          .cuid2("Input must be a valid user ID")
+          .trim()
+          .min(1, "User ID can't be empty"),
+
+        stringifiedSnapshot: z
+          .string()
+          .trim()
+          .min(1, "Stringified Listing can't be empty"),
+
+        property: z.object({
+          id: z.string(),
+          source: z.nativeEnum(ListingSource),
+          isAvailable: z.boolean().default(true),
+          type: z.nativeEnum(PropertyType),
+          category: z.string(),
+          photoUrl: z.string().optional(),
+          agentId: z.string().optional(),
+          href: z.string(),
+        }),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const propertyListingData: PropertyListing = {
+        id: input.property.id,
+        source: input.property.source,
+        isAvailable: input.property.isAvailable,
+        type: input.property.type,
+        category: input.property.category,
+        href: input.property.href,
+        photoUrl: input.property.photoUrl ?? null,
+        agentId: input.property.agentId ?? null,
+      };
+
+      const savedListingData: SavedPropertyListing = {
+        userId: input.userId,
+        propertyId: input.property.id,
+        stringifiedSnapshot: input.stringifiedSnapshot,
+      };
+
+      const [user, property] = await ctx.prisma.$transaction([
+        ctx.prisma.user.findFirst({
+          where: {
+            id: input.userId,
+          },
+        }),
+        ctx.prisma.propertyListing.findFirst({
+          where: {
+            id: input.property.id,
+          },
+        }),
+      ]);
+
+      logger("account.ts line 133", { user, property });
+
+      if (!property) {
+        await ctx.prisma.propertyListing.create({
+          data: {
+            ...propertyListingData,
+            savedBy: {
+              create: {
+                userId: savedListingData.userId,
+                stringifiedSnapshot: savedListingData.stringifiedSnapshot,
+              },
+            },
+          },
+        });
+      } else {
+        await ctx.prisma.savedPropertyListing.create({
+          data: savedListingData,
+        });
+      }
+
+      return await ctx.prisma.savedPropertyListing.findMany({
+        where: {
+          userId: input.userId,
+        },
+        include: {
+          property: true,
+        },
+      });
+    }),
+
   unsaveProperty: protectedProcedure
     .input(
       z.object({
@@ -408,15 +614,15 @@ export const accountRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const [, savedProperties] = await ctx.prisma.$transaction([
-        ctx.prisma.userSavedProperty.delete({
+        ctx.prisma.savedPropertyListing.delete({
           where: {
-            propertyId_userId: {
-              propertyId: input.listingId,
+            userId_propertyId: {
               userId: input.userId,
+              propertyId: input.listingId,
             },
           },
         }),
-        ctx.prisma.userSavedProperty.findMany({
+        ctx.prisma.savedPropertyListing.findMany({
           where: {
             userId: input.userId,
           },
@@ -429,89 +635,14 @@ export const accountRouter = createTRPCRouter({
       return savedProperties;
     }),
 
-  saveProperty: protectedProcedure
+  getUserSaved: publicProcedure
     .input(
       z.object({
         userId: z
           .string()
           .cuid2("Input must be a valid user ID")
           .trim()
-          .min(1, "User ID can't be empty"),
-        listingId: z.string().trim().min(1, "Listing ID can't be empty"),
-        listingType: z.nativeEnum(PropertyType),
-        clusterId: z.string().trim().min(1, "Cluster ID can't be empty"),
-        stringifiedListing: z
-          .string()
-          .trim()
-          .min(1, "Stringified Listing can't be empty"),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      const [user, property] = await ctx.prisma.$transaction([
-        ctx.prisma.user.findFirst({
-          where: {
-            id: input.userId,
-          },
-        }),
-        ctx.prisma.property.findFirst({
-          where: {
-            id: input.listingId,
-          },
-        }),
-      ]);
-
-      logger("account.ts line 133", { user, property });
-
-      if (!property) {
-        logger("account.ts line 136", "CREATE Property");
-        await ctx.prisma.property.create({
-          data: {
-            id: input.listingId,
-            type: input.listingType,
-            clusterId: input.clusterId,
-            stringifiedListing: input.stringifiedListing,
-            userSaved: {
-              create: {
-                userId: input.userId,
-              },
-            },
-          },
-        });
-      } else {
-        logger("account.ts line 150", "UPSERT UserSavedProperty");
-
-        await ctx.prisma.userSavedProperty.upsert({
-          where: {
-            propertyId_userId: {
-              propertyId: input.listingId,
-              userId: input.userId,
-            },
-          },
-          create: {
-            propertyId: input.listingId,
-            userId: input.userId,
-          },
-          update: {
-            propertyId: input.listingId,
-            userId: input.userId,
-          },
-        });
-      }
-
-      return await ctx.prisma.userSavedProperty.findMany({
-        where: {
-          userId: input.userId,
-        },
-        include: {
-          property: true,
-        },
-      });
-    }),
-
-  getUserSaved: publicProcedure
-    .input(
-      z.object({
-        id: z.string().cuid2("Input must be a valid user ID").trim().optional(),
+          .optional(),
         email: z
           .string()
           .email("Input must be a valid email address")
@@ -520,21 +651,19 @@ export const accountRouter = createTRPCRouter({
       })
     )
     .query(async ({ input, ctx }) => {
-      if (input.id?.length) {
-        return await ctx.prisma.userSavedProperty.findMany({
+      if (input.userId?.length) {
+        return await ctx.prisma.savedPropertyListing.findMany({
           where: {
-            User: {
-              id: input.id,
-            },
+            userId: input.userId,
           },
           include: {
             property: true,
           },
         });
       } else if (input.email?.length) {
-        return await ctx.prisma.userSavedProperty.findMany({
+        return await ctx.prisma.savedPropertyListing.findMany({
           where: {
-            User: {
+            user: {
               email: input.email,
             },
           },
@@ -549,6 +678,49 @@ export const accountRouter = createTRPCRouter({
         message: "Unable to query without user information",
       });
     }),
+
+  // getUserSavedV1: publicProcedure
+  //   .input(
+  //     z.object({
+  //       userId: z.string().cuid2("Input must be a valid user ID").trim().optional(),
+  //       email: z
+  //         .string()
+  //         .email("Input must be a valid email address")
+  //         .trim()
+  //         .optional(),
+  //     })
+  //   )
+  //   .query(async ({ input, ctx }) => {
+  //     if (input.userId?.length) {
+  //       return await ctx.prisma.userSavedProperty.findMany({
+  //         where: {
+  //           User: {
+  //             id: input.userId,
+  //           },
+  //         },
+  //         include: {
+  //           property: true,
+  //         },
+  //       });
+  //     } else if (input.email?.length) {
+  //       return await ctx.prisma.userSavedProperty.findMany({
+  //         where: {
+  //           User: {
+  //             email: input.email,
+  //           },
+  //         },
+  //         include: {
+  //           property: true,
+  //         },
+  //       });
+  //     }
+
+  //     throw new TRPCError({
+  //       code: "NOT_FOUND",
+  //       message: "Unable to query without user information",
+  //     });
+  //   }),
+
   //#endregion  //*======== UserSavedProperty ===========
 
   getUserById: publicProcedure
@@ -587,7 +759,7 @@ export const accountRouter = createTRPCRouter({
           email: input.email,
         },
         include: {
-          propertySaved: {
+          savedListing: {
             include: {
               property: true,
             },

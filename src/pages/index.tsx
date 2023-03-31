@@ -3,8 +3,11 @@ import { NextPage } from "next/types";
 import { useSession } from "next-auth/react";
 
 import { Listing, ListingType, ListingTypes } from "@/data/clients/ninetyNine";
-import { meta } from "@/data/static";
-import { useNinetyNineStore } from "@/data/stores/ninetyNine";
+import { Metadata } from "@/data/static";
+import {
+  defaultPaginationInfo,
+  useNinetyNineStore,
+} from "@/data/stores/ninetyNine";
 
 import { Layout, Property } from "@/components";
 import Hero from "@/components/Pages/Index/Hero";
@@ -27,16 +30,20 @@ const IndexPage: NextPage = () => {
     { isFetching: isFetchingSaleListings },
   ] = api.useQueries((t) =>
     ListingTypes.map((listingType) =>
-      t.ninetyNine.getListings(
+      t.ninetyNine.getListingsV1(
         {
-          listingType,
+          listingType: listingType,
         },
         {
-          enabled: !(allListings.get(listingType) ?? []).length,
-          onSuccess(data) {
+          enabled:
+            (allListings.get(listingType) ?? []).length <
+            defaultPaginationInfo.pageSize,
+          onSuccess: (data) => {
             if (!data.length) return;
             updateListings(listingType, data as Listing[]);
           },
+          placeholderData: [],
+          retry: 2,
         }
       )
     )
@@ -51,8 +58,8 @@ const IndexPage: NextPage = () => {
       }}
     >
       <Hero
-        headline={meta.tagline}
-        subHeading={meta.description}
+        headline={Metadata.tagline}
+        subHeading={Metadata.description}
       />
 
       <Box

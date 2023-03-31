@@ -1,4 +1,6 @@
+import { ListingSource, PropertyListing, PropertyType } from "@prisma/client";
 import { Redis } from "@upstash/redis";
+import { compress } from "compress-json";
 
 import { PaginationInfo } from "@/data/stores";
 
@@ -65,8 +67,7 @@ export type ProjectLaunch = {
   };
 };
 
-export type Listing = {
-  id: string;
+export interface NinetyNineListing extends PropertyListing {
   listing_type: ListingType;
   photo_url: string;
   address_name: string;
@@ -86,7 +87,32 @@ export type Listing = {
     coordinates: Record<string, number>;
     district: string;
   };
-};
+}
+
+export type Listing = NinetyNineListing;
+
+// export type Listing = {
+//   id: string;
+//   listing_type: ListingType;
+//   photo_url: string;
+//   address_name: string;
+//   address_line_2: string;
+//   main_category: ListingCategory;
+//   sub_category_formatted: string;
+//   formatted_tags: Record<string, string>[];
+//   date_formatted: string;
+//   attributes: Record<string, string | number>;
+//   tags: string[];
+//   cluster_mappings: Record<string, string[]>;
+//   enquiry_flags: Record<string, boolean>;
+//   user: Record<string, string>;
+//   enquiry_options: Record<string, string>[];
+//   photos: ListingPhoto[];
+//   location: {
+//     coordinates: Record<string, number>;
+//     district: string;
+//   };
+// };
 
 export type Cluster = {
   title: string;
@@ -95,9 +121,22 @@ export type Cluster = {
   tenure: string;
 };
 
+export const getInitialType = <T extends U, U>(extendedObj: T): U => {
+  const initialObj: U = {} as U;
+  for (const key in extendedObj) {
+    if (Object.prototype.hasOwnProperty.call(extendedObj, key)) {
+      initialObj[key as unknown as keyof U] = extendedObj[
+        key as keyof T
+      ] as unknown as U[keyof U];
+    }
+  }
+  return initialObj;
+};
+
 export class NinetyNine {
   private http: HTTP<typeof Routes>;
   private redis: Redis;
+  private source: ListingSource;
 
   constructor() {
     this.http = new HTTP(Endpoint, Routes);
@@ -105,7 +144,41 @@ export class NinetyNine {
       url: env.UPSTASH_REDIS_REST_URL,
       token: env.UPSTASH_REDIS_REST_TOKEN,
     });
+    this.source = ListingSource.ninetyNineCo;
   }
+
+  static convertSourceToListing = (
+    sourceListing: NinetyNineListing
+  ): PropertyListing =>
+    getInitialType<typeof sourceListing, PropertyListing>(
+      sourceListing
+    ) as PropertyListing;
+
+  static stringifySnapshot = (sourceListing: NinetyNineListing) =>
+    !sourceListing ? "" : JSON.stringify(compress(sourceListing));
+
+  static getSourceHref = ({
+    cluster_mappings,
+    listing_type,
+    id,
+  }: NinetyNineListing) => {
+    const clusterId: string =
+      cluster_mappings?.development?.[0] ?? cluster_mappings?.local?.[0] ?? "";
+    const listingRelativeLink = `/property/${listing_type}/${id}?clusterId=${clusterId}`;
+    return listingRelativeLink;
+  };
+
+  parseToCompatibleListing = (
+    sourceListing: NinetyNineListing
+  ): NinetyNineListing => ({
+    ...sourceListing,
+    source: this.source,
+    type: sourceListing.listing_type as PropertyType,
+    category: sourceListing.main_category,
+    photoUrl: sourceListing.photo_url,
+    isAvailable: true,
+    href: NinetyNine.getSourceHref(sourceListing),
+  });
 
   // getPostalInfo = async (postalCode = 0) => {
   //   const postalItems: any[] = [];
@@ -218,7 +291,113 @@ export class NinetyNine {
     return launches;
   };
 
-  getListings = async (
+  getListings = async ({
+    type = ListingTypes[0],
+    category = ListingCategories[0],
+    pagination = {
+      pageSize: 30,
+      pageNum: 1,
+    },
+    ignoreCategory = false,
+    extraParams = {},
+  }: {
+    type: ListingType;
+    category?: ListingCategory;
+    extraParams?: Record<string, string>;
+    pagination: Omit<PaginationInfo, "currentCount" | "hasNext">;
+    ignoreCategory?: boolean;
+  }) => {
+    const listings: NinetyNineListing[] = [];
+    if (!type.length) return listings;
+
+    const params: Record<string, string> = {
+      property_segments: "residential",
+      listing_type: type,
+      rental_type: "unit",
+      page_size: pagination.pageSize.toString(),
+      page_num: pagination.pageNum.toString(),
+      show_cluster_preview: "true",
+      show_internal_linking: "true",
+      show_meta_description: "true",
+      show_description: "true",
+      ...extraParams,
+    };
+    if (!ignoreCategory) {
+      params["main_category"] = category;
+    }
+
+    logger("ninetyNine.ts line 185", {
+      category,
+      ignoreCategory,
+      params,
+      extraParams,
+    });
+
+    const url = this.http.path("listings", {}, params);
+    const isFirstQuery: boolean =
+      !Object.keys(extraParams).length && pagination.pageNum === 1;
+
+    fetchListings: try {
+      if (isFirstQuery) {
+        const cachedListingsData: CachedData<NinetyNineListing[]> =
+          (await this.redis.get(type)) as CachedData<NinetyNineListing[]>;
+
+        if (Object.keys(cachedListingsData).length) {
+          const cacheAgeInDays: number = getTimestampAgeInDays(
+            cachedListingsData.cachedAt
+          );
+
+          // Only utilize cache data if it's less than 3 days old
+          if (cacheAgeInDays < 3) {
+            const cachedListings: NinetyNineListing[] = (
+              cachedListingsData.data ?? []
+            ).map(this.parseToCompatibleListing);
+            listings.push(...cachedListings);
+            logger("ninetyNine.ts line 217", {
+              isFirstQuery,
+              cachedListings: cachedListings.length,
+              cacheAgeInDays,
+            });
+          }
+        }
+
+        if (listings.length) {
+          logger("ninetyNine.ts line 279", { usedCached: !!listings.length });
+          if (listings.length >= pagination.pageSize) break fetchListings;
+        }
+      }
+
+      const response = await this.http.get({ url });
+      if (!response.ok) return listings;
+      const result = await response.json();
+      const listingsData: NinetyNineListing[] = (
+        (result?.data?.sections?.[0]?.listings ?? []) as NinetyNineListing[]
+      ).map(this.parseToCompatibleListing);
+
+      logger("ninetyNine.ts line 331", {
+        isFirstQuery,
+        listingsData: listingsData.length,
+      });
+      listings.push(...listingsData);
+
+      // Serialize cache
+      if (isFirstQuery) {
+        const cacheData = createCachedObject(listingsData);
+        this.redis.set(type, cacheData);
+      }
+      logger("NinetyNine/getListingsV1", {
+        url: url.toString(),
+        listings: listings.length,
+        params,
+        extraParams,
+      });
+    } catch (error) {
+      console.error("NinetyNine/getListingsV1", url, error);
+    }
+    return listings;
+  };
+
+  getListingsV1 = async (
     listingType: ListingType = ListingTypes[0],
     listingCategory: ListingCategory = ListingCategories[0],
     extraParams: Record<string, string> = {},
@@ -228,7 +407,7 @@ export class NinetyNine {
     },
     ignoreCategory = false
   ) => {
-    const listings: Listing[] = [];
+    const listings: NinetyNineListing[] = [];
     if (!listingType.length) return listings;
 
     const params: Record<string, string> = {
@@ -260,9 +439,10 @@ export class NinetyNine {
 
     fetchListings: try {
       if (isFirstQuery) {
-        const cachedListingsData: CachedData<Listing[]> = (await this.redis.get(
-          listingType
-        )) as CachedData<Listing[]>;
+        const cachedListingsData: CachedData<NinetyNineListing[]> =
+          (await this.redis.get(listingType)) as CachedData<
+            NinetyNineListing[]
+          >;
 
         if (Object.keys(cachedListingsData).length) {
           const cacheAgeInDays: number = getTimestampAgeInDays(
@@ -271,7 +451,9 @@ export class NinetyNine {
 
           // Only utilize cache data if it's less than 3 days old
           if (cacheAgeInDays < 3) {
-            const cachedListings: Listing[] = cachedListingsData.data ?? [];
+            const cachedListings: NinetyNineListing[] = (
+              cachedListingsData.data ?? []
+            ).map(this.parseToCompatibleListing);
             listings.push(...cachedListings);
             logger("ninetyNine.ts line 217", {
               isFirstQuery,
@@ -290,9 +472,11 @@ export class NinetyNine {
       const response = await this.http.get({ url });
       if (!response.ok) return listings;
       const result = await response.json();
-      const listingsData: Listing[] = (result?.data?.sections?.[0]?.listings ??
-        []) as Listing[];
-      logger("ninetyNine.ts line 217", {
+      const listingsData: NinetyNineListing[] = (
+        (result?.data?.sections?.[0]?.listings ?? []) as NinetyNineListing[]
+      ).map(this.parseToCompatibleListing);
+
+      logger("ninetyNine.ts line 331", {
         isFirstQuery,
         listingsData: listingsData.length,
       });
@@ -303,14 +487,14 @@ export class NinetyNine {
         const cacheData = createCachedObject(listingsData);
         this.redis.set(listingType, cacheData);
       }
-      logger("NinetyNine/getListings", {
+      logger("NinetyNine/getListingsV1", {
         url: url.toString(),
         listings: listings.length,
         params,
         extraParams,
       });
     } catch (error) {
-      console.error("NinetyNine/getListings", url, error);
+      console.error("NinetyNine/getListingsV1", url, error);
     }
 
     return listings;
@@ -338,7 +522,7 @@ export class NinetyNine {
       },
     });
 
-    return this.getListings(
+    return this.getListingsV1(
       listingType,
       listingCategory,
       extraParams,
@@ -351,7 +535,7 @@ export class NinetyNine {
     listingId: string,
     clusterId: string
   ) => {
-    let listing: Listing | null = null;
+    let listing: NinetyNineListing | null = null;
 
     const extraParams = {
       query_type: "cluster",
@@ -359,7 +543,7 @@ export class NinetyNine {
     };
 
     try {
-      const listingsData: Listing[] = await this.getListings(
+      const listingsData: NinetyNineListing[] = await this.getListingsV1(
         listingType,
         undefined,
         extraParams,
@@ -367,7 +551,7 @@ export class NinetyNine {
         true
       );
 
-      const matchedListings: Listing[] = listingsData.filter(
+      const matchedListings: NinetyNineListing[] = listingsData.filter(
         ({ id }) => id === listingId
       );
       listing = matchedListings?.[0] ?? null;

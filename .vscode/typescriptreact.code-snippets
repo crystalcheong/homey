@@ -258,7 +258,7 @@
   "Logger": {
     "prefix": "lg",
     "body": [
-      "logger('${TM_FILENAME} line ${TM_LINE_NUMBER}',{ ${1:${CLIPBOARD}} })"
+      "logger('[${TM_FILENAME}:${TM_LINE_NUMBER}]',{ ${1:${CLIPBOARD}} })"
     ]
   }
 }

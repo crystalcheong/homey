@@ -42,6 +42,7 @@ const NeighbourhoodsPage = () => {
             }}
           >
             <Image
+              withPlaceholder
               src={assetUrl ?? null}
               fit="cover"
               height={150}

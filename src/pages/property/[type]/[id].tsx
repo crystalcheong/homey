@@ -733,6 +733,25 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
                   tt="capitalize"
                 >
                   {listingData?.user?.name}
+                  <br />
+                  <Text
+                    hidden
+                    component="span"
+                    size="xs"
+                    color="dimmed"
+                    tt="initial"
+                  >
+                    on &nbsp;
+                    <Badge
+                      component="span"
+                      radius="sm"
+                      tt="uppercase"
+                      size="xs"
+                      variant="gradient"
+                    >
+                      {listing?.source}
+                    </Badge>
+                  </Text>
                 </Text>
               </Group>
 

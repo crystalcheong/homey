@@ -59,6 +59,16 @@ export const getInsertedArray = <T>(
   ...originalArray.slice(index),
 ];
 
+export const getRandomArrayIdx = <T>(array: T[]): number => {
+  if (array.length === 0) {
+    return 0;
+  }
+  return Math.floor(Math.random() * array.length);
+};
+
+export const getRandomArrayElement = <T>(array: T[]): T | null =>
+  array[getRandomArrayIdx(array)];
+
 //#endregion  //*======== Cache ===========
 
 export type CachedData<T> = {

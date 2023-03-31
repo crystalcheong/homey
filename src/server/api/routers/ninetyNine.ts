@@ -21,7 +21,7 @@ import { createTRPCRouter, publicProcedure } from "../trpc";
 const client: NinetyNine = new NinetyNine();
 
 export const ninetyNineRouter = createTRPCRouter({
-  getListings: publicProcedure
+  getListingsV1: publicProcedure
     .meta({
       description: "Retrieves listings",
     })
@@ -45,7 +45,7 @@ export const ninetyNineRouter = createTRPCRouter({
     )
     .query(
       async ({ input }) =>
-        await client.getListings(
+        await client.getListingsV1(
           input.listingType,
           input.listingCategory,
           {},
@@ -128,7 +128,7 @@ export const ninetyNineRouter = createTRPCRouter({
         );
       }
 
-      return await client.getListings(
+      return await client.getListingsV1(
         input.listingType,
         input.listingCategory,
         {},
@@ -193,6 +193,8 @@ export const ninetyNineRouter = createTRPCRouter({
         input.listingId,
         input.clusterId
       );
+
+      logger("ninetyNine.ts line 197", { listing });
 
       if (!property) {
         return listing;

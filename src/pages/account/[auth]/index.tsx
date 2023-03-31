@@ -43,7 +43,7 @@ import { FaGithub, FaGoogle } from "react-icons/fa";
 import { TbAlertCircle } from "react-icons/tb";
 
 import { Gov } from "@/data/clients/gov";
-import { meta } from "@/data/static";
+import { Metadata } from "@/data/static";
 
 import { Layout, Provider } from "@/components";
 import BetaWarning from "@/components/Layouts/BetaWarning";
@@ -361,7 +361,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
                 ceaLicense: formState.ceaLicense,
               },
               {
-                onSuccess: (data) => onSuccess(data.User),
+                onSuccess: (data) => onSuccess(data.user),
                 onError,
               }
             );
@@ -793,8 +793,8 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
               ta="center"
               mt="xl"
             >
-              By continuing, you agree to {meta.name}'s <TermsAndPrivacyLinks />
-              .
+              By continuing, you agree to {Metadata.name}'s{" "}
+              <TermsAndPrivacyLinks />.
             </Text>
           </Box>
         </Container>

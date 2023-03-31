@@ -40,8 +40,8 @@ export const UserButton = forwardRef<HTMLButtonElement, Props>(
       >
         <Group position="apart">
           <Avatar
-            src={user.image ?? null}
-            alt={user.name ?? ""}
+            src={user.image}
+            alt={`${user.name}`}
             radius="xl"
             size={40}
             color="primary"

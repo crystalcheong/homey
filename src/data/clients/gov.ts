@@ -1,5 +1,5 @@
 import { env } from "@/env.mjs";
-import { HTTP, isCEALicense, isName, logger } from "@/utils";
+import { HTTP, isCEALicense, isName, logger, LogLevel } from "@/utils";
 
 const Endpoint = `https://www.cea.gov.sg`;
 
@@ -33,21 +33,27 @@ export class Gov {
 
     try {
       const response = await this.http.post({ url, data });
-      logger("gov.ts line 38", {
+      logger("[gov.ts:36]/checkIsCEALicensed", {
+        input: {
+          agentName,
+          ceaLicense,
+        },
         url,
         data,
-        response,
-        body: response.body,
+        status: response.ok,
+        isValidAgent,
       });
       if (!response.ok) return isValidAgent;
       const result = await response.json();
 
       const matchingAgents = result?.data ?? [];
       isValidAgent = !!matchingAgents.length;
-      logger("gov.ts line 49", { result, isValidAgent });
       return isValidAgent;
     } catch (error) {
-      console.error("gov/checkIsCEALicensed", url, error);
+      logger(LogLevel.Error, "[gov.ts:50]/checkIsCEALicensed", {
+        url,
+        error,
+      });
     }
   };
 }

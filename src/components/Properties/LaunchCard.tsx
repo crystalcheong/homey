@@ -12,7 +12,6 @@ import {
   Title,
   useMantineTheme,
 } from "@mantine/core";
-import React from "react";
 import { TbWalk } from "react-icons/tb";
 
 import { ProjectLaunch } from "@/data/clients/ninetyNine";
@@ -38,8 +37,6 @@ const LaunchCard = ({
     location,
     details,
     photo_url,
-    // address_line,
-    // formatted_launch_date,
     percentage_sold,
     formatted_tags,
     within_distance_from_query,
@@ -54,8 +51,6 @@ const LaunchCard = ({
       p="lg"
       radius="md"
       withBorder
-      // component={Link}
-      // href={listingRelativeLink}
       {...rest}
     >
       <MCard.Section>

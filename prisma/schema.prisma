@@ -43,37 +43,53 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-model Property {
-  id                 String              @id
-  clusterId          String
-  type               PropertyType        @default(rent)
-  stringifiedListing String
-  isAvailable        Boolean             @default(true)
-  userSaved          UserSavedProperty[]
-
-  @@unique([id, clusterId])
-}
-
 model User {
-  id            String              @id @default(cuid())
+  id            String                 @id @default(cuid())
   name          String?
-  email         String?             @unique
+  email         String?                @unique
   password      String?
   image         String?
   emailVerified DateTime?
   accounts      Account[]
   sessions      Session[]
-  propertySaved UserSavedProperty[]
   propertyAgent PropertyAgent[]
+  savedListing  SavedPropertyListing[]
 }
 
-model UserSavedProperty {
-  propertyId String
-  userId     String
-  property   Property @relation(fields: [propertyId], references: [id], onDelete: Restrict)
-  User       User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+//#endregion  //*======== PROPERTY ===========
 
-  @@id([propertyId, userId])
+enum PropertyType {
+  rent
+  sale
+}
+
+enum ListingSource {
+  homey
+  ninetyNineCo
+}
+
+model PropertyAgent {
+  ceaLicense     String            @id
+  phoneNumber    String
+  isVerified     Boolean           @default(false)
+  userId         String            @unique
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  postedListings PropertyListing[]
+}
+
+model PropertyListing {
+  id          String        @id @default(cuid())
+  source      ListingSource @default(homey)
+  type        PropertyType  @default(rent)
+  isAvailable Boolean       @default(true)
+  category    String
+  href        String
+  photoUrl    String?
+
+  agentId String?
+  agent   PropertyAgent? @relation(fields: [agentId], references: [userId], onDelete: Cascade, onUpdate: Cascade)
+
+  savedBy SavedPropertyListing[]
 }
 
 model Neighbourhood {
@@ -82,15 +98,20 @@ model Neighbourhood {
   zoneId   String
 }
 
-enum PropertyType {
-  rent
-  sale
+//#endregion  //*======== PROPERTY ===========
+
+//#endregion  //*======== ACCOUNT ===========
+
+model SavedPropertyListing {
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  propertyId String          @unique
+  property   PropertyListing @relation(fields: [propertyId], references: [id], onUpdate: Cascade)
+
+  stringifiedSnapshot String?
+
+  @@id([userId, propertyId])
 }
 
-model PropertyAgent {
-  ceaLicense  String  @id
-  phoneNumber String
-  userId      String  @unique
-  isVerified  Boolean @default(false)
-  User        User    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-}
+//#endregion  //*======== ACCOUNT ===========

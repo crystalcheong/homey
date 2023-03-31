@@ -19,9 +19,8 @@ import {
 } from "react-icons/tb";
 
 import { ListingCategories } from "@/data/clients/ninetyNine";
-import { meta } from "@/data/static";
+import { Metadata, Route } from "@/data/static";
 
-import { Route } from "@/components/Layouts/Navbars/Base";
 import Logo from "@/components/Logo";
 
 import { useIsMobile } from "@/utils";
@@ -240,7 +239,7 @@ export function FooterLinks({ linkRows }: FooterLinksProps) {
             color="dimmed"
             className={classes.description}
           >
-            {meta.tagline}
+            {Metadata.tagline}
           </Text>
         </Box>
 
@@ -262,7 +261,7 @@ export function FooterLinks({ linkRows }: FooterLinksProps) {
           color="dimmed"
           size="xs"
         >
-          &copy; {currentYear} {meta.name}. All rights reserved.
+          &copy; {currentYear} {Metadata.name}. All rights reserved.
         </Text>
 
         <Group

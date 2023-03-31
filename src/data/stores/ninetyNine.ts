@@ -142,8 +142,20 @@ export const getPredefinedNeighbourhoods = (): Record<
 export const getStringifiedListing = (listing: Listing) =>
   !listing ? "" : JSON.stringify(compress(listing));
 
-export const parseStringifiedListing = (stringifiedListing: string) =>
-  decompress(JSON.parse(stringifiedListing));
+export const parseStringifiedListing = <T>(
+  stringifiedListing: string | null
+): T => {
+  if (!stringifiedListing) return {} as T;
+  try {
+    const stringifiedSnapshot = decompress(
+      JSON.parse(stringifiedListing) ?? {}
+    ) as T;
+    return stringifiedSnapshot;
+  } catch (error) {
+    console.error(error);
+    return {} as T;
+  }
+};
 
 const updateListings = (
   listingType: ListingType,
@@ -239,7 +251,7 @@ const store = create<Store>()(
           currentPagination.get(listingType as ListingType) ??
           defaultPaginationInfo;
         const newListings: Listing[] =
-          (await innerApi.ninetyNine.getListings.query({
+          (await innerApi.ninetyNine.getListingsV1.query({
             listingType,
             pageNum,
           })) ?? [];

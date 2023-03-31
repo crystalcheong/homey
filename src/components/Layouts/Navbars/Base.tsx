@@ -109,7 +109,7 @@ export function HeaderMegaMenu() {
       onSuccess: (data) => {
         logger("Base.tsx line 173", { data });
 
-        const userSavedListings: SavedListing[] = data?.propertySaved ?? [];
+        const userSavedListings: SavedListing[] = data?.savedListing ?? [];
         useAccountStore.setState(() => ({
           currentUser: data,
           savedListings: userSavedListings,

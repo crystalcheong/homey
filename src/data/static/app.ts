@@ -1,4 +1,4 @@
-export const meta = {
+export const Metadata = {
   name: "Homey",
   tagline: "Find your dream home in Singapore",
   description:

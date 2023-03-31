@@ -1,7 +1,7 @@
 import { Badge, Box, Text, useMantineTheme } from "@mantine/core";
 import Link from "next/link";
 
-import { meta } from "@/data/static";
+import { Metadata } from "@/data/static";
 import { useAppStore } from "@/data/stores";
 
 import HomeyLogo from "~/assets/brand/homey.svg";
@@ -38,7 +38,7 @@ const Logo = ({ hideBrand = false }: Props) => {
           fz="xl"
           m={0}
         >
-          {meta.name}
+          {Metadata.name}
         </Text>
       )}
 

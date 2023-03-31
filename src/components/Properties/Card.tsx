@@ -15,7 +15,12 @@ import { IconType } from "react-icons";
 import { FaPhoneAlt, FaWhatsapp } from "react-icons/fa";
 import { TbBed, TbResize } from "react-icons/tb";
 
-import { Listing, ListingType, ListingTypes } from "@/data/clients/ninetyNine";
+import {
+  Listing,
+  ListingType,
+  ListingTypes,
+  NinetyNine,
+} from "@/data/clients/ninetyNine";
 
 import {
   ListingCardOrientation,
@@ -69,17 +74,12 @@ export const Card = ({
     attributes,
     main_category,
     address_name,
-    cluster_mappings,
     formatted_tags,
   } = listing;
 
   const isPlaceholder = !Object.keys(listing).length;
   const isSkeleton: boolean = isLoading || isPlaceholder;
   const strPrice = `${attributes?.price_formatted ?? `$-.--`}`;
-
-  const clusterId: string =
-    cluster_mappings?.development?.[0] ?? cluster_mappings?.local?.[0] ?? "";
-  const listingRelativeLink = `/property/${listing_type}/${id}?clusterId=${clusterId}`;
 
   const formattedTag = getLimitedArray(formatted_tags ?? [], 1)?.[0] ?? null;
 
@@ -99,7 +99,7 @@ export const Card = ({
       radius="md"
       withBorder
       component={Link}
-      href={listingRelativeLink}
+      href={NinetyNine.getSourceHref(listing)}
       sx={(theme) => ({
         height: "100%",
         width: "100%",
@@ -143,6 +143,7 @@ export const Card = ({
         {allowSaveListing && (
           <SaveButton
             listing={listing}
+            disabled={isLoading}
             overwriteIconProps={{
               size: 30,
             }}

@@ -18,12 +18,6 @@ export class Cloudinary {
   uploadImage = async (rawImage: string, publicId: string) => {
     if (!rawImage.length || !publicId.length) return null;
 
-    logger("cloudinary.ts line 22", {
-      rawImage,
-      publicId,
-      isValid: !rawImage.length || !publicId.length,
-    });
-
     const imageOptions = {
       width: 400,
       height: 300,
@@ -32,27 +26,38 @@ export class Cloudinary {
     const uploadOptions: UploadApiOptions = {
       public_id: publicId,
       folder: "user-avatar",
-      // upload_preset: "user-avatar",
       ...imageOptions,
     };
 
     const uploadQuery = await this.sdk.uploader.upload(
       rawImage,
       uploadOptions,
-      (err, res) => {
-        logger("cloudinary.ts line 47", { err, res });
-      }
+      (err, res) =>
+        logger("[cloudinary.ts:39]/uploadImage", {
+          err,
+          publicId: res?.public_id,
+        })
     );
-
-    logger("cloudinary.ts line 38", {
-      rawImage,
-      publicId,
-      uploadQuery,
-    });
 
     const uploadUrl: string = (await uploadQuery.secure_url) ?? "";
     if (!uploadUrl.length) return null;
 
     return uploadUrl;
+  };
+
+  deleteImage = async (publicId: string) => {
+    if (!publicId.length) return null;
+
+    const destroyQuery = await this.sdk.uploader.destroy(
+      publicId,
+      undefined,
+      (err, res) =>
+        logger("[cloudinary.ts:58]/deleteImage", {
+          err,
+          res,
+        })
+    );
+
+    return destroyQuery;
   };
 }

@@ -23,11 +23,10 @@ const AccountSavedPage = () => {
 
   const userSavedListings: SavedListing[] = useAccountStore.use.savedListings();
 
-  const allSavedListings = useMemo(
+  const allSavedListings: Listing[] = useMemo<Listing[]>(
     () =>
-      (userSavedListings ?? []).map(
-        ({ property }) =>
-          parseStringifiedListing(property.stringifiedListing) as Listing
+      (userSavedListings ?? []).map(({ stringifiedSnapshot }) =>
+        parseStringifiedListing<Listing>(stringifiedSnapshot)
       ),
     [userSavedListings]
   );

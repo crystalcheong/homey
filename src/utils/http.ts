@@ -90,13 +90,13 @@ export class HTTP<PathSpecs> {
   /**
    * Executes HTTP POST request with fetch
    */
-  post = ({
+  post = async ({
     url,
     data,
     content_type = "application/json",
     headers,
   }: QueryParams) =>
-    fetch(url, {
+    await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": content_type || "application/json",
@@ -108,13 +108,13 @@ export class HTTP<PathSpecs> {
   /**
    * Executes HTTP DELETE request with fetch
    */
-  del = ({
+  del = async ({
     url,
     content_type = "application/json",
     headers,
     data,
   }: QueryParams) =>
-    fetch(url, {
+    await fetch(url, {
       method: "DELETE",
       headers: {
         "Content-Type": content_type || "application/json",
@@ -126,8 +126,8 @@ export class HTTP<PathSpecs> {
   /**
    * Executes HTTP multipart POST request with fetch
    */
-  multi_post = ({ url, headers, data }: QueryParams) =>
-    fetch(url, {
+  multi_post = async ({ url, headers, data }: QueryParams) =>
+    await fetch(url, {
       method: "POST",
       headers: {
         ...headers,
@@ -138,8 +138,8 @@ export class HTTP<PathSpecs> {
   /**
    * Executes HTTP PUT request with fetch
    */
-  put = ({ url, headers, data }: QueryParams) =>
-    fetch(url, {
+  put = async ({ url, headers, data }: QueryParams) =>
+    await fetch(url, {
       method: "PUT",
       headers: {
         ...headers,

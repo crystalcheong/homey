@@ -14,7 +14,8 @@ export const govRouter = createTRPCRouter({
         ceaLicense: z.string().trim().min(1, "CEA License can't be empty"),
       })
     )
-    .mutation(async ({ input }) => {
-      return await client.checkIsCEALicensed(input.name, input.ceaLicense);
-    }),
+    .mutation(
+      async ({ input }) =>
+        await client.checkIsCEALicensed(input.name, input.ceaLicense)
+    ),
 });

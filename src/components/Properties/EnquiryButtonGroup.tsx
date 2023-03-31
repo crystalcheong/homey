@@ -9,7 +9,7 @@ import {
 } from "@mantine/core";
 import { IconBaseProps } from "react-icons";
 
-import { Listing } from "@/data/clients/ninetyNine";
+import { Listing, NinetyNine } from "@/data/clients/ninetyNine";
 
 import { EnquiryIcons } from "@/components/Properties/Card";
 
@@ -44,10 +44,7 @@ export const EnquiryButtonGroup = ({
         }
       : {};
 
-  const { listing_type: type, id, cluster_mappings } = listing;
-  const clusterId: string =
-    cluster_mappings?.development?.[0] ?? cluster_mappings?.local?.[0] ?? "";
-  const listingRelativeLink = `/property/${type}/${id}?clusterId=${clusterId}`;
+  const listingRelativeLink = NinetyNine.getSourceHref(listing);
 
   return (
     <Group {...overwriteGroupProps}>
