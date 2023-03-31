@@ -179,10 +179,9 @@ export const ninetyNineRouter = createTRPCRouter({
     )
     .query(async ({ input, ctx }) => {
       // Retrieve Property from db
-      const property = await ctx.prisma.property.findFirst({
+      const property = await ctx.prisma.propertyListing.findFirst({
         where: {
           id: input.listingId,
-          clusterId: input.clusterId,
         },
       });
 
@@ -204,12 +203,9 @@ export const ninetyNineRouter = createTRPCRouter({
       const isAvailable = !!listing;
       if (isAvailable !== property.isAvailable) {
         property.isAvailable = isAvailable;
-        await ctx.prisma.property.update({
+        await ctx.prisma.propertyListing.update({
           where: {
-            id_clusterId: {
-              id: property.id,
-              clusterId: property.clusterId,
-            },
+            id: input.listingId,
           },
           data: property,
         });
@@ -217,7 +213,7 @@ export const ninetyNineRouter = createTRPCRouter({
 
       // Parse stringified to Listing
       const propertyListing: Listing = parseStringifiedListing(
-        property.stringifiedListing
+        property.stringifiedSnapshot
       ) as Listing;
       return propertyListing;
     }),

@@ -25,8 +25,8 @@ const AccountSavedPage = () => {
 
   const allSavedListings: Listing[] = useMemo<Listing[]>(
     () =>
-      (userSavedListings ?? []).map(({ stringifiedSnapshot }) =>
-        parseStringifiedListing<Listing>(stringifiedSnapshot)
+      (userSavedListings ?? []).map(({ property }) =>
+        parseStringifiedListing<Listing>(property.stringifiedSnapshot)
       ),
     [userSavedListings]
   );

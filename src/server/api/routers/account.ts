@@ -523,11 +523,6 @@ export const accountRouter = createTRPCRouter({
           .trim()
           .min(1, "User ID can't be empty"),
 
-        stringifiedSnapshot: z
-          .string()
-          .trim()
-          .min(1, "Stringified Listing can't be empty"),
-
         property: z.object({
           id: z.string(),
           source: z.nativeEnum(ListingSource),
@@ -537,6 +532,10 @@ export const accountRouter = createTRPCRouter({
           photoUrl: z.string().optional(),
           agentId: z.string().optional(),
           href: z.string(),
+          stringifiedSnapshot: z
+            .string()
+            .trim()
+            .min(1, "Stringified Listing can't be empty"),
         }),
       })
     )
@@ -549,13 +548,13 @@ export const accountRouter = createTRPCRouter({
         category: input.property.category,
         href: input.property.href,
         photoUrl: input.property.photoUrl ?? null,
+        stringifiedSnapshot: input.property.stringifiedSnapshot,
         agentId: input.property.agentId ?? null,
       };
 
       const savedListingData: SavedPropertyListing = {
         userId: input.userId,
         propertyId: input.property.id,
-        stringifiedSnapshot: input.stringifiedSnapshot,
       };
 
       const [user, property] = await ctx.prisma.$transaction([
@@ -580,7 +579,6 @@ export const accountRouter = createTRPCRouter({
             savedBy: {
               create: {
                 userId: savedListingData.userId,
-                stringifiedSnapshot: savedListingData.stringifiedSnapshot,
               },
             },
           },

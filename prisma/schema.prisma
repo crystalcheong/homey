@@ -86,6 +86,8 @@ model PropertyListing {
   href        String
   photoUrl    String?
 
+  stringifiedSnapshot String?
+
   agentId String?
   agent   PropertyAgent? @relation(fields: [agentId], references: [userId], onDelete: Cascade, onUpdate: Cascade)
 
@@ -108,8 +110,6 @@ model SavedPropertyListing {
 
   propertyId String          @unique
   property   PropertyListing @relation(fields: [propertyId], references: [id], onUpdate: Cascade)
-
-  stringifiedSnapshot String?
 
   @@id([userId, propertyId])
 }

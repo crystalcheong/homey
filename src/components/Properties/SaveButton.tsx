@@ -94,8 +94,8 @@ export const SaveButton = ({
         photoUrl: property.photoUrl ?? undefined,
         agentId: property.agentId ?? undefined,
         href: property.href,
+        stringifiedSnapshot: NinetyNine.stringifySnapshot(listing),
       },
-      stringifiedSnapshot: NinetyNine.stringifySnapshot(listing),
     };
 
     logger("SaveButton.tsx line 92", { saveParams });
