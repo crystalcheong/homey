@@ -41,7 +41,7 @@ interface Mutators {
   removeListing: (listingType: ListingType, listingId: Listing["id"]) => void;
 }
 
-interface Store extends State, Mutators {}
+interface Store extends State, Mutators { }
 
 //#endregion  //*======== Universal Functions ===========
 
@@ -49,7 +49,6 @@ const cachedStates: string[] = [
   "currentListing",
   "savedListings",
   "neighbourhoods",
-  "pagination",
 ];
 export const defaultPaginationInfo: PaginationInfo = {
   currentCount: 0,
