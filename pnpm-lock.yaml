@@ -42,6 +42,7 @@ specifiers:
   eslint-plugin-simple-import-sort: ^10.0.0
   eslint-plugin-unused-imports: ^2.0.0
   husky: ^8.0.3
+  idb-keyval: ^6.2.0
   next: ^13.2.4
   next-auth: ^4.20.1
   next-pwa: ^5.6.0
@@ -83,6 +84,7 @@ dependencies:
   compress-json: 2.1.2
   embla-carousel-autoplay: 7.1.0_embla-carousel@7.1.0
   embla-carousel-react: 7.1.0_react@18.2.0
+  idb-keyval: 6.2.0
   next: 13.2.4_hrdbe576m4w26u2yfpqpvbxyky
   next-auth: 4.20.1_ld2jel3hspngo3u5lti2kgl2sq
   next-pwa: 5.6.0_izqjhcwi2t5xgqmcxx5r3wfwmu
@@ -6613,6 +6615,15 @@ packages:
     dev: false
     optional: true
 
+  /idb-keyval/6.2.0:
+    resolution:
+      {
+        integrity: sha512-uw+MIyQn2jl3+hroD7hF8J7PUviBU7BPKWw4f/ISf32D4LoGu98yHjrzWWJDASu9QNrX10tCJqk9YY0ClWm8Ng==,
+      }
+    dependencies:
+      safari-14-idb-fix: 3.0.0
+    dev: false
+
   /idb/7.1.1:
     resolution:
       {
@@ -8949,6 +8960,13 @@ packages:
       }
     dependencies:
       queue-microtask: 1.2.3
+
+  /safari-14-idb-fix/3.0.0:
+    resolution:
+      {
+        integrity: sha512-eBNFLob4PMq8JA1dGyFn6G97q3/WzNtFK4RnzT1fnLq+9RyrGknzYiM/9B12MnKAxuj1IXr7UKYtTNtjyKMBog==,
+      }
+    dev: false
 
   /safe-buffer/5.2.1:
     resolution:

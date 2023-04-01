@@ -8,7 +8,7 @@ import { Listing, ListingType, ListingTypes } from "@/data/clients/ninetyNine";
 import { getUniqueObjectListwithKeys } from "@/utils";
 import { innerApi } from "@/utils/api";
 import { logger } from "@/utils/debug";
-import { createSelectors } from "@/utils/store";
+import { createSelectors, storage } from "@/utils/store";
 
 export type PaginationInfo = {
   currentCount: number;
@@ -301,7 +301,7 @@ const store = create<Store>()(
     }),
     {
       name: "properties",
-      storage: createJSONStorage(() => sessionStorage),
+      storage: createJSONStorage(() => storage),
       partialize: (state) =>
         Object.fromEntries(
           Object.entries(state).filter(([key]) => cachedStates.includes(key))
