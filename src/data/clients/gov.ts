@@ -48,12 +48,13 @@ export class Gov {
 
       const matchingAgents = result?.data ?? [];
       isValidAgent = !!matchingAgents.length;
-      return isValidAgent;
     } catch (error) {
       logger(LogLevel.Error, "[gov.ts:50]/checkIsCEALicensed", {
         url,
         error,
       });
     }
+
+    return isValidAgent;
   };
 }

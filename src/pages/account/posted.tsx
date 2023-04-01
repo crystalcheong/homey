@@ -43,7 +43,7 @@ const AgentPostedPage = () => {
         gap: "5vh",
       }}
     >
-      <BetaWarning />
+      <BetaWarning alwaysDisplay />
 
       <Provider.RenderGuard renderIf={isAuth}>
         <Property.Grid

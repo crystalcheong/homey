@@ -2,16 +2,22 @@ import { Alert, AlertProps, Transition, useMantineTheme } from "@mantine/core";
 import { useState } from "react";
 import { TbAlertCircle } from "react-icons/tb";
 
+import { useAppStore } from "@/data/stores";
+
 interface Props {
   title?: AlertProps["title"];
   content?: AlertProps["children"];
+  alwaysDisplay?: boolean;
 }
 
-const BetaWarning = ({ title, content }: Props) => {
+const BetaWarning = ({ title, content, alwaysDisplay }: Props) => {
   const theme = useMantineTheme();
   const isDark = theme.colorScheme === "dark" ?? false;
 
-  const [isVisible, setIsVisible] = useState<boolean>(true);
+  const isBetaPreview: boolean = useAppStore().isBetaPreview;
+  const [isVisible, setIsVisible] = useState<boolean>(
+    alwaysDisplay || isBetaPreview
+  );
   const handleOnClose = () => {
     setIsVisible(false);
   };

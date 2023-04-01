@@ -568,7 +568,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
               ceaLicense: formState.ceaLicense,
             },
             {
-              onSuccess: (data) => {
+              onSuccess: (data: boolean) => {
                 const isLicensed: boolean = data ?? false;
                 setIsCEALicensed(isLicensed);
                 isValidLicense = isLicensed;
