@@ -187,7 +187,12 @@ const ForgotPasswordPage: NextPage = () => {
   //#endregion  //*======== Pre-Render Checks ===========
 
   return (
-    <Layout.Base showAffix={false}>
+    <Layout.Base
+      showAffix={false}
+      seo={{
+        templateTitle: "Forget Password",
+      }}
+    >
       <Container
         size="xs"
         py={theme.spacing.md}

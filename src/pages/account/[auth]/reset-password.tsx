@@ -231,7 +231,12 @@ const ResetPasswordPage: NextPage = () => {
   //#endregion  //*======== Pre-Render Checks ===========
 
   return (
-    <Layout.Base showAffix={false}>
+    <Layout.Base
+      showAffix={false}
+      seo={{
+        templateTitle: "Reset Password",
+      }}
+    >
       <Provider.RenderGuard
         renderIf={!!paramAccessToken}
         fallbackComponent={

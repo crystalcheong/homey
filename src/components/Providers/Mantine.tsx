@@ -1,6 +1,7 @@
 import {
   ColorScheme,
   ColorSchemeProvider,
+  createEmotionCache,
   MantineProvider,
   MantineThemeOverride,
 } from "@mantine/core";
@@ -21,6 +22,11 @@ const theme = (colorScheme: ColorScheme): MantineThemeOverride => {
     colorScheme,
   };
 };
+
+const emotionCache = createEmotionCache({
+  key: "mt",
+  prepend: false,
+});
 
 export const Mantine = ({ children }: PropsWithChildren) => {
   const preferredColorScheme = useColorScheme();
@@ -44,6 +50,7 @@ export const Mantine = ({ children }: PropsWithChildren) => {
         withCSSVariables
         withNormalizeCSS
         withGlobalStyles
+        emotionCache={emotionCache}
         theme={theme(colorScheme)}
       >
         <NavigationProgress autoReset={true} />

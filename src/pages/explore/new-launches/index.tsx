@@ -60,7 +60,11 @@ const NewLaunchesPage = () => {
   };
 
   return (
-    <Layout.Base>
+    <Layout.Base
+      seo={{
+        templateTitle: "Condo Launches",
+      }}
+    >
       <BetaWarning />
       <Title
         order={1}

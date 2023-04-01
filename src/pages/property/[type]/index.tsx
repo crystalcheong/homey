@@ -177,7 +177,12 @@ const PropertyTypePage = () => {
   };
 
   return (
-    <Layout.Base showAffix={!!listings.length}>
+    <Layout.Base
+      showAffix={!!listings.length}
+      seo={{
+        templateTitle: `Properties ${paramType ? `for ${paramType}` : ""}`,
+      }}
+    >
       <Provider.RenderGuard
         renderIf={isValidType}
         fallbackComponent={

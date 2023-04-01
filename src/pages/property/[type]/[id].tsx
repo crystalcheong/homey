@@ -371,10 +371,11 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
       })}`
     : "";
 
-  // const neighbourhoodUrl = `/explore/neighbourhoods/${neighbourhood}`;
-
   return (
     <Layout.Base
+      seo={{
+        templateTitle: listingData ? listingData.address_name : "Listing",
+      }}
       layoutStylesOverwrite={{
         display: "flex",
         flexDirection: "column",

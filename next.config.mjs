@@ -1,5 +1,12 @@
 // @ts-check
 
+import nextPwa from "next-pwa";
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const withPWA = nextPwa({
+  dest: "public",
+});
+
 /**
  * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation.
  * This is especially useful for Docker builds.
@@ -145,4 +152,6 @@ const config = {
     defaultLocale: "en",
   },
 };
-export default config;
+
+const appConfig = withPWA(config);
+export default appConfig;

@@ -23,7 +23,11 @@ const NeighbourhoodsPage = () => {
   });
 
   return (
-    <Layout.Base>
+    <Layout.Base
+      seo={{
+        templateTitle: "Neighbourhoods",
+      }}
+    >
       <SimpleGrid
         cols={3}
         spacing="xl"

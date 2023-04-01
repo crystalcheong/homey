@@ -34,6 +34,9 @@ const AgentPostedPage = () => {
 
   return (
     <Layout.Base
+      seo={{
+        templateTitle: "Posted Listings",
+      }}
       layoutStylesOverwrite={{
         display: "flex",
         flexDirection: "column",

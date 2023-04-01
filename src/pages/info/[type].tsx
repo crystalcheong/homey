@@ -42,6 +42,9 @@ const InfoTypePage: NextPage = () => {
 
   return (
     <Layout.Base
+      seo={{
+        templateTitle: isValidType ? typeContent?.title : "Information",
+      }}
       layoutStylesOverwrite={{
         display: "flex",
         flexDirection: "column",

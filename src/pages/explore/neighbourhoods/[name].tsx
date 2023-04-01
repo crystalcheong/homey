@@ -31,6 +31,7 @@ import { getPredefinedNeighbourhoods, useNinetyNineStore } from "@/data/stores";
 import { Layout, Provider } from "@/components";
 import UnknownState from "@/components/Layouts/UnknownState";
 
+import { toTitleCase } from "@/utils";
 import { api } from "@/utils/api";
 import { logger } from "@/utils/debug";
 
@@ -154,7 +155,14 @@ const Neighbourhood = () => {
   logger("[name].tsx line 26", { neighbourhoodData });
 
   return (
-    <Layout.Base isLoading={isLoading}>
+    <Layout.Base
+      isLoading={isLoading}
+      seo={{
+        templateTitle: neighbourhoodInfo
+          ? toTitleCase(neighbourhoodInfo.name)
+          : "Neighbourhood",
+      }}
+    >
       <Provider.RenderGuard
         renderIf={!!neighbourhoodData}
         fallbackComponent={

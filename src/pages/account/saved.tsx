@@ -44,7 +44,12 @@ const AccountSavedPage = () => {
   //#endregion  //*======== Pre-Render Checks ===========
 
   return (
-    <Layout.Base showAffix={!!allSavedListings.length}>
+    <Layout.Base
+      showAffix={!!allSavedListings.length}
+      seo={{
+        templateTitle: "Saved Listings",
+      }}
+    >
       <Provider.RenderGuard renderIf={isAuth}>
         <Property.Grid
           showViewMode={!!allSavedListings.length}

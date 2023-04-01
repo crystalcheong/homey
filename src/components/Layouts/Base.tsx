@@ -14,6 +14,7 @@ import { PropsWithChildren } from "react";
 import { TbArrowUp } from "react-icons/tb";
 
 import { Footer, Navbar } from "@/components/Layouts";
+import Seo, { SeoProps } from "@/components/Providers/Seo";
 
 import { useIsMobile } from "@/utils/dom";
 
@@ -21,9 +22,11 @@ export type BaseLayoutProps = PropsWithChildren & {
   showAffix?: boolean;
   isLoading?: boolean;
   layoutStylesOverwrite?: ContainerProps["styles"];
+  seo?: Partial<SeoProps>;
 };
 
 export const BaseLayout = ({
+  seo,
   children,
   showAffix = true,
   isLoading = false,
@@ -35,6 +38,7 @@ export const BaseLayout = ({
 
   return (
     <>
+      <Seo {...seo} />
       <Navbar.Base />
       <Paper
         py="5vh"

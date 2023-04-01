@@ -448,6 +448,9 @@ const AccountUpdatePage = () => {
 
   return (
     <Layout.Base
+      seo={{
+        templateTitle: "Update Account",
+      }}
       layoutStylesOverwrite={{
         display: "flex",
         flexDirection: "column",
