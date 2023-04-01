@@ -46,6 +46,7 @@ specifiers:
   next-auth: ^4.20.1
   next-pwa: ^5.6.0
   next-seo: ^5.15.0
+  next-sitemap: ^4.0.6
   prettier: ^2.8.7
   prisma: ^4.12.0
   react: ^18.2.0
@@ -85,6 +86,7 @@ dependencies:
   next: 13.2.4_hrdbe576m4w26u2yfpqpvbxyky
   next-auth: 4.20.1_ld2jel3hspngo3u5lti2kgl2sq
   next-pwa: 5.6.0_izqjhcwi2t5xgqmcxx5r3wfwmu
+  next-sitemap: 4.0.6_jccvrrmb7rb3yyi3af3znueaea
   react: 18.2.0
   react-dom: 18.2.0_react@18.2.0
   react-icons: 4.8.0_react@18.2.0
@@ -1904,6 +1906,13 @@ packages:
     dependencies:
       chalk: 4.1.2
     dev: true
+
+  /@corex/deepmerge/4.0.37:
+    resolution:
+      {
+        integrity: sha512-PX90bEnrLdxd5e6rSFWsghExMuSw0Uov3fWJuuaoFuUQIS/446diu/4seExK5b+43L+SOBbd2uBGwYUkG1JfCw==,
+      }
+    dev: false
 
   /@cspotcode/source-map-support/0.8.1:
     resolution:
@@ -7633,7 +7642,6 @@ packages:
       {
         integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==,
       }
-    dev: true
 
   /minipass/3.3.6:
     resolution:
@@ -7798,6 +7806,23 @@ packages:
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
     dev: true
+
+  /next-sitemap/4.0.6_jccvrrmb7rb3yyi3af3znueaea:
+    resolution:
+      {
+        integrity: sha512-pZ9tynYe6mRR189qZqcOlWVgM1Gxo07BJQW0AjerKmLwQOt+6FQMdaDgifgCt6jDT3Y3EG/+NUDDZRcd0gbPkA==,
+      }
+    engines: { node: ">=14.18" }
+    hasBin: true
+    peerDependencies:
+      "@next/env": "*"
+      next: "*"
+    dependencies:
+      "@corex/deepmerge": 4.0.37
+      "@next/env": 13.2.4
+      minimist: 1.2.8
+      next: 13.2.4_hrdbe576m4w26u2yfpqpvbxyky
+    dev: false
 
   /next-tick/1.1.0:
     resolution:
