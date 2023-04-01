@@ -45,7 +45,12 @@ interface Store extends State, Mutators {}
 
 //#endregion  //*======== Universal Functions ===========
 
-const cachedStates: string[] = ["currentListing", "savedListings"];
+const cachedStates: string[] = [
+  "currentListing",
+  "savedListings",
+  "neighbourhoods",
+  "pagination",
+];
 export const defaultPaginationInfo: PaginationInfo = {
   currentCount: 0,
   pageSize: 30,
@@ -78,9 +83,9 @@ export const neighbourhoodNames: string[] = [
   "choa-chu-kang",
   "clarke-quay",
   "clementi",
-  "clifford-pier",
-  // "geylang",
-  // "robertson-quay",
+  // "clifford-pier",
+  "geylang",
+  "robertson-quay",
   "holland",
   "hougang",
   "jurong-east",
@@ -119,7 +124,7 @@ export const getPredefinedNeighbourhoods = (): Record<
   string,
   Neighbourhood
 > => {
-  const baseUrl = `https://www.99.co/spa-assets/images/neighbourhoods-landing-page/thumb`;
+  const baseUrl = `https://res.cloudinary.com/drcfvdkzm/image/upload/t_Sharpened/v1680363728/neighbourhoods`;
   const zoneIdPreifx = `zo`;
 
   const neighbourhoods: Record<string, Neighbourhood> =
@@ -309,61 +314,5 @@ const store = create<Store>()(
     }
   )
 );
-
-// export const persistentStore = create<State>()(
-//   persist(
-//     (set, get) => ({
-//       listings: ListingTypes.reduce(
-//         (listingMap = {}, type) => ({
-//           ...listingMap,
-//           [type]: [],
-//         }), {}),
-//       pagination: ListingTypes.reduce(
-//         (listingMap = {}, type) => ({
-//           ...listingMap,
-//           [type]: {
-//             currentCount: 0,
-//             pageSize: 30,
-//             pageNum: 1,
-//           },
-//         }), {}),
-//       updateListings: (listingType, newListings) => {
-//         const currentListings = get().listings;
-//         const currentPagination = get().pagination;
-
-//         const updatedListings = (currentListings[listingType] ?? []).concat(newListings)
-//         const {
-//           currentCount,
-//           pageNum,
-//         } = currentPagination[listingType]
-//         const updatedCurrentCount = (currentCount ?? 0) + (updatedListings.length)
-//         const updatePageNum = (pageNum ?? 0) + 1
-
-//         return set({
-//           listings: {
-//             ...currentListings,
-//             [listingType]: updatedListings
-//           },
-//           pagination: {
-//             ...currentPagination,
-//             [listingType]: {
-//               ...currentPagination[listingType],
-//               currentCount: updatedCurrentCount,
-//               pageNum: updatePageNum,
-//             }
-//           }
-//         })
-//       },
-//     }),
-//     {
-//       name: 'ninetyNine',
-//       storage: createJSONStorage(() => sessionStorage),
-//       partialize: (state) => ({
-//         listings: state.listings,
-//         pagination: state.pagination,
-//       }),
-//     }
-//   )
-// )
 
 export const useNinetyNineStore = createSelectors(store);
