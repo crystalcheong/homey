@@ -58,6 +58,7 @@ const AccountSavedPage = () => {
           title="Saved"
           emptyFallback={
             <UnknownState
+              hidden={isAuthLoading}
               allowRedirect={false}
               svgNode={<EmptySaved />}
               title="No saved listings"

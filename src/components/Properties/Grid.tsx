@@ -56,6 +56,7 @@ interface Props extends BoxProps {
 
   viewMode?: ViewMode;
   showViewMode?: boolean;
+  hidden?: boolean;
 }
 
 export const Grid = ({
@@ -66,6 +67,7 @@ export const Grid = ({
   isLoading = false,
   showTitle = true,
   showMoreCTA = false,
+  hidden = false,
   allowSaveListing = false,
   placeholderCount = 3,
   maxViewableCount = 0,
@@ -118,6 +120,7 @@ export const Grid = ({
   return (
     <Box
       component="section"
+      hidden={hidden}
       {...rest}
     >
       {(showTitle || showMoreCTA) && (

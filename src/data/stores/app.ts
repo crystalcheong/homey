@@ -5,6 +5,7 @@ import { createSelectors } from "@/utils";
 
 interface State {
   isBetaPreview: boolean;
+  isLoading: boolean;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -16,6 +17,7 @@ const store = create<Store>()(
   // persist(
   () => ({
     isBetaPreview: env.NEXT_PUBLIC_BETA_PREVIEW === "true" ?? false,
+    isLoading: false,
   })
   //   {
   //     name: "account",

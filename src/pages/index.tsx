@@ -2,7 +2,12 @@ import { Box, useMantineTheme } from "@mantine/core";
 import { NextPage } from "next/types";
 import { useSession } from "next-auth/react";
 
-import { Listing, ListingType, ListingTypes } from "@/data/clients/ninetyNine";
+import {
+  Listing,
+  ListingType,
+  ListingTypes,
+  NinetyNineListing,
+} from "@/data/clients/ninetyNine";
 import { Metadata } from "@/data/static";
 import {
   defaultPaginationInfo,
@@ -38,7 +43,7 @@ const IndexPage: NextPage = () => {
           enabled:
             (allListings.get(listingType) ?? []).length <
             defaultPaginationInfo.pageSize,
-          onSuccess: (data) => {
+          onSuccess: (data: NinetyNineListing[]) => {
             if (!data.length) return;
             updateListings(listingType, data as Listing[]);
           },

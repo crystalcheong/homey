@@ -4,7 +4,6 @@ import {
   Button,
   Container,
   ContainerProps,
-  LoadingOverlay,
   Paper,
   Transition,
   useMantineTheme,
@@ -14,6 +13,7 @@ import { PropsWithChildren } from "react";
 import { TbArrowUp } from "react-icons/tb";
 
 import { Footer, Navbar } from "@/components/Layouts";
+import LogoLoader from "@/components/LogoLoader";
 import Seo, { SeoProps } from "@/components/Providers/Seo";
 
 import { useIsMobile } from "@/utils/dom";
@@ -53,45 +53,46 @@ export const BaseLayout = ({
             position: "relative",
             minHeight: "calc(100vh - 350px)",
             ...layoutStylesOverwrite,
+
+            ...(isLoading && {
+              height: "100vh",
+              overflow: "hidden",
+            }),
           }}
         >
-          {isLoading && (
-            <LoadingOverlay
-              visible={isLoading}
-              overlayBlur={2}
-            />
-          )}
+          <LogoLoader visible={isLoading} />
           {children}
         </Container>
-        {showAffix && (
-          <Affix position={{ bottom: 20, right: 20 }}>
-            <Transition
-              transition="slide-up"
-              mounted={scroll.y > 0}
-            >
-              {(transitionStyles) =>
-                !isMobile ? (
-                  <Button
-                    leftIcon={<TbArrowUp size={16} />}
-                    style={transitionStyles}
-                    onClick={() => scrollTo({ y: 0 })}
-                  >
-                    Scroll to top
-                  </Button>
-                ) : (
-                  <ActionIcon
-                    variant="filled"
-                    color={theme.fn.primaryColor()}
-                    style={transitionStyles}
-                    onClick={() => scrollTo({ y: 0 })}
-                  >
-                    <TbArrowUp size={16} />
-                  </ActionIcon>
-                )
-              }
-            </Transition>
-          </Affix>
-        )}
+        <Affix
+          hidden={!showAffix}
+          position={{ bottom: 20, right: 20 }}
+        >
+          <Transition
+            transition="slide-up"
+            mounted={scroll.y > 0}
+          >
+            {(transitionStyles) =>
+              !isMobile ? (
+                <Button
+                  leftIcon={<TbArrowUp size={16} />}
+                  style={transitionStyles}
+                  onClick={() => scrollTo({ y: 0 })}
+                >
+                  Scroll to top
+                </Button>
+              ) : (
+                <ActionIcon
+                  variant="filled"
+                  color={theme.fn.primaryColor()}
+                  style={transitionStyles}
+                  onClick={() => scrollTo({ y: 0 })}
+                >
+                  <TbArrowUp size={16} />
+                </ActionIcon>
+              )
+            }
+          </Transition>
+        </Affix>
       </Paper>
       <Footer.Base />
     </>

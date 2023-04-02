@@ -42,6 +42,7 @@ interface Props extends BoxProps {
   subtitle: string | ReactNode;
   hideBackButton?: boolean;
   allowRedirect?: boolean;
+  hidden?: boolean;
 }
 
 const UnknownState = ({
@@ -51,6 +52,7 @@ const UnknownState = ({
   children,
   hideBackButton = false,
   allowRedirect = true,
+  hidden = false,
   ...rest
 }: Props) => {
   const router = useRouter();
@@ -64,6 +66,7 @@ const UnknownState = ({
   return (
     <Box
       component="article"
+      hidden={hidden}
       sx={{
         display: "flex",
         flexDirection: "column",

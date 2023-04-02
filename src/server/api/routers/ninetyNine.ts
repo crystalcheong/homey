@@ -103,14 +103,17 @@ export const ninetyNineRouter = createTRPCRouter({
         listingCategory: z
           .string()
           .trim()
+          .default(ListingCategories[0])
           .optional()
           .describe(ListingCategories.toString()),
         pageSize: z
           .number()
+          .default(defaultPaginationInfo.pageNum)
           .optional()
           .describe(`${defaultPaginationInfo.pageNum.toString()} (default)`),
         pageNum: z
           .number()
+          .default(defaultPaginationInfo.pageSize)
           .optional()
           .describe(`${defaultPaginationInfo.pageSize.toString()} (default)`),
       })

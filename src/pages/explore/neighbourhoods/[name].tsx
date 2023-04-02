@@ -10,6 +10,8 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import { useRouter } from "next/router";
+import { useSession } from "next-auth/react";
+import { useState } from "react";
 import { IconType } from "react-icons";
 import {
   TbBuildingBank,
@@ -25,13 +27,21 @@ import {
   TbTrees,
 } from "react-icons/tb";
 
-import { AreaCategory, AreaCategoryData } from "@/data/clients/ninetyNine";
+import {
+  AreaCategory,
+  AreaCategoryData,
+  Listing,
+  ListingTypes,
+  Neighbourhood,
+} from "@/data/clients/ninetyNine";
 import { getPredefinedNeighbourhoods, useNinetyNineStore } from "@/data/stores";
 
-import { Layout, Provider } from "@/components";
+import { Layout, Property, Provider } from "@/components";
 import UnknownState from "@/components/Layouts/UnknownState";
 
-import { toTitleCase } from "@/utils";
+import { getZoneIds } from "@/pages/property/[type]";
+import { getNeigbourhoodListingsHref } from "@/pages/property/[type]/[id]";
+import { toTitleCase, useIsTablet } from "@/utils";
 import { api } from "@/utils/api";
 import { logger } from "@/utils/debug";
 
@@ -126,6 +136,9 @@ const Neighbourhood = () => {
   const router = useRouter();
   const theme = useMantineTheme();
   const { name } = router.query;
+  const { data: sessionData } = useSession();
+  const isAuth = !!sessionData;
+  const isTablet: boolean = useIsTablet(theme);
 
   const neighbourhoods = useNinetyNineStore.use.neighbourhoods();
 
@@ -138,17 +151,43 @@ const Neighbourhood = () => {
     ? getPredefinedNeighbourhoods()[paramName]
     : null;
 
-  const [{ isFetching: isFetchingNeighbourhood, data: neighbourhoodData }] =
-    api.useQueries((t) => [
-      t.ninetyNine.getNeighbourhood(
+  const [neighbourhood, setNeighbourhood] = useState<Neighbourhood | null>(
+    null
+  );
+
+  const { isFetching: isFetchingNeighbourhood, data: neighbourhoodData } =
+    api.ninetyNine.getNeighbourhood.useQuery(
+      {
+        name: paramName,
+      },
+      {
+        enabled: isValidName && !neighbourhood,
+        onSuccess: (data) => {
+          if (!data) return;
+          setNeighbourhood(data);
+        },
+      }
+    );
+
+  const [
+    { isFetching: isFetchingRentListings, data: rentListings = [] },
+    { isFetching: isFetchingSaleListings, data: saleListings = [] },
+  ] = api.useQueries((t) =>
+    ListingTypes.map((listingType) =>
+      t.ninetyNine.getZoneListings(
         {
-          name: paramName,
+          listingType,
+          zoneId: getZoneIds([neighbourhoodInfo?.name ?? ""]),
+          // listingCategory: getRandomArrayElement(ListingCategories) ?? undefined,
         },
         {
-          enabled: isValidName,
+          enabled: isValidName && !neighbourhood,
+          placeholderData: [],
+          retry: 2,
         }
-      ),
-    ]);
+      )
+    )
+  );
 
   const isLoading: boolean = isFetchingNeighbourhood;
 
@@ -159,20 +198,19 @@ const Neighbourhood = () => {
       isLoading={isLoading}
       seo={{
         templateTitle: neighbourhoodInfo
-          ? toTitleCase(neighbourhoodInfo.name)
+          ? toTitleCase(neighbourhoodInfo.name.replace(/-/g, " "))
           : "Neighbourhood",
       }}
     >
       <Provider.RenderGuard
-        renderIf={!!neighbourhoodData}
+        renderIf={!!neighbourhoodData || !isLoading}
         fallbackComponent={
-          !isLoading ? (
-            <UnknownState
-              svgNode={<EmptySearch />}
-              title="Neighbourhood not found"
-              subtitle="Woops, the neighbourhood has vanished"
-            />
-          ) : null
+          <UnknownState
+            hidden={isLoading}
+            svgNode={<EmptySearch />}
+            title="Neighbourhood not found"
+            subtitle="Woops, the neighbourhood has vanished"
+          />
         }
       >
         <Box
@@ -224,7 +262,7 @@ const Neighbourhood = () => {
             </Title>
           </Box>
 
-          <Box>
+          <Box component="section">
             <Accordion
               variant="separated"
               defaultValue="subway_station"
@@ -265,6 +303,29 @@ const Neighbourhood = () => {
               })}
             </Accordion>
           </Box>
+
+          {ListingTypes.map((type, idx) => {
+            const isLoading: boolean =
+              idx === 0 ? isFetchingRentListings : isFetchingSaleListings;
+            const listings: Listing[] = idx === 0 ? rentListings : saleListings;
+            return (
+              <Property.Grid
+                key={`neighbourhood-${type}Listings`}
+                hidden={!listings.length}
+                title={toTitleCase(type)}
+                listings={listings}
+                isLoading={isLoading}
+                maxViewableCount={isTablet ? 4 : 3}
+                placeholderCount={isTablet ? 4 : 3}
+                allowSaveListing={isAuth}
+                seeMoreLink={getNeigbourhoodListingsHref(
+                  neighbourhoodInfo?.zoneId ?? "",
+                  type
+                )}
+                showMoreCTA
+              />
+            );
+          })}
         </Box>
       </Provider.RenderGuard>
     </Layout.Base>

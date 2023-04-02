@@ -617,6 +617,7 @@ const AccountAuthPage: NextPage<Props> = ({ providers }: Props) => {
         renderIf={isValidAuthType && !isAuth}
         fallbackComponent={
           <UnknownState
+            hidden={isAuthLoading}
             svgNode={<ErrorClient />}
             title="Account page not found"
             subtitle="Hey, you aren't supposed to be here"

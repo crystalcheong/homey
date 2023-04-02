@@ -43,7 +43,12 @@ import {
 import { TiChartAreaOutline } from "react-icons/ti";
 import superjson from "superjson";
 
-import { Cluster, Listing, ListingTypes } from "@/data/clients/ninetyNine";
+import {
+  Cluster,
+  Listing,
+  ListingType,
+  ListingTypes,
+} from "@/data/clients/ninetyNine";
 import { useNinetyNineStore } from "@/data/stores";
 
 import { Layout, Property, Provider } from "@/components";
@@ -77,6 +82,19 @@ import {
 } from "@/utils";
 
 import EmptyListing from "~/assets/images/empty-listing.svg";
+
+export const getNeigbourhoodListingsHref = (
+  zoneId: string,
+  type: ListingType
+) => {
+  const neighbourhoodName: string = getStringWithoutAffix(zoneId ?? "", "zo");
+
+  return neighbourhoodName.length
+    ? `/property/${type}?${new URLSearchParams({
+        location: JSON.stringify([neighbourhoodName]),
+      })}`
+    : "";
+};
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const { id, type, clusterId } = context.query;
@@ -168,7 +186,7 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
   const [
     { data: listingData = null },
     ,
-    { data: listingsData = [], isFetching: isLoadingListings },
+    { data: listingsData = [], isFetching: isLoadingListing },
     { data: neighbourhoodData },
   ] = api.useQueries((t) => [
     t.ninetyNine.getClusterListings(
@@ -365,11 +383,11 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
   const neighbourhoodName: string = toTitleCase(
     getReplacedStringDelimiter(neighbourhood, "_", " ")
   );
-  const neighbourhoodListingsUrl = neighbourhood.length
-    ? `/property/${type}?${new URLSearchParams({
-        location: JSON.stringify([neighbourhood]),
-      })}`
-    : "";
+
+  const neighbourhoodListingsUrl: string = getNeigbourhoodListingsHref(
+    listing?.cluster_mappings?.zone[0] ?? "",
+    type
+  );
 
   return (
     <Layout.Base
@@ -381,11 +399,13 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
         flexDirection: "column",
         gap: "5vh",
       }}
+      isLoading={isLoadingListing}
     >
       <Provider.RenderGuard
         renderIf={isValidProperty && isMounted && !!listingData}
         fallbackComponent={
           <UnknownState
+            hidden={isLoadingListing}
             svgNode={<EmptyListing />}
             title="Listing not found"
             subtitle="Woops, the listing has vanished"
@@ -886,7 +906,7 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
         <Property.Grid
           title="Similar"
           listings={listingsData ?? []}
-          isLoading={isLoadingListings}
+          isLoading={isLoadingListing}
           maxViewableCount={isTablet ? 4 : 3}
           placeholderCount={isTablet ? 4 : 3}
           allowSaveListing={isAuth}

@@ -241,6 +241,7 @@ const ResetPasswordPage: NextPage = () => {
         renderIf={!!paramAccessToken}
         fallbackComponent={
           <UnknownState
+            hidden={isAuthLoading}
             svgNode={<EmptyNotifications />}
             title="Expired Link"
             subtitle="Uh oh, this link has expired"

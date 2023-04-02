@@ -40,7 +40,7 @@ import { api, getObjectValueCount, logger } from "@/utils";
 import EmptySearch from "~/assets/images/empty-search.svg";
 import ErrorClient from "~/assets/images/error-client.svg";
 
-const getZoneIds = (locations: string[]) =>
+export const getZoneIds = (locations: string[]) =>
   locations
     .map((location: string) => `zo${location.replace(/-/g, "_")}`)
     .toString();
@@ -187,6 +187,7 @@ const PropertyTypePage = () => {
         renderIf={isValidType}
         fallbackComponent={
           <UnknownState
+            hidden={isLoading}
             svgNode={<ErrorClient />}
             title="Listing type not found"
             subtitle="Hey, you aren't supposed to be here"
@@ -326,6 +327,7 @@ const PropertyTypePage = () => {
           }
           emptyFallback={
             <UnknownState
+              hidden={isLoading}
               svgNode={<EmptySearch />}
               title="No listings found"
               subtitle="Try adjusting your search to find what you are looking for"
