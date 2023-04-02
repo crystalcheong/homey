@@ -269,7 +269,7 @@ const Neighbourhood = () => {
               styles={{
                 chevron: {
                   "&[data-rotate]": {
-                    transform: "rotate(45deg)",
+                    transform: "rotate(180deg)",
                   },
                 },
               }}

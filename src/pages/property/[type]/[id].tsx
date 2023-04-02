@@ -91,8 +91,8 @@ export const getNeigbourhoodListingsHref = (
 
   return neighbourhoodName.length
     ? `/property/${type}?${new URLSearchParams({
-        location: JSON.stringify([neighbourhoodName]),
-      })}`
+      location: JSON.stringify([neighbourhoodName]),
+    })}`
     : "";
 };
 
@@ -256,125 +256,124 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
     attribute: string;
     icon: IconType;
   }[] = [
-    {
-      label: `Bedrooms`,
-      attribute: `${listingData?.attributes?.bedrooms ?? "--"}`,
-      icon: TbBed,
-    },
-    {
-      label: `Bathrooms`,
-      attribute: `${listingData?.attributes?.bathrooms ?? "--"}`,
-      icon: TbBath,
-    },
-    {
-      label: `Living Space`,
-      attribute: `${listingData?.attributes?.area_size_sqm_formatted ?? "--"}`,
-      icon: TbDimensions,
-    },
-    {
-      label: `Tenure`,
-      attribute: `${listingData?.attributes?.tenure ?? "--"}`,
-      icon: TbClock,
-    },
+      {
+        label: `Bedrooms`,
+        attribute: `${listingData?.attributes?.bedrooms ?? "--"}`,
+        icon: TbBed,
+      },
+      {
+        label: `Bathrooms`,
+        attribute: `${listingData?.attributes?.bathrooms ?? "--"}`,
+        icon: TbBath,
+      },
+      {
+        label: `Living Space`,
+        attribute: `${listingData?.attributes?.area_size_sqm_formatted ?? "--"}`,
+        icon: TbDimensions,
+      },
+      {
+        label: `Tenure`,
+        attribute: `${listingData?.attributes?.tenure ?? "--"}`,
+        icon: TbClock,
+      },
 
-    {
-      label: `Price/sqft`,
-      attribute: `${
-        listingData?.attributes?.area_ppsf_formatted ?? "$-.-- psf"
-      }`,
-      icon: TiChartAreaOutline,
-    },
-    {
-      label: `Built year`,
-      attribute: `${listingData?.attributes?.completed_at ?? "----"}`,
-      icon: FaBirthdayCake,
-    },
-    {
-      label: `Property type`,
-      attribute: `${listingData?.main_category ?? "--"}`.toUpperCase(),
-      icon: TbBuildingCommunity,
-    },
-    {
-      label: `Last updated`,
-      attribute: `${listingData?.date_formatted ?? "--"}`,
-      icon: TbEdit,
-    },
-  ];
+      {
+        label: `Price/sqft`,
+        attribute: `${listingData?.attributes?.area_ppsf_formatted ?? "$-.-- psf"
+          }`,
+        icon: TiChartAreaOutline,
+      },
+      {
+        label: `Built year`,
+        attribute: `${listingData?.attributes?.completed_at ?? "----"}`,
+        icon: FaBirthdayCake,
+      },
+      {
+        label: `Property type`,
+        attribute: `${listingData?.main_category ?? "--"}`.toUpperCase(),
+        icon: TbBuildingCommunity,
+      },
+      {
+        label: `Last updated`,
+        attribute: `${listingData?.date_formatted ?? "--"}`,
+        icon: TbEdit,
+      },
+    ];
 
   const faqs: {
     question: string;
     answer: ReactNode;
   }[] = [
-    {
-      question: "How do I view this listing?",
-      answer: (
-        <>
-          You can view this listing at{" "}
-          <Text
-            component="span"
-            variant="gradient"
-          >
-            {listingData?.address_name}
-          </Text>{" "}
-          by clicking on the 'Call' or 'WhatsApp' button.
-          <br />
-          The agent will get in touch with you.
-        </>
-      ),
-    },
-    {
-      question: `What is the price of this ${type} listing?`,
-      answer: (
-        <>
-          The {type} price of this listing is{" "}
-          <Text
-            component="span"
-            variant="gradient"
-          >
-            {listingData?.attributes?.price_formatted ?? `$-.--`}
-            {PriceListingTypes[listingData?.listing_type ?? ListingTypes[0]]}
-          </Text>
-          .
-        </>
-      ),
-    },
-    {
-      question: `What is the size of this listing?`,
-      answer: (
-        <>
-          The size of this listing is&nbsp;
-          <Text
-            component="span"
-            variant="gradient"
-          >
-            {listingData?.attributes?.area_size_sqm_formatted ?? "--"}
-          </Text>
-          &nbsp;(
-          <Text
-            component="span"
-            variant="gradient"
-          >
-            {listingData?.attributes?.area_size_formatted ?? "--"}
-          </Text>
-          ).
-        </>
-      ),
-    },
-    {
-      question: `When was this listing built?`,
-      answer: (
-        <>
-          This listing was built in&nbsp;
-          <Text
-            component="span"
-            variant="gradient"
-          >
-            {listingData?.attributes?.completed_at ?? "--"}
-          </Text>
-        </>
-      ),
-    },
-  ];
+      {
+        question: "How do I view this listing?",
+        answer: (
+          <>
+            You can view this listing at{" "}
+            <Text
+              component="span"
+              variant="gradient"
+            >
+              {listingData?.address_name}
+            </Text>{" "}
+            by clicking on the 'Call' or 'WhatsApp' button.
+            <br />
+            The agent will get in touch with you.
+          </>
+        ),
+      },
+      {
+        question: `What is the price of this ${type} listing?`,
+        answer: (
+          <>
+            The {type} price of this listing is{" "}
+            <Text
+              component="span"
+              variant="gradient"
+            >
+              {listingData?.attributes?.price_formatted ?? `$-.--`}
+              {PriceListingTypes[listingData?.listing_type ?? ListingTypes[0]]}
+            </Text>
+            .
+          </>
+        ),
+      },
+      {
+        question: `What is the size of this listing?`,
+        answer: (
+          <>
+            The size of this listing is&nbsp;
+            <Text
+              component="span"
+              variant="gradient"
+            >
+              {listingData?.attributes?.area_size_sqm_formatted ?? "--"}
+            </Text>
+            &nbsp;(
+            <Text
+              component="span"
+              variant="gradient"
+            >
+              {listingData?.attributes?.area_size_formatted ?? "--"}
+            </Text>
+            ).
+          </>
+        ),
+      },
+      {
+        question: `When was this listing built?`,
+        answer: (
+          <>
+            This listing was built in&nbsp;
+            <Text
+              component="span"
+              variant="gradient"
+            >
+              {listingData?.attributes?.completed_at ?? "--"}
+            </Text>
+          </>
+        ),
+      },
+    ];
 
   const mapsUrl = `https://www.google.com/maps/embed/v1/place?key=AIzaSyBeU0KYm091allUovk19s4Aw4KfI7l43aI&q=${encodeURIComponent(
     listingData?.address_name ?? ""
@@ -920,7 +919,7 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
           styles={{
             chevron: {
               "&[data-rotate]": {
-                transform: "rotate(45deg)",
+                transform: "rotate(180deg)",
               },
             },
           }}
