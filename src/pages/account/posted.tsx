@@ -1,4 +1,4 @@
-import { useMantineTheme } from "@mantine/core";
+import { Badge, useMantineTheme } from "@mantine/core";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
@@ -59,7 +59,11 @@ const AgentPostedPage = () => {
               allowRedirect={false}
               svgNode={<EmptyListing />}
               title="No posted listings"
-              subtitle={<>Work in Progress</>}
+              subtitle={<>
+                Stay tuned for feature release 👀
+                <br />
+                <Badge size="xs">Coming Soon</Badge>
+              </>}
             />
           }
         />
