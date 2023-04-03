@@ -4,7 +4,7 @@ import { logger } from "@/utils/debug";
 import { getPartialClonedObject } from "@/utils/helpers";
 import { HTTP } from "@/utils/http";
 
-const Endpoint = `https://flask-api-deployment.onrender.com`;
+const Endpoint = `https://flask-api-deployment-swe-homey.onrender.com`;
 
 const Routes: Record<string, string> = {
   createUser: `/createUser`,
