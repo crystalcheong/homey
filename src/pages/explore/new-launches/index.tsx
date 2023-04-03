@@ -31,7 +31,7 @@ const NewLaunchesPage = () => {
       },
       {
         enabled: !launches.length && hasNext,
-        onSuccess(data) {
+        onSuccess: (data) => {
           if (data) {
             if (!data) {
               setHasNext(false);

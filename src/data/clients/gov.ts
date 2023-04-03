@@ -26,8 +26,8 @@ export class Gov {
       sortAscFlag: "true",
       sort: "name",
       name: agentName,
-      licenseNumber: ceaLicense,
-      profileType: "1",
+      registrationNumber: ceaLicense,
+      profileType: "2",
     };
     const url = this.http.path("ceaProfiles");
 
