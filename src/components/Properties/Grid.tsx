@@ -9,13 +9,13 @@ import {
   Title,
   useMantineTheme,
 } from "@mantine/core";
+import dynamic from "next/dynamic";
 import Link, { LinkProps } from "next/link";
 import { ReactNode, useState } from "react";
 import { TbLayoutGrid, TbLayoutList } from "react-icons/tb";
 
 import { Listing, ListingType } from "@/data/clients/ninetyNine";
-
-import { Card } from "@/components/Properties";
+const Card = dynamic(() => import("@/components/Properties/Card"));
 
 import { getLimitedArray, logger, useIsMobile } from "@/utils";
 
@@ -123,55 +123,54 @@ export const Grid = ({
       hidden={hidden}
       {...rest}
     >
-      {(showTitle || showMoreCTA) && (
-        <Group position="apart">
-          {showTitle && (
-            <>
-              <Title
-                order={2}
-                size="h3"
-                py="md"
-                tt="capitalize"
-                data-pw={`grid-text-title-${title || listingType}`}
-              >
-                {`${title || listingType} Listings`.trim()}
-              </Title>
-
-              {showViewMode && (
-                <Group
-                  spacing="xs"
-                  hidden={isMobile}
-                >
-                  {ViewModes.map((mode) => {
-                    const isActiveMode: boolean = currentViewMode === mode;
-                    return (
-                      <ThemeIcon
-                        key={`viewMode-${mode}`}
-                        variant={isActiveMode ? "gradient" : "default"}
-                        onClick={() => handleModeChange(mode)}
-                      >
-                        {getViewModeIcon(mode)}
-                      </ThemeIcon>
-                    );
-                  })}
-                </Group>
-              )}
-            </>
-          )}
-
-          {showMoreCTA && (
-            <Text
-              component={Link}
-              href={seeMoreLink ?? `/property/${listingType}`}
-              size="sm"
-              fw={500}
-              variant="gradient"
+      <Group
+        position="apart"
+        hidden={!(showTitle || showMoreCTA)}
+      >
+        {showTitle && (
+          <>
+            <Title
+              order={2}
+              size="h3"
+              py="md"
+              tt="capitalize"
+              data-pw={`grid-text-title-${title || listingType}`}
             >
-              See More
-            </Text>
-          )}
-        </Group>
-      )}
+              {`${title || listingType} Listings`.trim()}
+            </Title>
+
+            <Group
+              spacing="xs"
+              hidden={isMobile || !showViewMode}
+            >
+              {ViewModes.map((mode) => {
+                const isActiveMode: boolean = currentViewMode === mode;
+                return (
+                  <ThemeIcon
+                    key={`viewMode-${mode}`}
+                    variant={isActiveMode ? "gradient" : "default"}
+                    onClick={() => handleModeChange(mode)}
+                  >
+                    {getViewModeIcon(mode)}
+                  </ThemeIcon>
+                );
+              })}
+            </Group>
+          </>
+        )}
+
+        <Text
+          hidden={!showMoreCTA}
+          component={Link}
+          href={seeMoreLink ?? `/property/${listingType}`}
+          size="sm"
+          fw={500}
+          variant="gradient"
+        >
+          See More
+        </Text>
+      </Group>
+
       {subtitle}
 
       {showEmptyFallback && !isLoading ? (

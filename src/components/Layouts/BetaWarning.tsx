@@ -21,6 +21,7 @@ const BetaWarning = ({ title, content, alwaysDisplay }: Props) => {
   const handleOnClose = () => {
     setIsVisible(false);
   };
+
   return (
     <Transition
       mounted={isVisible}

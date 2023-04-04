@@ -3,7 +3,7 @@ User-agent: *
 Allow: /
 
 # Host
-Host: https://homey-sg.vercel.app
+Host: https://undefined
 
 # Sitemaps
-Sitemap: https://homey-sg.vercel.app/sitemap.xml
+Sitemap: https://undefined/sitemap.xml

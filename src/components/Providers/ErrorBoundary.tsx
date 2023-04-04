@@ -1,6 +1,6 @@
+import dynamic from "next/dynamic";
 import { Component, ErrorInfo, PropsWithChildren } from "react";
-
-import UnknownState from "@/components/Layouts/UnknownState";
+const UnknownState = dynamic(() => import("@/components/Layouts/UnknownState"));
 
 import ErrorServer from "~/assets/images/error-server.svg";
 

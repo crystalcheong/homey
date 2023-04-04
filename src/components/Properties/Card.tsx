@@ -10,6 +10,7 @@ import {
   Title,
   useMantineTheme,
 } from "@mantine/core";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { IconType } from "react-icons";
 import { FaPhoneAlt, FaWhatsapp } from "react-icons/fa";
@@ -26,7 +27,7 @@ import {
   ListingCardOrientation,
   ListingCardOrientations,
 } from "@/components/Properties/Grid";
-import SaveButton from "@/components/Properties/SaveButton";
+const SaveButton = dynamic(() => import("@/components/Properties/SaveButton"));
 
 import { getLimitedArray, useIsMobile } from "@/utils";
 
@@ -85,12 +86,6 @@ export const Card = ({
 
   const isHorizontal: boolean = orientation === ListingCardOrientations[1];
 
-  // logger('Card.tsx line 84', {
-  //   orientation,
-  //   isHorizontal,
-  //   ViewOrientation,
-  // })
-
   return (
     <MCard
       shadow="sm"
@@ -118,43 +113,41 @@ export const Card = ({
           position: "relative",
         }}
       >
-        {!!formattedTag && (
-          <Badge
-            key={`${id}-${formattedTag.color}`}
-            radius="xs"
-            variant="gradient"
-            tt="uppercase"
-            styles={(theme) => ({
-              root: {
-                position: "absolute",
-                bottom: -theme.spacing.xs,
-                left: 0,
-                zIndex: 10,
-
-                borderTopRightRadius: theme.radius.sm,
-                borderBottomRightRadius: theme.radius.sm,
-              },
-            })}
-          >
-            {formattedTag?.text}
-          </Badge>
-        )}
-
-        {allowSaveListing && (
-          <SaveButton
-            listing={listing}
-            disabled={isLoading}
-            overwriteIconProps={{
-              size: 30,
-            }}
-            sx={{
+        <Badge
+          hidden={!formattedTag}
+          key={`${id}-${formattedTag?.color ?? "color"}`}
+          radius="xs"
+          variant="gradient"
+          tt="uppercase"
+          styles={(theme) => ({
+            root: {
               position: "absolute",
-              top: theme.spacing.xs,
-              right: theme.spacing.xs,
+              bottom: -theme.spacing.xs,
+              left: 0,
               zIndex: 10,
-            }}
-          />
-        )}
+
+              borderTopRightRadius: theme.radius.sm,
+              borderBottomRightRadius: theme.radius.sm,
+            },
+          })}
+        >
+          {formattedTag?.text}
+        </Badge>
+
+        <SaveButton
+          hidden={!allowSaveListing}
+          listing={listing}
+          disabled={isLoading}
+          overwriteIconProps={{
+            size: 30,
+          }}
+          sx={{
+            position: "absolute",
+            top: theme.spacing.xs,
+            right: theme.spacing.xs,
+            zIndex: 10,
+          }}
+        />
 
         <Image
           src={photo_url}
@@ -252,21 +245,22 @@ export const Card = ({
               </Text>
             </Group>
 
-            {!!attributes?.area_size_formatted && (
-              <Group spacing="xs">
-                <TbResize
-                  size={16}
-                  color={theme.fn.primaryColor()}
-                />
-                <Text
-                  component="p"
-                  fz="xs"
-                  truncate
-                >
-                  {attributes?.area_size_formatted}
-                </Text>
-              </Group>
-            )}
+            <Group
+              spacing="xs"
+              hidden={!attributes?.area_size_formatted}
+            >
+              <TbResize
+                size={16}
+                color={theme.fn.primaryColor()}
+              />
+              <Text
+                component="p"
+                fz="xs"
+                truncate
+              >
+                {attributes?.area_size_formatted}
+              </Text>
+            </Group>
           </Group>
         </Box>
       </MCard.Section>

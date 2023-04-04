@@ -13,8 +13,7 @@ export const RenderGuard: FC<Props> = ({
   fallbackComponent,
 }: Props) => (
   <ErrorBoundary>
-    {renderIf && children}
-    {!renderIf && (fallbackComponent ?? null)}
+    {renderIf ? children : fallbackComponent ?? null}
   </ErrorBoundary>
 );
 

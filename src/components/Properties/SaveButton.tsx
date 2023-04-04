@@ -25,6 +25,7 @@ interface Props extends DefaultProps {
   listing: Listing;
   showLabel?: boolean;
   disabled?: boolean;
+  hidden?: boolean;
 
   overwriteIconProps?: IconBaseProps;
   overwriteButtonProps?: ButtonProps;
@@ -33,6 +34,7 @@ interface Props extends DefaultProps {
 
 export const SaveButton = ({
   listing,
+  hidden = false,
   showLabel = false,
   disabled = false,
   overwriteIconProps,
@@ -152,7 +154,7 @@ export const SaveButton = ({
   );
 
   return (
-    <Provider.RenderGuard renderIf={!!currentUser || !listing}>
+    <Provider.RenderGuard renderIf={(!!currentUser || !listing) && !hidden}>
       {showLabel ? (
         <Button
           compact

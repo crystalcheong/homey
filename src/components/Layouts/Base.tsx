@@ -9,14 +9,17 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import { useWindowScroll } from "@mantine/hooks";
+import dynamic from "next/dynamic";
 import { PropsWithChildren } from "react";
 import { TbArrowUp } from "react-icons/tb";
 
-import { Footer, Navbar } from "@/components/Layouts";
 import LogoLoader from "@/components/LogoLoader";
 import Seo, { SeoProps } from "@/components/Providers/Seo";
 
 import { useIsMobile } from "@/utils/dom";
+
+const BaseNavbar = dynamic(() => import("@/components/Layouts/Navbars/Base"));
+const BaseFooter = dynamic(() => import("@/components/Layouts/Footers/Base"));
 
 export type BaseLayoutProps = PropsWithChildren & {
   showAffix?: boolean;
@@ -39,7 +42,7 @@ export const BaseLayout = ({
   return (
     <>
       <Seo {...seo} />
-      <Navbar.Base />
+      <BaseNavbar />
       <Paper
         py="5vh"
         sx={{
@@ -63,6 +66,7 @@ export const BaseLayout = ({
           <LogoLoader visible={isLoading} />
           {children}
         </Container>
+
         <Affix
           hidden={!showAffix}
           position={{ bottom: 20, right: 20 }}
@@ -94,7 +98,7 @@ export const BaseLayout = ({
           </Transition>
         </Affix>
       </Paper>
-      <Footer.Base />
+      <BaseFooter />
     </>
   );
 };

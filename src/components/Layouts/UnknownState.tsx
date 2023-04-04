@@ -127,16 +127,15 @@ const UnknownState = ({
         .
       </Text>
 
-      {!hideBackButton && (
-        <Button
-          variant="light"
-          onClick={() => router.back()}
-          leftIcon={<TbArrowNarrowLeft />}
-          mt={8}
-        >
-          Go back
-        </Button>
-      )}
+      <Button
+        hidden={hideBackButton}
+        variant="light"
+        onClick={() => router.back()}
+        leftIcon={<TbArrowNarrowLeft />}
+        mt={8}
+      >
+        Go back
+      </Button>
 
       {children}
     </Box>

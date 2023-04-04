@@ -10,6 +10,7 @@ import {
   Text,
   useMantineTheme,
 } from "@mantine/core";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import React from "react";
 import {
@@ -20,8 +21,7 @@ import {
 
 import { ListingCategories } from "@/data/clients/ninetyNine";
 import { Metadata, Route } from "@/data/static";
-
-import Logo from "@/components/Logo";
+const Logo = dynamic(() => import("@/components/Logo"));
 
 import { useIsMobile } from "@/utils";
 
