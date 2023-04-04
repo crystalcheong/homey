@@ -59,11 +59,13 @@ const AgentPostedPage = () => {
               allowRedirect={false}
               svgNode={<EmptyListing />}
               title="No posted listings"
-              subtitle={<>
-                Stay tuned for feature release 👀
-                <br />
-                <Badge size="xs">Coming Soon</Badge>
-              </>}
+              subtitle={
+                <>
+                  Stay tuned for feature release 👀
+                  <br />
+                  <Badge size="xs">Coming Soon</Badge>
+                </>
+              }
             />
           }
         />

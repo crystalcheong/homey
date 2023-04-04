@@ -184,15 +184,20 @@ export const accountRouter = createTRPCRouter({
 
       // GOV
       const govClient: Gov = new Gov();
-      const isCEALicensed = await govClient.checkIsCEALicensed(
-        input.name,
-        input.ceaLicense
-      );
-      if (!isCEALicensed) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Invalid CEA License.",
-        });
+      const isCEAValidated = govClient.isNotValidated;
+
+      let isCEALicensed = false;
+      if (isCEAValidated) {
+        isCEALicensed = await govClient.checkIsCEALicensed(
+          input.name,
+          input.ceaLicense
+        );
+        if (!isCEALicensed) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Invalid CEA License.",
+          });
+        }
       }
 
       logger("account.ts line 189", {
@@ -205,7 +210,7 @@ export const accountRouter = createTRPCRouter({
           ceaLicense: input.ceaLicense,
           phoneNumber: "",
           userId: input.id,
-          isVerified: govClient.isNotValidated,
+          isVerified: isCEALicensed,
         },
         include: {
           user: true,
