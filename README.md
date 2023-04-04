@@ -2,7 +2,7 @@
 
 > A NextJS real estate web application.<br/>
 > - [Demo](https://youtu.be/apbWi2NVMBU)
-> - [Documentation](https://ry3ng.github.io/MOBLIMA/)
+> - [Documentation](https://github.com/swe-homey/docs)
 
 
 <br/>
