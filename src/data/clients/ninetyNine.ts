@@ -1,13 +1,28 @@
 import { ListingSource, PropertyListing, PropertyType } from "@prisma/client";
 import { Redis } from "@upstash/redis";
+import { Cluster } from "cluster";
 import { compress } from "compress-json";
 
-import { PaginationInfo } from "@/data/stores";
-
 import { env } from "@/env.mjs";
-import { CachedData, createCachedObject, getTimestampAgeInDays } from "@/utils";
+import {
+  CachedData,
+  createCachedObject,
+  getInitialType,
+  getTimestampAgeInDays,
+} from "@/utils";
 import { logger } from "@/utils/debug";
 import { HTTP } from "@/utils/http";
+
+import {
+  ListingCategories,
+  ListingCategory,
+  ListingType,
+  ListingTypes,
+  NeighbourhoodInfo,
+  NinetyNineListing,
+  PaginationInfo,
+  ProjectLaunch,
+} from "@/types/ninetyNine";
 
 const Endpoint = `https://www.99.co/api`;
 
@@ -17,120 +32,6 @@ const Routes: Record<string, string> = {
   postal: `/v1/web/dashboard/listing-util/address`,
   neighbourhood: `/v1/web/neighbourhoods/:name/places-of-interest`,
   newLaunches: `/v1/web/new-launches/list-all-projects`,
-};
-
-export const ListingTypes = ["rent", "sale"];
-export type ListingType = (typeof ListingTypes)[number];
-
-export const ListingCategories = ["HDB", "Condo", "Landed"];
-export type ListingCategory = (typeof ListingCategories)[number];
-
-export type ListingPhoto = {
-  id: string;
-  category: string;
-  url: string;
-};
-
-export type AreaCategoryData = {
-  name: string;
-  id: string;
-  station_options: Record<string, string>[];
-};
-
-export type AreaCategory = {
-  name: string;
-  key: string;
-  data: AreaCategoryData[];
-};
-
-export type Neighbourhood = {
-  categories: AreaCategory[];
-};
-
-export type ProjectLaunch = {
-  development_id: string;
-  name: string;
-  location: string;
-  address_line: string;
-  details: string;
-  photo_url: string;
-  formatted_launch_date: string;
-  percentage_sold: number;
-  formatted_tags: Record<string, string>[];
-  within_distance_from_query: {
-    closest_mrt: {
-      colors: string[];
-      lines: Record<string, string>[];
-      title: string;
-      walking_time_in_mins: string;
-    };
-  };
-};
-
-export interface NinetyNineListing extends PropertyListing {
-  listing_type: ListingType;
-  photo_url: string;
-  address_name: string;
-  address_line_2: string;
-  main_category: ListingCategory;
-  sub_category_formatted: string;
-  formatted_tags: Record<string, string>[];
-  date_formatted: string;
-  attributes: Record<string, string | number>;
-  tags: string[];
-  cluster_mappings: Record<string, string[]>;
-  enquiry_flags: Record<string, boolean>;
-  user: Record<string, string>;
-  enquiry_options: Record<string, string>[];
-  photos: ListingPhoto[];
-  location: {
-    coordinates: Record<string, number>;
-    district: string;
-  };
-}
-
-export type Listing = NinetyNineListing;
-
-// export type Listing = {
-//   id: string;
-//   listing_type: ListingType;
-//   photo_url: string;
-//   address_name: string;
-//   address_line_2: string;
-//   main_category: ListingCategory;
-//   sub_category_formatted: string;
-//   formatted_tags: Record<string, string>[];
-//   date_formatted: string;
-//   attributes: Record<string, string | number>;
-//   tags: string[];
-//   cluster_mappings: Record<string, string[]>;
-//   enquiry_flags: Record<string, boolean>;
-//   user: Record<string, string>;
-//   enquiry_options: Record<string, string>[];
-//   photos: ListingPhoto[];
-//   location: {
-//     coordinates: Record<string, number>;
-//     district: string;
-//   };
-// };
-
-export type Cluster = {
-  title: string;
-  subtitle: string;
-  description: string;
-  tenure: string;
-};
-
-export const getInitialType = <T extends U, U>(extendedObj: T): U => {
-  const initialObj: U = {} as U;
-  for (const key in extendedObj) {
-    if (Object.prototype.hasOwnProperty.call(extendedObj, key)) {
-      initialObj[key as unknown as keyof U] = extendedObj[
-        key as keyof T
-      ] as unknown as U[keyof U];
-    }
-  }
-  return initialObj;
 };
 
 export class NinetyNine {
@@ -569,7 +470,7 @@ export class NinetyNine {
     return listing;
   };
 
-  getCluster = async (clusterId: string) => {
+  getCluster = async (clusterId: string): Promise<Cluster | null> => {
     let cluster: Cluster | null = null;
     if (clusterId.length < 3) return cluster;
 
@@ -586,8 +487,10 @@ export class NinetyNine {
     return cluster;
   };
 
-  getNeighbourhood = async (name: string) => {
-    let neighbourhood: Neighbourhood | null = null;
+  getNeighbourhood = async (
+    name: string
+  ): Promise<NeighbourhoodInfo | null> => {
+    let neighbourhood: NeighbourhoodInfo | null = null;
     const url = this.http.path("neighbourhood", {
       name,
     });

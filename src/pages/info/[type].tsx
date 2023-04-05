@@ -1,13 +1,14 @@
 import { Box, Divider, Text, Title } from "@mantine/core";
 import { NextPage } from "next";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 
 import { privacyPolicy, TermPolicy, termsAndConditions } from "@/data/static";
 
 import { Layout, Provider } from "@/components";
-import UnknownState from "@/components/Layouts/UnknownState";
+const UnknownState = dynamic(() => import("@/components/Layouts/UnknownState"));
 
-import { logger } from "@/utils";
+import { logger } from "@/utils/debug";
 
 import ErrorClient from "~/assets/images/error-client.svg";
 

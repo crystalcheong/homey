@@ -13,11 +13,11 @@ import dynamic from "next/dynamic";
 import { PropsWithChildren } from "react";
 import { TbArrowUp } from "react-icons/tb";
 
-import LogoLoader from "@/components/LogoLoader";
 import Seo, { SeoProps } from "@/components/Providers/Seo";
 
 import { useIsMobile } from "@/utils/dom";
 
+const LogoLoader = dynamic(() => import("@/components/LogoLoader"));
 const BaseNavbar = dynamic(() => import("@/components/Layouts/Navbars/Base"));
 const BaseFooter = dynamic(() => import("@/components/Layouts/Footers/Base"));
 

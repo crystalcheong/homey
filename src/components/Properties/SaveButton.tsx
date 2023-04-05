@@ -7,19 +7,22 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import { cleanNotifications, showNotification } from "@mantine/notifications";
-import { PropertyListing, User } from "@prisma/client";
+import { PropertyListing } from "@prisma/client";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { IconBaseProps } from "react-icons";
 import { TbBookmark } from "react-icons/tb";
 
-import { Listing, NinetyNine } from "@/data/clients/ninetyNine";
-import { SavedListing, useAccountStore } from "@/data/stores";
+import { NinetyNine } from "@/data/clients/ninetyNine";
+import { useAccountStore } from "@/data/stores";
 
 import { Provider } from "@/components";
 
 import { api } from "@/utils/api";
 import { logger } from "@/utils/debug";
+
+import { SavedListing, UserAccount } from "@/types/account";
+import { Listing } from "@/types/ninetyNine";
 
 interface Props extends DefaultProps {
   listing: Listing;
@@ -46,7 +49,7 @@ export const SaveButton = ({
 
   const router = useRouter();
   const theme = useMantineTheme();
-  const currentUser: User | null = useAccountStore.use.currentUser();
+  const currentUser: UserAccount | null = useAccountStore.use.currentUser();
   const savedListings: SavedListing[] = useAccountStore.use.savedListings();
 
   // const useAccountSavePropertyV1 = api.account.savePropertyV1.useMutation();

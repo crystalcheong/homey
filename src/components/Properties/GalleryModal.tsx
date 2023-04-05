@@ -1,45 +1,21 @@
 import { Carousel } from "@mantine/carousel";
-import {
-  Image,
-  Modal,
-  ModalProps,
-  Text,
-  TextProps,
-  useMantineTheme,
-} from "@mantine/core";
+import { Image, Modal, ModalProps, useMantineTheme } from "@mantine/core";
 import Autoplay from "embla-carousel-autoplay";
+import dynamic from "next/dynamic";
 import { Dispatch, SetStateAction, useRef } from "react";
-
-import { Listing, ListingPhoto } from "@/data/clients/ninetyNine";
+const GalleryImageCaption = dynamic(
+  () => import("@/components/Properties/GalleryImageCaption")
+);
 
 import { useIsMobile } from "@/utils/dom";
+
+import { Listing, ListingPhoto } from "@/types/ninetyNine";
 
 interface Props extends ModalProps {
   photos: Listing["photos"];
   activePhoto?: Listing["photos"][number];
   dispatchState: Dispatch<SetStateAction<ListingPhoto | undefined>>;
 }
-
-export const ImageCaption = ({ children, ...rest }: TextProps) => {
-  const theme = useMantineTheme();
-  return (
-    <Text
-      sx={{
-        position: "absolute",
-        bottom: "0.5em",
-        left: "0.5em",
-        padding: "0.2em",
-
-        background: `rgba(0,0,0,.4)`,
-        color: theme.white,
-        borderRadius: theme.radius.md,
-      }}
-      {...rest}
-    >
-      {children}
-    </Text>
-  );
-};
 
 const GalleryModal = ({
   photos,
@@ -83,7 +59,9 @@ const GalleryModal = ({
         sx={{
           position: "relative",
         }}
-        caption={<ImageCaption>{activePhoto?.category}</ImageCaption>}
+        caption={
+          <GalleryImageCaption>{activePhoto?.category}</GalleryImageCaption>
+        }
       />
 
       <Carousel
@@ -123,7 +101,9 @@ const GalleryModal = ({
               sx={{
                 position: "relative",
               }}
-              caption={<ImageCaption>{photo.category}</ImageCaption>}
+              caption={
+                <GalleryImageCaption>{photo.category}</GalleryImageCaption>
+              }
             />
           </Carousel.Slide>
         ))}

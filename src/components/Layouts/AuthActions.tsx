@@ -5,7 +5,7 @@ import { signOut } from "next-auth/react";
 
 import { Provider } from "@/components";
 
-import { AuthType, AuthTypes } from "@/pages/account/[auth]";
+import { AuthType, AuthTypes } from "@/types/account";
 
 interface Props {
   session: Session | null;

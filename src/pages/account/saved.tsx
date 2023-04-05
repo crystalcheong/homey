@@ -1,17 +1,17 @@
+import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { useEffect, useMemo } from "react";
 import { TbBookmark } from "react-icons/tb";
 
-import { Listing } from "@/data/clients/ninetyNine";
-import {
-  parseStringifiedListing,
-  SavedListing,
-  useAccountStore,
-} from "@/data/stores";
+import { parseStringifiedListing, useAccountStore } from "@/data/stores";
 
-import { Layout, Property, Provider } from "@/components";
-import UnknownState from "@/components/Layouts/UnknownState";
+import { Layout, Provider } from "@/components";
+const PropertyGrid = dynamic(() => import("@/components/Properties/Grid"));
+const UnknownState = dynamic(() => import("@/components/Layouts/UnknownState"));
+
+import { SavedListing } from "@/types/account";
+import { Listing } from "@/types/ninetyNine";
 
 import EmptySaved from "~/assets/images/empty-saved.svg";
 
@@ -51,7 +51,7 @@ const AccountSavedPage = () => {
       }}
     >
       <Provider.RenderGuard renderIf={isAuth}>
-        <Property.Grid
+        <PropertyGrid
           showViewMode={!!allSavedListings.length}
           listings={allSavedListings}
           allowSaveListing={isAuth && !!allSavedListings.length}

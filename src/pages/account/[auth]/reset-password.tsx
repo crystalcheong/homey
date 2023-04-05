@@ -2,6 +2,7 @@ import { Alert, Button, Container, Text, useMantineTheme } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import { DefaultErrorShape } from "@trpc/server";
 import { NextPage } from "next";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
@@ -12,17 +13,23 @@ import {
 } from "react-icons/tb";
 
 import { Layout, Provider } from "@/components";
-import UnknownState from "@/components/Layouts/UnknownState";
-import { PasswordFormState } from "@/components/Pages/Auth";
-import AuthPassword from "@/components/Pages/Auth/AuthPassword";
+const UnknownState = dynamic(() => import("@/components/Layouts/UnknownState"));
+const AuthPassword = dynamic(
+  () => import("@/components/Pages/Auth/AuthPassword")
+);
 
-import { AuthTypes, validateAuthInput } from "@/pages/account/[auth]";
 import {
   api,
   getPartialClonedObject,
   getReplacedStringDelimiter,
   logger,
 } from "@/utils";
+
+import {
+  AuthTypes,
+  PasswordFormState,
+  validateAuthInput,
+} from "@/types/account";
 
 import EmptyNotifications from "~/assets/images/empty-notifications.svg";
 

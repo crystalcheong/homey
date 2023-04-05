@@ -8,7 +8,7 @@ import {
   TbSettings,
 } from "react-icons/tb";
 
-import { ListingTypes } from "@/data/clients/ninetyNine";
+import { ListingTypes } from "@/types/ninetyNine";
 
 export interface Route {
   label: string;

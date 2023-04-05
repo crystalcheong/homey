@@ -9,9 +9,9 @@ import {
 } from "@mantine/core";
 import { IconBaseProps } from "react-icons";
 
-import { Listing, NinetyNine } from "@/data/clients/ninetyNine";
+import { NinetyNine } from "@/data/clients/ninetyNine";
 
-import { EnquiryIcons } from "@/components/Properties/Card";
+import { EnquiryIcons, Listing } from "@/types/ninetyNine";
 
 interface Props {
   listing: Listing;

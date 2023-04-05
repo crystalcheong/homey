@@ -1,6 +1,6 @@
 import { Text } from "@mantine/core";
-
-import TermsAndPrivacyLinks from "./TermsAndPrivacyLinks";
+import dynamic from "next/dynamic";
+const TermsAndPrivacyLinks = dynamic(() => import("./TermsAndPrivacyLinks"));
 
 const TermsDisclaimer = () => {
   return (

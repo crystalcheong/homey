@@ -1,8 +1,8 @@
 import { Badge, Box, Text, useMantineTheme } from "@mantine/core";
 import Link from "next/link";
 
-import { Metadata } from "@/data/static";
-import { useAppStore } from "@/data/stores";
+import { Metadata } from "@/data/static/app";
+import { useAppStore } from "@/data/stores/app";
 
 import HomeyLogo from "~/assets/brand/homey.svg";
 

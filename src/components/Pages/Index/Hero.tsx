@@ -17,52 +17,19 @@ import { useDisclosure } from "@mantine/hooks";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { IconType } from "react-icons";
-import { HiHomeModern } from "react-icons/hi2";
-import { MdApartment, MdOutlineRealEstateAgent } from "react-icons/md";
 import { TbChevronDown, TbSearch } from "react-icons/tb";
 
+import { logger, useIsMobile } from "@/utils";
+
 import {
-  ListingCategories,
-  ListingCategory,
-  ListingType,
-  ListingTypes,
-} from "@/data/clients/ninetyNine";
-import { neighbourhoodNames } from "@/data/stores";
-
-import { logger, toTitleCase, useIsMobile } from "@/utils";
-
-const SearchTypes: string[] = ["rent", "buy"];
-export type SearchType = (typeof SearchTypes)[number];
-export const SearchListingTypes: {
-  [key in SearchType]: ListingType;
-} = SearchTypes.reduce(
-  (searchMap = {}, type: string, idx: number) => ({
-    ...searchMap,
-    [type]: ListingTypes[idx],
-  }),
-  {}
-);
-
-export const LocationSelection = neighbourhoodNames.map((name) => ({
-  label: toTitleCase(name.replace(/-/g, " ")),
-  value: name,
-}));
-
-export const ListingCategoryIcons: {
-  [key in ListingCategory]: IconType;
-} = {
-  [ListingCategories[0]]: MdOutlineRealEstateAgent,
-  [ListingCategories[1]]: MdApartment,
-  [ListingCategories[2]]: HiHomeModern,
-};
-
-export const FilterFormState: {
-  location: string[];
-  category: ListingCategory;
-} = {
-  location: [],
-  category: "",
-};
+  FilterFormState,
+  ListingCategoryIcons,
+  LocationSelection,
+  SearchListingTypes,
+  SearchType,
+  SearchTypes,
+} from "@/types/account";
+import { ListingCategories } from "@/types/ninetyNine";
 
 interface Props extends BoxProps {
   headline: string;

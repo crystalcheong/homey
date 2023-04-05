@@ -9,16 +9,18 @@ import {
 import { showNotification } from "@mantine/notifications";
 import { DefaultErrorShape } from "@trpc/server";
 import { NextPage } from "next";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { TbAlertCircle, TbArrowBack, TbMailFast } from "react-icons/tb";
 
 import { Layout } from "@/components";
-import AuthEmail from "@/components/Pages/Auth/AuthEmail";
+const AuthEmail = dynamic(() => import("@/components/Pages/Auth/AuthEmail"));
 
-import { validateAuthInput } from "@/pages/account/[auth]";
 import { api, getBaseUrl, logger, useIsTablet } from "@/utils";
+
+import { validateAuthInput } from "@/types/account";
 
 const InitalFormState: Record<string, string> = {
   email: "",
@@ -235,15 +237,14 @@ const ForgotPasswordPage: NextPage = () => {
           </Button>
         </Group>
 
-        {!!authErrorState && (
-          <Alert
-            icon={<TbAlertCircle size={16} />}
-            title="Recovery Failed"
-            color={isDark ? "red" : "red.7"}
-          >
-            <Text color="dimmed">{authErrorState.message}</Text>
-          </Alert>
-        )}
+        <Alert
+          hidden={!authErrorState}
+          icon={<TbAlertCircle size={16} />}
+          title="Recovery Failed"
+          color={isDark ? "red" : "red.7"}
+        >
+          <Text color="dimmed">{authErrorState?.message ?? ""}</Text>
+        </Alert>
       </Container>
     </Layout.Base>
   );

@@ -1,21 +1,9 @@
-import {
-  PropertyAgent,
-  PropertyListing,
-  SavedPropertyListing,
-  User,
-} from "@prisma/client";
 import { create } from "zustand";
 
 import { innerApi } from "@/utils/api";
 import { createSelectors } from "@/utils/store";
 
-export interface SavedListing extends SavedPropertyListing {
-  property: PropertyListing;
-}
-
-export type UserAccount = User & {
-  propertyAgent?: PropertyAgent[];
-};
+import { SavedListing, UserAccount } from "@/types/account";
 
 interface State {
   currentUser: UserAccount | null;

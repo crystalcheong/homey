@@ -1,12 +1,7 @@
 import { Neighbourhood } from "@prisma/client";
 import { z } from "zod";
 
-import {
-  Listing,
-  ListingCategories,
-  ListingTypes,
-  NinetyNine,
-} from "@/data/clients/ninetyNine";
+import { NinetyNine } from "@/data/clients/ninetyNine";
 import {
   defaultLaunchPaginationInfo,
   defaultPaginationInfo,
@@ -17,6 +12,8 @@ import {
 import { logger } from "@/utils/debug";
 
 import { createTRPCRouter, publicProcedure } from "../trpc";
+
+import { Listing, ListingCategories, ListingTypes } from "@/types/ninetyNine";
 
 const client: NinetyNine = new NinetyNine();
 

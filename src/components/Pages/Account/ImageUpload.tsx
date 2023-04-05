@@ -6,6 +6,7 @@ import {
   IMAGE_MIME_TYPE,
 } from "@mantine/dropzone";
 
+import { getImageUrl } from "@/utils";
 import { logger } from "@/utils/debug";
 
 type Props = {
@@ -13,28 +14,6 @@ type Props = {
   files: FileWithPath[];
   onDrop: DropzoneProps["onDrop"];
   sx?: DropzoneProps["sx"];
-};
-
-export const getImageUrl = (file: FileWithPath) => {
-  const imageUrl = URL.createObjectURL(file);
-  return imageUrl;
-};
-
-export const getImageBase64 = async (file: FileWithPath) => {
-  const toBase64 = (file: FileWithPath) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
-    });
-
-  try {
-    const base64Image = await toBase64(file);
-    return base64Image;
-  } catch (error) {
-    console.error(error);
-  }
 };
 
 const ImageUpload = ({ placeholder = null, files = [], onDrop, sx }: Props) => {

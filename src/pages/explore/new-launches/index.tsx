@@ -1,7 +1,6 @@
 import { Box, Button, SimpleGrid, Title, useMantineTheme } from "@mantine/core";
 import { useState } from "react";
 
-import { ProjectLaunch } from "@/data/clients/ninetyNine";
 import { defaultLaunchPaginationInfo } from "@/data/stores";
 
 import { Layout } from "@/components";
@@ -10,6 +9,8 @@ import LaunchCard from "@/components/Properties/LaunchCard";
 
 import { api } from "@/utils/api";
 import { logger } from "@/utils/debug";
+
+import { ProjectLaunch } from "@/types/ninetyNine";
 
 const NewLaunchesPage = () => {
   const theme = useMantineTheme();

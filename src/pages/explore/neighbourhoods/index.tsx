@@ -1,13 +1,12 @@
 import { Box, Image, Overlay, SimpleGrid, Text } from "@mantine/core";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
 import { useNinetyNineStore } from "@/data/stores";
+const BaseLayout = dynamic(() => import("@/components/Layouts/Base"));
 
-import { Layout } from "@/components";
-
-import { api } from "@/utils/api";
-import { logger } from "@/utils/debug";
+import { api, logger } from "@/utils";
 
 const NeighbourhoodsPage = () => {
   const router = useRouter();
@@ -23,7 +22,7 @@ const NeighbourhoodsPage = () => {
   });
 
   return (
-    <Layout.Base
+    <BaseLayout
       seo={{
         templateTitle: "Neighbourhoods",
       }}
@@ -80,7 +79,7 @@ const NeighbourhoodsPage = () => {
           </Box>
         ))}
       </SimpleGrid>
-    </Layout.Base>
+    </BaseLayout>
   );
 };
 

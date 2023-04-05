@@ -7,6 +7,7 @@ import {
   Text,
   useMantineTheme,
 } from "@mantine/core";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { useCallback, useMemo, useState } from "react";
@@ -14,48 +15,34 @@ import { IconType } from "react-icons";
 import { TbChevronDown, TbLocation } from "react-icons/tb";
 
 import {
+  defaultListingMap,
+  defaultPaginationInfo,
+  useNinetyNineStore,
+} from "@/data/stores";
+
+import { Layout, Provider } from "@/components";
+const PropertyGrid = dynamic(() => import("@/components/Properties/Grid"));
+const UnknownState = dynamic(() => import("@/components/Layouts/UnknownState"));
+
+import { api, getObjectValueCount, logger } from "@/utils";
+
+import {
+  FilterFormState,
+  ListingCategoryIcons,
+  LocationSelection,
+} from "@/types/account";
+import {
+  getZoneIds,
   Listing,
   ListingCategories,
   ListingCategory,
   ListingType,
   ListingTypes,
-} from "@/data/clients/ninetyNine";
-import {
-  defaultListingMap,
-  defaultPaginationInfo,
   PaginationInfo,
-  useNinetyNineStore,
-} from "@/data/stores";
-
-import { Layout, Property, Provider } from "@/components";
-import UnknownState from "@/components/Layouts/UnknownState";
-import {
-  FilterFormState,
-  ListingCategoryIcons,
-  LocationSelection,
-} from "@/components/Pages/Index/Hero";
-
-import { api, getObjectValueCount, logger } from "@/utils";
+} from "@/types/ninetyNine";
 
 import EmptySearch from "~/assets/images/empty-search.svg";
 import ErrorClient from "~/assets/images/error-client.svg";
-
-export const getZoneIds = (locations: string[]) =>
-  locations
-    .map((location: string) => `zo${location.replace(/-/g, "_")}`)
-    .toString();
-
-const getLocations = (paramLocation: string) => {
-  let locations: string[] = [];
-  if (!paramLocation.length) return locations;
-
-  try {
-    locations = JSON.parse(paramLocation) ?? [];
-  } catch (e) {
-    return locations;
-  }
-  return locations;
-};
 
 const PropertyTypePage = () => {
   const router = useRouter();
@@ -83,10 +70,17 @@ const PropertyTypePage = () => {
     false;
 
   const paramLocation: string = (location ?? "").toString();
-  const paramLocations: string[] = useMemo(
-    () => getLocations(paramLocation),
-    [paramLocation]
-  );
+  const paramLocations: string[] = useMemo(() => {
+    let locations: string[] = [];
+    if (!paramLocation.length) return locations;
+
+    try {
+      locations = JSON.parse(paramLocation) ?? [];
+    } catch (e) {
+      return locations;
+    }
+    return locations;
+  }, [paramLocation]);
   const zoneIds: string = useMemo(
     () => getZoneIds(formState.location),
     [formState.location]
@@ -194,7 +188,7 @@ const PropertyTypePage = () => {
           />
         }
       >
-        <Property.Grid
+        <PropertyGrid
           listings={viewableListings.slice(
             pagination.pageSize * (pageNum - 1),
             pagination.pageSize * pageNum
@@ -351,7 +345,7 @@ const PropertyTypePage = () => {
               })}
             />
           )}
-        </Property.Grid>
+        </PropertyGrid>
       </Provider.RenderGuard>
     </Layout.Base>
   );

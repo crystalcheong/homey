@@ -12,31 +12,20 @@ import {
 } from "@mantine/core";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { IconType } from "react-icons";
-import { FaPhoneAlt, FaWhatsapp } from "react-icons/fa";
 import { TbBed, TbResize } from "react-icons/tb";
 
-import {
-  Listing,
-  ListingType,
-  ListingTypes,
-  NinetyNine,
-} from "@/data/clients/ninetyNine";
-
-import {
-  ListingCardOrientation,
-  ListingCardOrientations,
-} from "@/components/Properties/Grid";
 const SaveButton = dynamic(() => import("@/components/Properties/SaveButton"));
+
+import { NinetyNine } from "@/data/clients/ninetyNine";
 
 import { getLimitedArray, useIsMobile } from "@/utils";
 
-export const EnquiryTypes: string[] = ["call", "whatsapp"];
-export type EnquiryType = (typeof EnquiryTypes)[number];
-export const EnquiryIcons: Record<EnquiryType, IconType> = {
-  [EnquiryTypes[0]]: FaPhoneAlt,
-  [EnquiryTypes[1]]: FaWhatsapp,
-};
+import {
+  Listing,
+  ListingCardOrientation,
+  ListingCardOrientations,
+  PriceListingTypes,
+} from "@/types/ninetyNine";
 
 interface Props extends Partial<CardProps> {
   listing: Listing;
@@ -44,18 +33,6 @@ interface Props extends Partial<CardProps> {
   allowSaveListing?: boolean;
   orientation?: ListingCardOrientation;
 }
-
-export const PriceTypes: string[] = ["/month", ""];
-export type PriceType = (typeof PriceTypes)[number];
-export const PriceListingTypes: {
-  [key in ListingType]: PriceType;
-} = ListingTypes.reduce(
-  (searchMap = {}, type: string, idx: number) => ({
-    ...searchMap,
-    [type]: PriceTypes[idx],
-  }),
-  {}
-);
 
 export const Card = ({
   listing,
@@ -70,7 +47,7 @@ export const Card = ({
 
   const {
     id,
-    listing_type,
+    type,
     photo_url,
     attributes,
     main_category,
@@ -196,7 +173,7 @@ export const Card = ({
               >
                 {strPrice}
               </Text>
-              &nbsp;{PriceListingTypes[listing_type]}
+              &nbsp;{PriceListingTypes[type]}
             </Title>
 
             <Badge>{main_category}</Badge>

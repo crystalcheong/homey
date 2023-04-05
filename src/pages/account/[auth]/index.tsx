@@ -20,6 +20,7 @@ import {
 import { User } from "@prisma/client";
 import { DefaultErrorShape } from "@trpc/server";
 import { InferGetServerSidePropsType, NextPage } from "next";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { ProviderType } from "next-auth/providers";
@@ -38,94 +39,35 @@ import {
   useMemo,
   useState,
 } from "react";
-import { IconType } from "react-icons";
-import { FaGithub, FaGoogle } from "react-icons/fa";
 import { TbAlertCircle } from "react-icons/tb";
 
 import { Gov } from "@/data/clients/gov";
 import { Metadata } from "@/data/static";
 
 import { Layout, Provider } from "@/components";
-import BetaWarning from "@/components/Layouts/BetaWarning";
-import UnknownState from "@/components/Layouts/UnknownState";
-import AuthEmail from "@/components/Pages/Auth/AuthEmail";
-import AuthPassword, {
-  PasswordFormState,
-} from "@/components/Pages/Auth/AuthPassword";
-import TermsAndPrivacyLinks from "@/components/Pages/Info/TermsAndPrivacyLinks";
+const BetaWarning = dynamic(() => import("@/components/Layouts/BetaWarning"));
+const UnknownState = dynamic(() => import("@/components/Layouts/UnknownState"));
+const AuthEmail = dynamic(() => import("@/components/Pages/Auth/AuthEmail"));
+const AuthPassword = dynamic(
+  () => import("@/components/Pages/Auth/AuthPassword")
+);
+const TermsAndPrivacyLinks = dynamic(
+  () => import("@/components/Pages/Info/TermsAndPrivacyLinks")
+);
+
+import { api, getPartialClonedObject, logger } from "@/utils";
 
 import {
-  api,
-  getPartialClonedObject,
-  isCEALicense,
-  isEmail,
-  isName,
-  logger,
-} from "@/utils";
+  AuthType,
+  AuthTypes,
+  FormErrorMessages,
+  InitalFormState,
+  PasswordFormState,
+  ProviderIcons,
+  validateAuthInput,
+} from "@/types/account";
 
 import ErrorClient from "~/assets/images/error-client.svg";
-
-//#endregion  //*======== Utilities ===========
-
-export const AuthTypes: string[] = ["signIn", "signUp"];
-export type AuthType = (typeof AuthTypes)[number];
-
-export const ProviderIcons: {
-  [key in ClientSafeProvider["name"]]: IconType;
-} = {
-  Google: FaGoogle,
-  GitHub: FaGithub,
-};
-
-export const InitalFormState: Record<string, string> = {
-  email: "",
-  password: "",
-  confirmPassword: "",
-  name: "",
-  ceaLicense: "",
-};
-
-export const FormErrorMessages: {
-  [key in keyof typeof InitalFormState]: string;
-} = {
-  name: "Invalid Name",
-  email: "Invalid Email",
-  password: "Invalid Password",
-  confirmPassword: "Passwords do not match",
-  ceaLicense: "Invalid CEA License",
-};
-
-export const getEmailSuggestions = (input: string) =>
-  input.trim().length > 0 && !input.includes("@")
-    ? ["gmail.com", "outlook.com", "yahoo.com"].map(
-        (provider) => `${input}@${provider}`
-      )
-    : [];
-
-export const validateAuthInput = (id: string, value: string, refVal = "") => {
-  const validations: {
-    [key in keyof typeof InitalFormState]: (
-      val: string,
-      refVal?: string
-    ) => boolean;
-  } = {
-    email: (val: string) => isEmail(val),
-    password: (val: string) => {
-      const isValid = !!val.length;
-      return isValid;
-    },
-    confirmPassword: (val: string, ref: string = refVal) => {
-      const isValid = !!val.length && ref === val;
-      return isValid;
-    },
-    name: (val: string) => isName(val),
-    image: (val: string) => !!val.length,
-    ceaLicense: (val: string) => isCEALicense(val),
-  };
-  return validations[id](value);
-};
-
-//#endregion  //*======== Utilities ===========
 
 export const getServerSideProps = async () => {
   const providers = await getProviders();

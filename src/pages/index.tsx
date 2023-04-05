@@ -1,13 +1,8 @@
 import { Box, useMantineTheme } from "@mantine/core";
+import dynamic from "next/dynamic";
 import { NextPage } from "next/types";
 import { useSession } from "next-auth/react";
 
-import {
-  Listing,
-  ListingType,
-  ListingTypes,
-  NinetyNineListing,
-} from "@/data/clients/ninetyNine";
 import { Metadata } from "@/data/static";
 import {
   defaultPaginationInfo,
@@ -15,10 +10,16 @@ import {
 } from "@/data/stores/ninetyNine";
 
 import { Layout, Property } from "@/components";
-import Hero from "@/components/Pages/Index/Hero";
+const Hero = dynamic(() => import("@/components/Pages/Index/Hero"));
 
-import { api } from "@/utils/api";
-import { useIsTablet } from "@/utils/dom";
+import { api, useIsTablet } from "@/utils";
+
+import {
+  Listing,
+  ListingType,
+  ListingTypes,
+  NinetyNineListing,
+} from "@/types/ninetyNine";
 
 const IndexPage: NextPage = () => {
   const theme = useMantineTheme();

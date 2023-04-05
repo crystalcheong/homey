@@ -23,6 +23,7 @@ import {
 import { useWindowScroll } from "@mantine/hooks";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { ReactNode, useEffect, useState } from "react";
@@ -43,25 +44,24 @@ import {
 import { TiChartAreaOutline } from "react-icons/ti";
 import superjson from "superjson";
 
-import {
-  Cluster,
-  Listing,
-  ListingType,
-  ListingTypes,
-} from "@/data/clients/ninetyNine";
 import { useNinetyNineStore } from "@/data/stores";
 
 import { Layout, Property, Provider } from "@/components";
-import UnknownState from "@/components/Layouts/UnknownState";
-import TermsDisclaimer from "@/components/Pages/Info/TermsDisclaimer";
-import {
-  EnquiryButtonGroup,
-  PriceListingTypes,
-  SaveButton,
-} from "@/components/Properties";
-import GalleryModal, {
-  ImageCaption,
-} from "@/components/Properties/GalleryModal";
+
+const UnknownState = dynamic(() => import("@/components/Layouts/UnknownState"));
+const TermsDisclaimer = dynamic(
+  () => import("@/components/Pages/Info/TermsDisclaimer")
+);
+const GalleryModal = dynamic(
+  () => import("@/components/Properties/GalleryModal")
+);
+const GalleryImageCaption = dynamic(
+  () => import("@/components/Properties/GalleryImageCaption")
+);
+const SaveButton = dynamic(() => import("@/components/Properties/SaveButton"));
+const EnquiryButtonGroup = dynamic(
+  () => import("@/components/Properties/EnquiryButtonGroup")
+);
 
 import {
   getCategoryContent,
@@ -81,20 +81,15 @@ import {
   useIsTablet,
 } from "@/utils";
 
+import {
+  Cluster,
+  getNeigbourhoodListingsHref,
+  Listing,
+  ListingTypes,
+  PriceListingTypes,
+} from "@/types/ninetyNine";
+
 import EmptyListing from "~/assets/images/empty-listing.svg";
-
-export const getNeigbourhoodListingsHref = (
-  zoneId: string,
-  type: ListingType
-) => {
-  const neighbourhoodName: string = getStringWithoutAffix(zoneId ?? "", "zo");
-
-  return neighbourhoodName.length
-    ? `/property/${type}?${new URLSearchParams({
-        location: JSON.stringify([neighbourhoodName]),
-      })}`
-    : "";
-};
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const { id, type, clusterId } = context.query;
@@ -187,7 +182,7 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
     { data: listingData = null },
     ,
     { data: listingsData = [], isFetching: isLoadingListing },
-    { data: neighbourhoodData },
+    { data: neighbourhoodData = null },
   ] = api.useQueries((t) => [
     t.ninetyNine.getClusterListings(
       {
@@ -215,7 +210,7 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
       {
         enabled:
           !!listing && !!clusterId.length && isValidProperty && isMounted,
-        onSuccess: (data) => {
+        onSuccess: (data: Cluster) => {
           logger("[id].tsx line 161", { data });
           setCluster(data);
         },
@@ -521,9 +516,9 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
                 alt={listingData?.photos?.[0]?.category}
                 onClick={() => setModalOpened(listingData?.photos?.[0])}
                 caption={
-                  <ImageCaption>
+                  <GalleryImageCaption>
                     {listingData?.photos?.[0]?.category ?? ""}
-                  </ImageCaption>
+                  </GalleryImageCaption>
                 }
               />
             </Skeleton>
@@ -551,7 +546,11 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
                       sx={{
                         position: "relative",
                       }}
-                      caption={<ImageCaption>{photo?.category}</ImageCaption>}
+                      caption={
+                        <GalleryImageCaption>
+                          {photo?.category}
+                        </GalleryImageCaption>
+                      }
                     />
                   </Skeleton>
                 </Grid.Col>

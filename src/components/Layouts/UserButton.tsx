@@ -11,9 +11,9 @@ import {
 import { ComponentPropsWithoutRef, forwardRef, ReactNode } from "react";
 import { TbChevronRight, TbCircleCheckFilled } from "react-icons/tb";
 
-import { UserAccount } from "@/data/stores";
-
 import { getNameInitials } from "@/utils";
+
+import { UserAccount } from "@/types/account";
 
 interface Props
   extends ComponentPropsWithoutRef<"button">,

@@ -9,6 +9,8 @@ import {
   Title,
   useMantineTheme,
 } from "@mantine/core";
+import type { Neighbourhood } from "@prisma/client";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
@@ -27,23 +29,22 @@ import {
   TbTrees,
 } from "react-icons/tb";
 
+import { getPredefinedNeighbourhoods, useNinetyNineStore } from "@/data/stores";
+
+import { Layout, Provider } from "@/components";
+const UnknownState = dynamic(() => import("@/components/Layouts/UnknownState"));
+const PropertyGrid = dynamic(() => import("@/components/Properties/Grid"));
+
+import { api, logger, toTitleCase, useIsTablet } from "@/utils";
+
 import {
   AreaCategory,
   AreaCategoryData,
+  getNeigbourhoodListingsHref,
+  getZoneIds,
   Listing,
   ListingTypes,
-  Neighbourhood,
-} from "@/data/clients/ninetyNine";
-import { getPredefinedNeighbourhoods, useNinetyNineStore } from "@/data/stores";
-
-import { Layout, Property, Provider } from "@/components";
-import UnknownState from "@/components/Layouts/UnknownState";
-
-import { getZoneIds } from "@/pages/property/[type]";
-import { getNeigbourhoodListingsHref } from "@/pages/property/[type]/[id]";
-import { toTitleCase, useIsTablet } from "@/utils";
-import { api } from "@/utils/api";
-import { logger } from "@/utils/debug";
+} from "@/types/ninetyNine";
 
 import EmptySearch from "~/assets/images/empty-search.svg";
 
@@ -309,7 +310,7 @@ const Neighbourhood = () => {
               idx === 0 ? isFetchingRentListings : isFetchingSaleListings;
             const listings: Listing[] = idx === 0 ? rentListings : saleListings;
             return (
-              <Property.Grid
+              <PropertyGrid
                 key={`neighbourhood-${type}Listings`}
                 hidden={!listings.length}
                 title={toTitleCase(type)}

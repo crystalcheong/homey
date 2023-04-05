@@ -30,7 +30,7 @@ import {
 } from "react-icons/tb";
 
 import { AccountMenulist, NavRoutes } from "@/data/static";
-import { SavedListing, useAccountStore } from "@/data/stores";
+import { useAccountStore } from "@/data/stores";
 
 import UserButton from "@/components/Layouts/UserButton";
 const AuthActions = dynamic(() => import("@/components/Layouts/AuthActions"));
@@ -38,7 +38,8 @@ const NestedNavRoutes = dynamic(
   () => import("@/components/Layouts/Navbars/NestedNavRoutes")
 );
 const Logo = dynamic(() => import("@/components/Logo"));
-const ThemeToggle = dynamic(() => import("@/components/ThemeToggle"));
+
+import ThemeToggle from "@/components/ThemeToggle";
 
 import {
   api,
@@ -47,6 +48,8 @@ import {
   useIsMobile,
   useIsTablet,
 } from "@/utils";
+
+import { SavedListing } from "@/types/account";
 
 export function HeaderMegaMenu() {
   const router = useRouter();

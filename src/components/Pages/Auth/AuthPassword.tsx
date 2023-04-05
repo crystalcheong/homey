@@ -8,10 +8,7 @@ import {
 import Link from "next/link";
 import { ChangeEventHandler, Fragment, ReactNode } from "react";
 
-export interface PasswordFormState {
-  password: string;
-  confirmPassword: string;
-}
+import { PasswordFormState } from "@/types/account";
 
 interface Props {
   formState: PasswordFormState;

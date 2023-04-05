@@ -14,9 +14,9 @@ import {
 } from "@mantine/core";
 import { TbWalk } from "react-icons/tb";
 
-import { ProjectLaunch } from "@/data/clients/ninetyNine";
-
 import { RenderGuard } from "@/components/Providers";
+
+import { ProjectLaunch } from "@/types/ninetyNine";
 
 interface Props extends Partial<CardProps> {
   launch: ProjectLaunch;

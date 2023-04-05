@@ -15,6 +15,7 @@ import {
 import { FileWithPath } from "@mantine/dropzone";
 import { useDisclosure } from "@mantine/hooks";
 import { showNotification } from "@mantine/notifications";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import { signOut, useSession } from "next-auth/react";
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
@@ -23,22 +24,27 @@ import { TbCircleCheckFilled, TbCircleXFilled } from "react-icons/tb";
 import { useAccountStore } from "@/data/stores";
 
 import { Layout, Provider } from "@/components";
-import ImageUpload, {
+const AuthPassword = dynamic(
+  () => import("@/components/Pages/Auth/AuthPassword")
+);
+const ImageUpload = dynamic(
+  () => import("@/components/Pages/Account/ImageUpload")
+);
+
+import {
+  api,
   getImageBase64,
   getImageUrl,
-} from "@/components/Pages/Account/ImageUpload";
-import AuthPassword, {
-  PasswordFormState,
-} from "@/components/Pages/Auth/AuthPassword";
+  getPartialClonedObject,
+  logger,
+} from "@/utils";
 
 import {
   FormErrorMessages,
   InitalFormState,
+  PasswordFormState,
   validateAuthInput,
-} from "@/pages/account/[auth]";
-import { getPartialClonedObject } from "@/utils";
-import { api } from "@/utils/api";
-import { logger } from "@/utils/debug";
+} from "@/types/account";
 
 const UpdateFormState: Omit<typeof InitalFormState, "email"> & {
   currentPassword: string;

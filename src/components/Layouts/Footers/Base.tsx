@@ -19,11 +19,12 @@ import {
   TbBrandYoutube,
 } from "react-icons/tb";
 
-import { ListingCategories } from "@/data/clients/ninetyNine";
 import { Metadata, Route } from "@/data/static";
 const Logo = dynamic(() => import("@/components/Logo"));
 
 import { useIsMobile } from "@/utils";
+
+import { ListingCategories } from "@/types/ninetyNine";
 
 const useStyles = createStyles((theme) => ({
   footer: {

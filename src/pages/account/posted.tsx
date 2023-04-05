@@ -1,11 +1,13 @@
 import { Badge, useMantineTheme } from "@mantine/core";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
 
-import { Layout, Property, Provider } from "@/components";
-import BetaWarning from "@/components/Layouts/BetaWarning";
-import UnknownState from "@/components/Layouts/UnknownState";
+import { Layout, Provider } from "@/components";
+const PropertyGrid = dynamic(() => import("@/components/Properties/Grid"));
+const BetaWarning = dynamic(() => import("@/components/Layouts/BetaWarning"));
+const UnknownState = dynamic(() => import("@/components/Layouts/UnknownState"));
 
 import { useIsTablet } from "@/utils";
 
@@ -46,7 +48,7 @@ const AgentPostedPage = () => {
       <BetaWarning alwaysDisplay />
 
       <Provider.RenderGuard renderIf={isAuth}>
-        <Property.Grid
+        <PropertyGrid
           showViewMode={false}
           title="Posted"
           listings={[]}

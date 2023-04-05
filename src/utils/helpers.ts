@@ -1,10 +1,11 @@
+import { FileWithPath } from "@mantine/dropzone";
+
+import { getCurrentTimestamp } from "@/utils/date";
+
 /**
  * @title Unique Object List
  * @description Returns a unique list of objects by key
  **/
-
-import { getCurrentTimestamp } from "@/utils/date";
-
 export const getUniqueObjectList = <T>(array: T[], key: keyof T): T[] =>
   Array.from(new Map(array.map((item) => [item[key], item])).values());
 
@@ -141,3 +142,37 @@ export const toTitleCase = (str: string) =>
   );
 
 //#endregion  //*======== Strings ===========
+
+export const getInitialType = <T extends U, U>(extendedObj: T): U => {
+  const initialObj: U = {} as U;
+  for (const key in extendedObj) {
+    if (Object.prototype.hasOwnProperty.call(extendedObj, key)) {
+      initialObj[key as unknown as keyof U] = extendedObj[
+        key as keyof T
+      ] as unknown as U[keyof U];
+    }
+  }
+  return initialObj;
+};
+
+export const getImageUrl = (file: FileWithPath) => {
+  const imageUrl = URL.createObjectURL(file);
+  return imageUrl;
+};
+
+export const getImageBase64 = async (file: FileWithPath) => {
+  const toBase64 = (file: FileWithPath) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
+
+  try {
+    const base64Image = await toBase64(file);
+    return base64Image;
+  } catch (error) {
+    console.error(error);
+  }
+};

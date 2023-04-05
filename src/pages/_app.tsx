@@ -2,7 +2,7 @@ import {
   completeNavigationProgress,
   startNavigationProgress,
 } from "@mantine/nprogress";
-import { AppType } from "next/dist/shared/lib/utils";
+import { AppType } from "next/app";
 import { useRouter } from "next/router";
 import { type Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";

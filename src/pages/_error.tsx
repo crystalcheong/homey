@@ -1,7 +1,8 @@
 import { NextPage, NextPageContext } from "next";
+import dynamic from "next/dynamic";
 
-import { Layout } from "@/components";
-import UnknownState from "@/components/Layouts/UnknownState";
+const BaseLayout = dynamic(() => import("@/components/Layouts/Base"));
+const UnknownState = dynamic(() => import("@/components/Layouts/UnknownState"));
 
 import ErrorClient from "~/assets/images/error-client.svg";
 import ErrorServer from "~/assets/images/error-server.svg";
@@ -14,7 +15,7 @@ const Error: NextPage<Props> = ({ statusCode }: Props) => {
   const isClient: boolean = !!statusCode ?? true;
 
   return (
-    <Layout.Base
+    <BaseLayout
       showAffix={false}
       layoutStylesOverwrite={{
         display: "flex",
@@ -32,7 +33,7 @@ const Error: NextPage<Props> = ({ statusCode }: Props) => {
             : `a server-side error ${statusCode} occurred`
         }
       />
-    </Layout.Base>
+    </BaseLayout>
   );
 };
 

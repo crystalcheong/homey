@@ -3,19 +3,17 @@ import { compress, decompress } from "compress-json";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-import { Listing, ListingType, ListingTypes } from "@/data/clients/ninetyNine";
-
 import { getUniqueObjectListwithKeys } from "@/utils";
 import { innerApi } from "@/utils/api";
 import { logger } from "@/utils/debug";
 import { createSelectors, storage } from "@/utils/store";
 
-export type PaginationInfo = {
-  currentCount: number;
-  pageSize: number;
-  pageNum: number;
-  hasNext: boolean;
-};
+import {
+  Listing,
+  ListingType,
+  ListingTypes,
+  PaginationInfo,
+} from "@/types/ninetyNine";
 
 interface State {
   currentListing: Listing | null;

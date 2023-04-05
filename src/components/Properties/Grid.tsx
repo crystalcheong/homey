@@ -14,29 +14,17 @@ import Link, { LinkProps } from "next/link";
 import { ReactNode, useState } from "react";
 import { TbLayoutGrid, TbLayoutList } from "react-icons/tb";
 
-import { Listing, ListingType } from "@/data/clients/ninetyNine";
 const Card = dynamic(() => import("@/components/Properties/Card"));
 
 import { getLimitedArray, logger, useIsMobile } from "@/utils";
 
-export const ViewModes = ["grid", "list"];
-export type ViewMode = (typeof ViewModes)[number];
-
-export const ListingCardOrientations: string[] = ["vertical", "horizontal"];
-export type ListingCardOrientation = (typeof ListingCardOrientations)[number];
-
-export const ViewOrientation: Record<ViewMode, ListingCardOrientation> =
-  ViewModes.reduce(
-    (
-      viewOrientationMap: Record<ViewMode, ListingCardOrientation> = {},
-      viewMode,
-      idx
-    ) => {
-      viewOrientationMap[viewMode] = ListingCardOrientations[idx];
-      return viewOrientationMap;
-    },
-    {}
-  );
+import {
+  Listing,
+  ListingType,
+  ViewMode,
+  ViewModes,
+  ViewOrientation,
+} from "@/types/ninetyNine";
 
 interface Props extends BoxProps {
   listings: Listing[];
