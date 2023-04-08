@@ -2,7 +2,7 @@
 
 > A NextJS real estate web application.<br/>
 >
-> - [Demo](https://youtu.be/rf1tAE1Vwfg)
+> - [Demo](https://youtu.be/4qLNeD5MUFQ) / [Teaser](https://youtu.be/A9fdw31bSno)
 > - [Website](https://homey-sg.vercel.app/)
 > - [Documentation](https://github.com/swe-homey/docs)
 
