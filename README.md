@@ -16,6 +16,13 @@
 
 ---
 
+#### 🎋 Environments
+
+| Environment | Github branch                                                  | URL                                                                                         |
+| ----------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Production  | [main](https://github.com/crystalcheong/homey)                 | <a href="https://homey-sg.vercel.app/" target="_blank">https://homey-sg.vercel.app/</a>     |
+| Staging     | [staging](https://github.com/crystalcheong/homey/tree/staging) | <a href="https://homey-beta.vercel.app/" target="_blank">https://homey-beta.vercel.app/</a> |
+
 #### 🛠️ Installation and Set Up
 
 - Clone repository
