@@ -2,6 +2,7 @@ import {
   completeNavigationProgress,
   startNavigationProgress,
 } from "@mantine/nprogress";
+import { Analytics } from "@vercel/analytics/react";
 import { AppType } from "next/app";
 import { useRouter } from "next/router";
 import { type Session } from "next-auth";
@@ -49,6 +50,7 @@ const App: AppType<{ session: Session | null }> = ({
       <Provider.Mantine>
         <Provider.ErrorBoundary>
           <Component {...pageProps} />
+          <Analytics />
         </Provider.ErrorBoundary>
       </Provider.Mantine>
     </SessionProvider>
