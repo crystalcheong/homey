@@ -21,8 +21,6 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import { useWindowScroll } from "@mantine/hooks";
-import { createProxySSGHelpers } from "@trpc/react-query/ssg";
-import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -42,7 +40,6 @@ import {
   TbShare,
 } from "react-icons/tb";
 import { TiChartAreaOutline } from "react-icons/ti";
-import superjson from "superjson";
 
 import { useNinetyNineStore } from "@/data/stores";
 
@@ -63,12 +60,12 @@ const EnquiryButtonGroup = dynamic(
   () => import("@/components/Properties/EnquiryButtonGroup")
 );
 
+import { useRouter } from "next/router";
+
 import {
   getCategoryContent,
   getCategoryIcon,
 } from "@/pages/explore/neighbourhoods/[name]";
-import { appRouter } from "@/server/api/root";
-import { prisma } from "@/server/db";
 import {
   api,
   getBaseUrl,
@@ -91,8 +88,13 @@ import {
 
 import EmptyListing from "~/assets/images/empty-listing.svg";
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const { id, type, clusterId } = context.query;
+const PropertyPage = () => {
+  const router = useRouter();
+  const theme = useMantineTheme();
+  const { data: sessionData } = useSession();
+  const isAuth = !!sessionData;
+
+  const { id, type, clusterId } = router.query;
 
   const paramId: string = (id ?? "").toString();
   const isValidId: boolean = !!paramId.length ?? false;
@@ -106,39 +108,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   const isValidProperty: boolean = isValidId && isValidType && isValidClusterId;
 
-  const ssg = createProxySSGHelpers({
-    router: appRouter,
-    ctx: {
-      session: null,
-      prisma: prisma,
-    },
-    transformer: superjson,
-  });
-
-  await ssg.ninetyNine.getClusterListings.prefetch({
-    listingType: paramType,
-    listingId: paramId,
-    clusterId: paramClusterId,
-  });
-
-  return {
-    props: {
-      trpcState: ssg.dehydrate(),
-      id: paramId,
-      type: paramType,
-      clusterId: paramClusterId,
-      isValidProperty,
-    },
-  };
-};
-
-type Props = InferGetServerSidePropsType<typeof getServerSideProps>;
-
-const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
-  const theme = useMantineTheme();
-  const { data: sessionData } = useSession();
-  const isAuth = !!sessionData;
-
   const isMobile: boolean = useIsMobile(theme);
   const isTablet: boolean = useIsTablet(theme);
   const isDark: boolean = theme.colorScheme === "dark" ?? false;
@@ -150,7 +119,10 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
   const [baseUrl, setBaseUrl] = useState<string>(getBaseUrl());
   const [modalOpened, setModalOpened] = useState<Listing["photos"][number]>();
 
-  const listing: Listing | null = useNinetyNineStore.use.getListing()(type, id);
+  const listing: Listing | null = useNinetyNineStore.use.getListing()(
+    paramType,
+    paramId
+  );
   const updateCurrentListing = useNinetyNineStore.use.updateCurrentListing();
   const removeListing = useNinetyNineStore.use.removeListing();
   const updateListings = useNinetyNineStore.use.updateListings();
@@ -186,16 +158,16 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
   ] = api.useQueries((t) => [
     t.ninetyNine.getClusterListings(
       {
-        listingType: type,
-        listingId: id,
-        clusterId,
+        listingType: paramType,
+        listingId: paramId,
+        clusterId: paramClusterId,
       },
       {
-        enabled: !listing && isValidProperty && isMounted,
+        enabled: isValidProperty && isMounted,
         onSuccess: (data) => {
           logger("[id].tsx line 140", { data });
           if (!data) {
-            removeListing(type, id);
+            removeListing(paramType, paramId);
             return;
           }
 
@@ -205,11 +177,11 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
     ),
     t.ninetyNine.getCluster(
       {
-        clusterId,
+        clusterId: paramClusterId,
       },
       {
         enabled:
-          !!listing && !!clusterId.length && isValidProperty && isMounted,
+          !!listing && !!paramClusterId.length && isValidProperty && isMounted,
         onSuccess: (data: Cluster) => {
           logger("[id].tsx line 161", { data });
           setCluster(data);
@@ -218,7 +190,7 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
     ),
     t.ninetyNine.getZoneListings(
       {
-        listingType: type,
+        listingType: paramType,
         zoneId: listing?.cluster_mappings?.zone[0] ?? "",
         listingCategory: listing?.main_category ?? "",
       },
@@ -229,7 +201,7 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
 
           const isZonal = true;
           logger("[id].tsx line 179", { data });
-          updateListings(type, data as Listing[], isZonal);
+          updateListings(paramType, data as Listing[], isZonal);
         },
       }
     ),
@@ -381,7 +353,7 @@ const PropertyPage = ({ id, type, clusterId, isValidProperty }: Props) => {
 
   const neighbourhoodListingsUrl: string = getNeigbourhoodListingsHref(
     listing?.cluster_mappings?.zone[0] ?? "",
-    type
+    paramType
   );
 
   return (

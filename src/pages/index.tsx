@@ -36,7 +36,7 @@ const IndexPage: NextPage = () => {
     { isFetching: isFetchingSaleListings },
   ] = api.useQueries((t) =>
     ListingTypes.map((listingType) =>
-      t.ninetyNine.getListingsV1(
+      t.ninetyNine.getListings(
         {
           listingType: listingType,
         },

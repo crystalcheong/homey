@@ -253,7 +253,7 @@ const store = create<Store>()(
           currentPagination.get(listingType as ListingType) ??
           defaultPaginationInfo;
         const newListings: Listing[] =
-          (await innerApi.ninetyNine.getListingsV1.query({
+          (await innerApi.ninetyNine.getListings.query({
             listingType,
             pageNum,
           })) ?? [];

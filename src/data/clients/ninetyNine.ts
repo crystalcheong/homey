@@ -154,16 +154,19 @@ export class NinetyNine {
             const cachedLaunches: ProjectLaunch[] =
               cachedLaunchesData.data ?? [];
             launches.push(...cachedLaunches);
-            logger("ninetyNine.ts line 217", {
+            logger("ninetyNine.ts line 217 | use cached", {
               isFirstQuery,
               cachedLaunches: cachedLaunches.length,
               cacheAgeInDays,
+              cachedAt: cachedLaunchesData.cachedAt,
             });
           }
         }
 
         if (launches.length) {
-          logger("ninetyNine.ts line 188", { usedCached: !!launches.length });
+          logger("ninetyNine.ts line 188 | use cached", {
+            usedCached: !!launches.length,
+          });
           if (launches.length >= pagination.itemLimit) break fetchLaunches;
         }
       }
@@ -177,6 +180,7 @@ export class NinetyNine {
 
       // Serialize cache
       if (isFirstQuery) {
+        logger("[ninetyNine.ts:182] | re-cached");
         const cacheData = createCachedObject(launchesData);
         this.redis.set(cacheKey, cacheData);
       }
@@ -205,7 +209,7 @@ export class NinetyNine {
     type: ListingType;
     category?: ListingCategory;
     extraParams?: Record<string, string>;
-    pagination: Omit<PaginationInfo, "currentCount" | "hasNext">;
+    pagination?: Omit<PaginationInfo, "currentCount" | "hasNext">;
     ignoreCategory?: boolean;
   }) => {
     const listings: NinetyNineListing[] = [];
@@ -254,10 +258,11 @@ export class NinetyNine {
               cachedListingsData.data ?? []
             ).map(this.parseToCompatibleListing);
             listings.push(...cachedListings);
-            logger("ninetyNine.ts line 217", {
+            logger("ninetyNine.ts line 217 | use cached", {
               isFirstQuery,
               cachedListings: cachedListings.length,
               cacheAgeInDays,
+              cachedAt: cachedListingsData.cachedAt,
             });
           }
         }
@@ -283,17 +288,18 @@ export class NinetyNine {
 
       // Serialize cache
       if (isFirstQuery) {
+        logger("[ninetyNine.ts:182] | re-cached");
         const cacheData = createCachedObject(listingsData);
         this.redis.set(type, cacheData);
       }
-      logger("NinetyNine/getListingsV1", {
+      logger("NinetyNine/getListings", {
         url: url.toString(),
         listings: listings.length,
         params,
         extraParams,
       });
     } catch (error) {
-      console.error("NinetyNine/getListingsV1", url, error);
+      console.error("NinetyNine/getListings", url, error);
     }
     return listings;
   };
@@ -356,10 +362,11 @@ export class NinetyNine {
               cachedListingsData.data ?? []
             ).map(this.parseToCompatibleListing);
             listings.push(...cachedListings);
-            logger("ninetyNine.ts line 217", {
+            logger("ninetyNine.ts line 217 | use cached", {
               isFirstQuery,
               cachedListings: cachedListings.length,
               cacheAgeInDays,
+              cachedAt: cachedListingsData.cachedAt,
             });
           }
         }
@@ -385,6 +392,7 @@ export class NinetyNine {
 
       // Serialize cache
       if (isFirstQuery) {
+        logger("[ninetyNine.ts:182] | re-cached");
         const cacheData = createCachedObject(listingsData);
         this.redis.set(listingType, cacheData);
       }
@@ -423,12 +431,12 @@ export class NinetyNine {
       },
     });
 
-    return this.getListingsV1(
-      listingType,
-      listingCategory,
+    return this.getListings({
+      type: listingType,
+      category: listingCategory,
       extraParams,
-      pagination
-    );
+      pagination,
+    });
   };
 
   getClusterListings = async (
@@ -444,20 +452,18 @@ export class NinetyNine {
     };
 
     try {
-      const listingsData: NinetyNineListing[] = await this.getListingsV1(
-        listingType,
-        undefined,
+      const listingsData: NinetyNineListing[] = await this.getListings({
+        type: listingType,
         extraParams,
-        undefined,
-        true
-      );
+        ignoreCategory: true,
+      });
 
       const matchedListings: NinetyNineListing[] = listingsData.filter(
         ({ id }) => id === listingId
       );
       listing = matchedListings?.[0] ?? null;
 
-      logger("ninetyNine.ts line 342", {
+      logger("ninetyNine.ts line 342 | getClusterListings", {
         listingsData: listingsData.length,
         matchedListings: matchedListings.length,
         listing,

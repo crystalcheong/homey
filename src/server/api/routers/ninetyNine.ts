@@ -18,7 +18,7 @@ import { Listing, ListingCategories, ListingTypes } from "@/types/ninetyNine";
 const client: NinetyNine = new NinetyNine();
 
 export const ninetyNineRouter = createTRPCRouter({
-  getListingsV1: publicProcedure
+  getListings: publicProcedure
     .meta({
       description: "Retrieves listings",
     })
@@ -42,15 +42,14 @@ export const ninetyNineRouter = createTRPCRouter({
     )
     .query(
       async ({ input }) =>
-        await client.getListingsV1(
-          input.listingType,
-          input.listingCategory,
-          {},
-          {
+        await client.getListings({
+          type: input.listingType,
+          category: input.listingCategory,
+          pagination: {
             pageNum: input.pageNum ?? defaultPaginationInfo.pageNum,
             pageSize: input.pageSize ?? defaultPaginationInfo.pageSize,
-          }
-        )
+          },
+        })
     ),
 
   getLaunches: publicProcedure
@@ -128,15 +127,14 @@ export const ninetyNineRouter = createTRPCRouter({
         );
       }
 
-      return await client.getListingsV1(
-        input.listingType,
-        input.listingCategory,
-        {},
-        {
+      return await client.getListings({
+        type: input.listingType,
+        category: input.listingCategory,
+        pagination: {
           pageNum: input.pageNum ?? defaultPaginationInfo.pageNum,
           pageSize: input.pageSize ?? defaultPaginationInfo.pageSize,
-        }
-      );
+        },
+      });
     }),
 
   getCluster: publicProcedure
