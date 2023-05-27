@@ -34,14 +34,16 @@ import {
   TbBuildingCommunity,
   TbCheck,
   TbClock,
+  TbCrossFilled,
   TbCurrentLocation,
   TbDimensions,
   TbEdit,
   TbShare,
+  TbX,
 } from "react-icons/tb";
 import { TiChartAreaOutline } from "react-icons/ti";
 
-import { useNinetyNineStore } from "@/data/stores";
+import { useAppStore, useNinetyNineStore } from "@/data/stores";
 
 import { Layout, Property, Provider } from "@/components";
 
@@ -87,6 +89,9 @@ import {
 } from "@/types/ninetyNine";
 
 import EmptyListing from "~/assets/images/empty-listing.svg";
+import ErrorServer from "~/assets/images/error-server.svg";
+
+import { showNotification } from "@mantine/notifications";
 
 const PropertyPage = () => {
   const router = useRouter();
@@ -126,6 +131,7 @@ const PropertyPage = () => {
   const updateCurrentListing = useNinetyNineStore.use.updateCurrentListing();
   const removeListing = useNinetyNineStore.use.removeListing();
   const updateListings = useNinetyNineStore.use.updateListings();
+  const isServerDown: boolean = useAppStore().isServerDown;
 
   const neighbourhood: string = getStringWithoutAffix(
     listing?.cluster_mappings?.zone[0] ?? "",
@@ -151,9 +157,9 @@ const PropertyPage = () => {
   }, [listing]);
 
   const [
-    { data: listingData = null },
+    { data: listingData = null, isFetching: isLoadingListing },
     ,
-    { data: listingsData = [], isFetching: isLoadingListing },
+    { data: listingsData = [], isFetching: isLoadingListings },
     { data: neighbourhoodData = null },
   ] = api.useQueries((t) => [
     t.ninetyNine.getClusterListings(
@@ -172,6 +178,18 @@ const PropertyPage = () => {
           }
 
           updateCurrentListing(data);
+        },
+        onError: (err) => {
+          useAppStore.setState(() => ({
+            isServerDown: true,
+          }));
+
+          showNotification({
+            color: "red",
+            icon: <TbX />,
+            title: "Server Down",
+            message: "Unable to fetch listing from our servers",
+          });
         },
       }
     ),
@@ -366,16 +384,22 @@ const PropertyPage = () => {
         flexDirection: "column",
         gap: "5vh",
       }}
-      isLoading={isLoadingListing}
+      isLoading={isLoadingListings}
     >
       <Provider.RenderGuard
-        renderIf={isValidProperty && isMounted && !!listingData}
+        renderIf={
+          isValidProperty && isMounted && !!listingData && !isServerDown
+        }
         fallbackComponent={
           <UnknownState
-            hidden={isLoadingListing}
-            svgNode={<EmptyListing />}
-            title="Listing not found"
-            subtitle="Woops, the listing has vanished"
+            hidden={isLoadingListing || isLoadingListings}
+            svgNode={isServerDown ? <ErrorServer /> : <EmptyListing />}
+            title={isServerDown ? "Something went wrong" : "Listing not found"}
+            subtitle={
+              isServerDown
+                ? "a server-side error occurred"
+                : "Woops, the listing has vanished"
+            }
           />
         }
       >
@@ -877,7 +901,7 @@ const PropertyPage = () => {
         <Property.Grid
           title="Similar"
           listings={listingsData ?? []}
-          isLoading={isLoadingListing}
+          isLoading={isLoadingListings}
           maxViewableCount={isTablet ? 4 : 3}
           placeholderCount={isTablet ? 4 : 3}
           allowSaveListing={isAuth}
